@@ -2,57 +2,78 @@ package com.redskul.macrostatshelper
 
 import android.app.Service
 import android.content.Intent
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
+import kotlinx.coroutines.*
 
 class DataUsageService : Service() {
 
     private lateinit var dataUsageMonitor: DataUsageMonitor
-    private lateinit var fileManager: FileManager
     private lateinit var notificationHelper: NotificationHelper
-    private lateinit var handler: Handler
-    private lateinit var updateRunnable: Runnable
+    private lateinit var settingsManager: SettingsManager
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var updateJob: Job? = null
+    private var isForegroundService = false
 
     companion object {
-        const val UPDATE_INTERVAL = 30000L // 30 seconds
+        const val UPDATE_INTERVAL = 600000L // 10 minutes
         const val ACTION_UPDATE_NOW = "UPDATE_NOW"
+        const val ACTION_DATA_UPDATED = "com.redskul.macrostatshelper.DATA_UPDATED"
+        const val ACTION_NOTIFICATION_TOGGLE_CHANGED = "NOTIFICATION_TOGGLE_CHANGED"
     }
 
     override fun onCreate() {
         super.onCreate()
 
         dataUsageMonitor = DataUsageMonitor(this)
-        fileManager = FileManager(this)
         notificationHelper = NotificationHelper(this)
-        handler = Handler(Looper.getMainLooper())
-
-        createUpdateRunnable()
+        settingsManager = SettingsManager(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Start foreground immediately
-        startForeground(NotificationHelper.NOTIFICATION_ID, createServiceNotification())
-
-        // Handle immediate update request
-        if (intent?.action == ACTION_UPDATE_NOW) {
-            android.util.Log.d("DataUsageService", "Received immediate update request")
-            // Trigger immediate update
-            handler.post {
-                updateUsageData()
+        when (intent?.action) {
+            ACTION_UPDATE_NOW -> {
+                android.util.Log.d("DataUsageService", "Received immediate update request")
+                serviceScope.launch {
+                    updateUsageData()
+                }
+                return START_STICKY
             }
-            return START_STICKY
+            ACTION_NOTIFICATION_TOGGLE_CHANGED -> {
+                android.util.Log.d("DataUsageService", "Notification toggle changed")
+                updateForegroundStatus()
+                return START_STICKY
+            }
         }
 
-        // Start monitoring after a short delay to ensure service is properly started
-        handler.postDelayed({
+        // Check if notification is enabled and start/stop foreground accordingly
+        updateForegroundStatus()
+
+        serviceScope.launch {
+            delay(2000)
             startPeriodicUpdates()
-        }, 2000) // 2 second delay
+        }
 
         return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun updateForegroundStatus() {
+        val notificationEnabled = settingsManager.isNotificationEnabled()
+
+        if (notificationEnabled && !isForegroundService) {
+            // Start as foreground service
+            startForeground(NotificationHelper.NOTIFICATION_ID, createServiceNotification())
+            isForegroundService = true
+            android.util.Log.d("DataUsageService", "Started as foreground service")
+        } else if (!notificationEnabled && isForegroundService) {
+            // Remove from foreground but keep service running
+            stopForeground(true) // true = remove notification
+            isForegroundService = false
+            android.util.Log.d("DataUsageService", "Removed from foreground, service continues in background")
+        }
+    }
 
     private fun createServiceNotification(): android.app.Notification {
         val intent = Intent(this, MainActivity::class.java)
@@ -62,34 +83,48 @@ class DataUsageService : Service() {
         )
 
         return android.app.Notification.Builder(this, NotificationHelper.CHANNEL_ID)
-            .setContentTitle("Data Usage Monitor")
-            .setContentText("Monitoring data usage...")
+            .setContentTitle(getString(R.string.data_usage_monitor_service))
+            .setContentText(getString(R.string.monitoring_data_usage))
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
     }
 
-    private fun createUpdateRunnable() {
-        updateRunnable = object : Runnable {
-            override fun run() {
-                updateUsageData()
-                handler.postDelayed(this, UPDATE_INTERVAL)
+    private suspend fun startPeriodicUpdates() {
+        updateJob?.cancel()
+
+        updateJob = serviceScope.launch {
+            updateUsageData()
+
+            while (isActive) {
+                delay(UPDATE_INTERVAL)
+                if (isActive) {
+                    updateUsageData()
+                }
             }
         }
     }
 
-    private fun startPeriodicUpdates() {
-        updateUsageData() // Initial update
-        handler.postDelayed(updateRunnable, UPDATE_INTERVAL)
-    }
-
-    private fun updateUsageData() {
+    private suspend fun updateUsageData() {
         try {
             android.util.Log.d("DataUsageService", "Updating usage data")
             val usageData = dataUsageMonitor.getUsageData()
-            fileManager.writeUsageToFile(usageData)
-            notificationHelper.showUsageNotification(usageData)
+
+            withContext(Dispatchers.Main) {
+                // Only show notification if enabled by user
+                if (settingsManager.isNotificationEnabled()) {
+                    notificationHelper.showUsageNotification(usageData)
+                    android.util.Log.d("DataUsageService", "Data notification shown (enabled by user)")
+                } else {
+                    android.util.Log.d("DataUsageService", "Data notification skipped (disabled by user)")
+                }
+
+                // Always send broadcast to QS tiles regardless of notification setting
+                val broadcastIntent = Intent(ACTION_DATA_UPDATED)
+                sendBroadcast(broadcastIntent)
+                android.util.Log.d("DataUsageService", "Data update broadcast sent")
+            }
         } catch (e: Exception) {
             android.util.Log.e("DataUsageService", "Error updating usage data", e)
             e.printStackTrace()
@@ -98,7 +133,8 @@ class DataUsageService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacks(updateRunnable)
+        updateJob?.cancel()
+        serviceScope.cancel()
         notificationHelper.cancelNotification()
     }
 }

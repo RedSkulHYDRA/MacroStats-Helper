@@ -24,10 +24,10 @@ class NotificationHelper(private val context: Context) {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Data Usage Monitor",
+            context.getString(R.string.data_usage_monitor_channel),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Shows current data usage statistics"
+            description = context.getString(R.string.channel_description)
             setShowBadge(false)
         }
         notificationManager.createNotificationChannel(channel)
@@ -56,13 +56,13 @@ class NotificationHelper(private val context: Context) {
 
             val notification = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("Data Usage Stats")
+                .setContentTitle(context.getString(R.string.data_usage_stats_title))
                 .setContentText(shortText)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(expandedText))
                 .setContentIntent(settingsPendingIntent)
                 .addAction(
                     0,
-                    "Update",
+                    context.getString(R.string.notification_update),
                     updatePendingIntent
                 )
                 .setOngoing(true)

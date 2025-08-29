@@ -29,27 +29,27 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         val titleText = TextView(this).apply {
-            text = "QS Tile Settings"
+            text = getString(R.string.qs_tile_settings_title)
             textSize = 24f
             setPadding(0, 0, 0, 24)
         }
 
         val instructionText = TextView(this).apply {
-            text = "Configure what time period each Quick Settings tile shows. These settings are independent from your notification settings."
+            text = getString(R.string.qs_tile_instruction)
             textSize = 14f
             setPadding(0, 0, 0, 24)
         }
 
         // WiFi Tile Section
         val wifiLabel = TextView(this).apply {
-            text = "WiFi Usage Tile:"
+            text = getString(R.string.wifi_tile_label)
             textSize = 18f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setPadding(0, 0, 0, 8)
         }
 
         val wifiDescription = TextView(this).apply {
-            text = "Select time period for WiFi tile:"
+            text = getString(R.string.wifi_tile_description)
             textSize = 14f
             setPadding(0, 0, 0, 8)
         }
@@ -58,7 +58,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             adapter = ArrayAdapter(
                 this@QSTileSettingsActivity,
                 android.R.layout.simple_spinner_item,
-                listOf("Daily", "Weekly", "Monthly")
+                listOf(getString(R.string.daily), getString(R.string.weekly), getString(R.string.monthly))
             ).apply {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
@@ -66,14 +66,14 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Mobile Tile Section
         val mobileLabel = TextView(this).apply {
-            text = "Mobile Data Usage Tile:"
+            text = getString(R.string.mobile_tile_label)
             textSize = 18f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setPadding(0, 16, 0, 8)
         }
 
         val mobileDescription = TextView(this).apply {
-            text = "Select time period for Mobile tile:"
+            text = getString(R.string.mobile_tile_description)
             textSize = 14f
             setPadding(0, 0, 0, 8)
         }
@@ -82,7 +82,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             adapter = ArrayAdapter(
                 this@QSTileSettingsActivity,
                 android.R.layout.simple_spinner_item,
-                listOf("Daily", "Weekly", "Monthly")
+                listOf(getString(R.string.daily), getString(R.string.weekly), getString(R.string.monthly))
             ).apply {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
@@ -90,27 +90,27 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Preview Section
         val previewLabel = TextView(this).apply {
-            text = "Preview:"
+            text = getString(R.string.preview_label)
             textSize = 16f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setPadding(0, 24, 0, 8)
         }
 
         previewText = TextView(this).apply {
-            text = "Preview will appear here"
+            text = getString(R.string.preview_default)
             textSize = 12f
             setPadding(16, 8, 16, 8)
             setBackgroundColor(0xFFF0F0F0.toInt())
         }
 
         val instructionText2 = TextView(this).apply {
-            text = "\nAfter saving, add the tiles to your Quick Settings:\n1. Pull down notification panel\n2. Tap Edit (pencil icon)\n3. Drag 'WiFi Usage' and 'Mobile Usage' tiles to active area"
+            text = getString(R.string.qs_tile_instruction_2)
             textSize = 12f
             setPadding(0, 16, 0, 0)
         }
 
         saveButton = Button(this).apply {
-            text = "Save Settings"
+            text = getString(R.string.save_settings)
             setPadding(0, 24, 0, 0)
             setOnClickListener { saveSettings() }
         }
@@ -194,13 +194,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         previewText.text = buildString {
-            appendLine("WiFi Tile will show:")
-            appendLine("WiFi (${wifiPeriod.name.lowercase()})")
-            appendLine(wifiValue)
+            appendLine(getString(R.string.wifi_tile_preview, wifiPeriod.name.lowercase(), wifiValue))
             appendLine()
-            appendLine("Mobile Tile will show:")
-            appendLine("Mobile (${mobilePeriod.name.lowercase()})")
-            appendLine(mobileValue)
+            appendLine(getString(R.string.mobile_tile_preview, mobilePeriod.name.lowercase(), mobileValue))
         }
     }
 
@@ -222,7 +218,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager.saveWiFiTilePeriod(wifiPeriod)
         qsTileSettingsManager.saveMobileTilePeriod(mobilePeriod)
 
-        Toast.makeText(this, "QS Tile settings saved successfully!\nTiles will update automatically when visible.", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_LONG).show()
         finish()
     }
 }

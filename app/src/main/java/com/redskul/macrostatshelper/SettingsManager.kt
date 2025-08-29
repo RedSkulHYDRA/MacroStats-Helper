@@ -3,7 +3,7 @@ package com.redskul.macrostatshelper
 import android.content.Context
 import android.content.SharedPreferences
 
-class SettingsManager(context: Context) {
+class SettingsManager(private val context: Context) {
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("display_settings", Context.MODE_PRIVATE)
@@ -12,6 +12,14 @@ class SettingsManager(context: Context) {
         private const val KEY_WIFI_PERIODS = "wifi_periods"
         private const val KEY_MOBILE_PERIODS = "mobile_periods"
         private const val KEY_FIRST_LAUNCH = "first_launch"
+        private const val KEY_SHOW_NOTIFICATION = "show_notification"
+    }
+
+    // Extension function to get display string from TimePeriod
+    private fun TimePeriod.toDisplayString(): String = when (this) {
+        TimePeriod.DAILY -> context.getString(R.string.daily)
+        TimePeriod.WEEKLY -> context.getString(R.string.weekly)
+        TimePeriod.MONTHLY -> context.getString(R.string.monthly)
     }
 
     fun saveDisplaySettings(settings: DisplaySettings) {
@@ -72,6 +80,14 @@ class SettingsManager(context: Context) {
         return DisplaySettings(wifiPeriods, mobilePeriods)
     }
 
+    fun saveNotificationEnabled(enabled: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_NOTIFICATION, enabled).apply()
+    }
+
+    fun isNotificationEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_NOTIFICATION, true) // Default to true
+    }
+
     fun getFormattedUsageText(usageData: UsageData): Pair<String, String> {
         val settings = getDisplaySettings()
 
@@ -85,7 +101,7 @@ class SettingsManager(context: Context) {
                 TimePeriod.WEEKLY -> usageData.wifiWeekly
                 TimePeriod.MONTHLY -> usageData.wifiMonthly
             }
-            val periodName = period.name.lowercase()
+            val periodName = period.toDisplayString()
             wifiParts.add("$value ($periodName)")
         }
 
@@ -96,7 +112,7 @@ class SettingsManager(context: Context) {
                 TimePeriod.WEEKLY -> usageData.mobileWeekly
                 TimePeriod.MONTHLY -> usageData.mobileMonthly
             }
-            val periodName = period.name.lowercase()
+            val periodName = period.toDisplayString()
             mobileParts.add("$value ($periodName)")
         }
 
@@ -112,27 +128,27 @@ class SettingsManager(context: Context) {
         val shortText = if (shortTextParts.isNotEmpty()) {
             shortTextParts.joinToString(" | ")
         } else {
-            "No data selected"
+            context.getString(R.string.no_data_selected)
         }
 
         // Create expanded text (same as short text for now, since user only wants selected data)
         val expandedText = buildString {
             if (wifiParts.isNotEmpty()) {
-                appendLine("WiFi Usage:")
+                appendLine(context.getString(R.string.wifi_usage_label))
                 wifiParts.forEach { part ->
                     appendLine("  $part")
                 }
                 if (mobileParts.isNotEmpty()) appendLine()
             }
             if (mobileParts.isNotEmpty()) {
-                appendLine("Mobile Data Usage:")
+                appendLine(context.getString(R.string.mobile_data_usage_label))
                 mobileParts.forEach { part ->
                     appendLine("  $part")
                 }
             }
             if (wifiParts.isEmpty() && mobileParts.isEmpty()) {
-                appendLine("No data periods selected")
-                appendLine("Please configure your display settings")
+                appendLine(context.getString(R.string.no_data_periods_selected))
+                appendLine(context.getString(R.string.configure_display_settings))
             }
         }
 

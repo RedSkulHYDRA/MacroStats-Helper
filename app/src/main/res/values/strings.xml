@@ -1,5 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MacroStats Helper</string>
     <string name="wifi_usage">WiFi Usage</string>
     <string name="mobile_data">Mobile Data</string>
+
+    <!-- MainActivity strings -->
+    <string name="data_usage_monitoring_running">Data usage monitoring is running in the background.\n\nTap notification to access settings or use the button below.</string>
+    <string name="display_settings">Display Settings</string>
+    <string name="qs_tile_settings">QS Tile Settings</string>
+    <string name="stop_monitoring">Stop Monitoring</string>
+    <string name="monitoring_stopped">Monitoring stopped</string>
+    <string name="setup_title">MacroStats Helper Setup</string>
+    <string name="setup_description">This app needs permissions to monitor your data usage and show notifications. Please grant the required permissions.</string>
+    <string name="grant_notification_permission">Grant Notification Permission</string>
+    <string name="grant_usage_stats_permission">Grant Usage Stats Permission</string>
+    <string name="start_monitoring">Start Monitoring</string>
+    <string name="notification_permission_required">Notification permission is required for the app to work properly</string>
+    <string name="usage_stats_permission_required">Usage stats permission is required to monitor data usage</string>
+    <string name="grant_all_permissions">Please grant all required permissions</string>
+    <string name="monitoring_started_success">Data usage monitoring started successfully</string>
+    <string name="service_start_failed">Failed to start monitoring service</string>
+    <string name="service_error">Error starting service: %1$s</string>
+
+    <!-- SettingsActivity strings -->
+    <string name="settings_title">Display Settings</string>
+    <string name="settings_instruction">Select which time periods to display for each data type:</string>
+    <string name="wifi_usage_label">WiFi Usage:</string>
+    <string name="mobile_data_usage_label">Mobile Data Usage:</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly</string>
+    <string name="monthly">Monthly</string>
+    <string name="preview_label">Preview:</string>
+    <string name="preview_default">Preview will appear here</string>
+    <string name="save_settings">Save Settings</string>
+    <string name="notification_preview">Notification will show:\n%1$s</string>
+    <string name="settings_saved">Settings saved successfully!</string>
+
+    <!-- Notification Settings -->
+    <string name="notification_settings_title">Notification Settings</string>
+    <string name="show_data_usage_notification">Show Data Usage Notification</string>
+    <string name="notification_description">Display persistent notification with current data usage</string>
+    <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background for QS tiles.</string>
+
+    <!-- QSTileSettingsActivity strings -->
+    <string name="qs_tile_settings_title">QS Tile Settings</string>
+    <string name="qs_tile_instruction">Configure what time period each Quick Settings tile shows. These settings are independent from your notification settings.</string>
+    <string name="wifi_tile_label">WiFi Usage Tile:</string>
+    <string name="wifi_tile_description">Select time period for WiFi tile:</string>
+    <string name="mobile_tile_label">Mobile Data Usage Tile:</string>
+    <string name="mobile_tile_description">Select time period for Mobile tile:</string>
+    <string name="qs_tile_instruction_2">\nAfter saving, add the tiles to your Quick Settings:\n1. Pull down notification panel\n2. Tap Edit (pencil icon)\n3. Drag \'WiFi Usage\' and \'Mobile Usage\' tiles to active area</string>
+    <string name="qs_settings_saved">QS Tile settings saved successfully!\nTiles will update automatically when visible.</string>
+
+    <!-- NotificationHelper strings -->
+    <string name="data_usage_monitor_channel">Data Usage Monitor</string>
+    <string name="data_usage_stats_title">Data Usage Stats</string>
+    <string name="notification_update">Update</string>
+    <string name="channel_description">Shows current data usage statistics</string>
+
+    <!-- DataUsageService strings -->
+    <string name="data_usage_monitor_service">Data Usage Monitor</string>
+    <string name="monitoring_data_usage">Monitoring data usage...</string>
+
+    <!-- Common strings -->
+    <string name="no_data_selected">No data selected</string>
+    <string name="configure_display_settings">Please configure your display settings</string>
+    <string name="no_data_periods_selected">No data periods selected</string>
+
+    <!-- Preview samples -->
+    <string name="wifi_tile_preview">WiFi Tile will show:\nWiFi (%1$s)\n%2$s</string>
+    <string name="mobile_tile_preview">Mobile Tile will show:\nMobile (%1$s)\n%2$s</string>
 </resources>

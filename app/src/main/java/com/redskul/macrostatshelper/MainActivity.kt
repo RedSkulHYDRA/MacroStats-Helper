@@ -1,4 +1,3 @@
-// Updated MainActivity.kt
 package com.redskul.macrostatshelper
 
 import android.Manifest
@@ -7,24 +6,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.ContextCompat.startForegroundService
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var fileManager: FileManager
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -32,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         if (granted) {
             checkUsageStatsPermission()
         } else {
-            showToast("Notification permission is required for the app to work properly")
+            showToast(getString(R.string.notification_permission_required))
         }
     }
 
@@ -42,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         if (hasUsageStatsPermission()) {
             completeSetup()
         } else {
-            showToast("Usage stats permission is required to monitor data usage")
+            showToast(getString(R.string.usage_stats_permission_required))
         }
     }
 
@@ -50,7 +47,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        fileManager = FileManager(this)
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
@@ -70,18 +66,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         val titleText = TextView(this).apply {
-            text = "MacroStats Helper"
+            text = getString(R.string.app_name)
             textSize = 24f
             setPadding(0, 0, 0, 32)
         }
 
         val statusText = TextView(this).apply {
-            text = "Data usage monitoring is running in the background.\n\nTap notification to access settings or use the button below."
+            text = getString(R.string.data_usage_monitoring_running)
             setPadding(0, 0, 0, 32)
         }
 
         val settingsButton = Button(this).apply {
-            text = "Display Settings"
+            text = getString(R.string.display_settings)
             setPadding(0, 16, 0, 16)
             setOnClickListener {
                 startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
@@ -89,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val qsTileSettingsButton = Button(this).apply {
-            text = "QS Tile Settings"
+            text = getString(R.string.qs_tile_settings)
             setPadding(0, 16, 0, 16)
             setOnClickListener {
                 startActivity(Intent(this@MainActivity, QSTileSettingsActivity::class.java))
@@ -97,24 +93,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         val stopServiceButton = Button(this).apply {
-            text = "Stop Monitoring"
+            text = getString(R.string.stop_monitoring)
             setPadding(0, 16, 0, 16)
             setOnClickListener {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
-                showToast("Monitoring stopped")
+                showToast(getString(R.string.monitoring_stopped))
                 finish()
             }
-        }
-
-        val pathsText = TextView(this).apply {
-            text = buildString {
-                appendLine("File paths for MacroDroid:")
-                fileManager.getFilePaths().forEach { (key, path) ->
-                    appendLine("$key: $path")
-                }
-            }
-            setPadding(0, 32, 0, 0)
-            textSize = 12f
         }
 
         layout.addView(titleText)
@@ -122,7 +107,6 @@ class MainActivity : AppCompatActivity() {
         layout.addView(settingsButton)
         layout.addView(qsTileSettingsButton)
         layout.addView(stopServiceButton)
-        layout.addView(pathsText)
 
         setContentView(layout)
 
@@ -137,45 +121,34 @@ class MainActivity : AppCompatActivity() {
         }
 
         val titleText = TextView(this).apply {
-            text = "MacroStats Helper Setup"
+            text = getString(R.string.setup_title)
             textSize = 24f
             setPadding(0, 0, 0, 32)
         }
 
         val descriptionText = TextView(this).apply {
-            text = "This app needs permissions to monitor your data usage and show notifications. Please grant the required permissions."
+            text = getString(R.string.setup_description)
             setPadding(0, 0, 0, 32)
         }
 
         val notificationButton = Button(this).apply {
-            text = "Grant Notification Permission"
+            text = getString(R.string.grant_notification_permission)
             setPadding(0, 16, 0, 16)
             setOnClickListener { requestNotificationPermission() }
         }
 
         val usageStatsButton = Button(this).apply {
-            text = "Grant Usage Stats Permission"
+            text = getString(R.string.grant_usage_stats_permission)
             setPadding(0, 16, 0, 16)
             setOnClickListener { requestUsageStatsPermission() }
             isEnabled = hasNotificationPermission()
         }
 
         val startButton = Button(this).apply {
-            text = "Start Monitoring"
+            text = getString(R.string.start_monitoring)
             setPadding(0, 16, 0, 16)
             setOnClickListener { completeSetup() }
             isEnabled = hasNotificationPermission() && hasUsageStatsPermission()
-        }
-
-        val pathsText = TextView(this).apply {
-            text = buildString {
-                appendLine("File paths for MacroDroid:")
-                fileManager.getFilePaths().forEach { (key, path) ->
-                    appendLine("$key: $path")
-                }
-            }
-            setPadding(0, 32, 0, 0)
-            textSize = 12f
         }
 
         layout.addView(titleText)
@@ -183,20 +156,17 @@ class MainActivity : AppCompatActivity() {
         layout.addView(notificationButton)
         layout.addView(usageStatsButton)
         layout.addView(startButton)
-        layout.addView(pathsText)
 
         setContentView(layout)
 
-        // Update button states periodically
-        val handler = android.os.Handler(android.os.Looper.getMainLooper())
-        val updateButtons = object : Runnable {
-            override fun run() {
+        // Update button states using coroutines
+        lifecycleScope.launch {
+            while (true) {
                 usageStatsButton.isEnabled = hasNotificationPermission()
                 startButton.isEnabled = hasNotificationPermission() && hasUsageStatsPermission()
-                handler.postDelayed(this, 1000)
+                delay(1000)
             }
         }
-        handler.post(updateButtons)
     }
 
     private fun ensureServiceRunning() {
@@ -222,7 +192,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestUsageStatsPermission() {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS)
         usageStatsPermissionLauncher.launch(intent)
     }
 
@@ -255,7 +225,7 @@ class MainActivity : AppCompatActivity() {
             sharedPreferences.edit().putBoolean("setup_complete", true).apply()
             startServiceAndFinish()
         } else {
-            showToast("Please grant all required permissions")
+            showToast(getString(R.string.grant_all_permissions))
         }
     }
 
@@ -267,17 +237,18 @@ class MainActivity : AppCompatActivity() {
             val result = startForegroundService(serviceIntent)
 
             if (result != null) {
-                showToast("Data usage monitoring started successfully")
+                showToast(getString(R.string.monitoring_started_success))
 
-                // Give the service time to start, then finish
-                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                // Use coroutines for delay instead of Handler
+                lifecycleScope.launch {
+                    delay(3000) // 3 second delay
                     finishAndRemoveTask()
-                }, 3000) // 3 second delay
+                }
             } else {
-                showToast("Failed to start monitoring service")
+                showToast(getString(R.string.service_start_failed))
             }
         } catch (e: Exception) {
-            showToast("Error starting service: ${e.message}")
+            showToast(getString(R.string.service_error, e.message))
             e.printStackTrace()
         }
     }

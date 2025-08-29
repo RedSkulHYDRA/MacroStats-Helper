@@ -1,5 +1,6 @@
 package com.redskul.macrostatshelper
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +14,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var mobileDailyCheckbox: CheckBox
     private lateinit var mobileWeeklyCheckbox: CheckBox
     private lateinit var mobileMonthlyCheckbox: CheckBox
+    private lateinit var notificationEnabledSwitch: Switch
     private lateinit var saveButton: Button
     private lateinit var previewText: TextView
 
@@ -34,74 +36,115 @@ class SettingsActivity : AppCompatActivity() {
 
         // Title
         val titleText = TextView(this).apply {
-            text = "Display Settings"
+            text = getString(R.string.settings_title)
             textSize = 24f
             setPadding(0, 0, 0, 24)
         }
 
         // Instructions
         val instructionText = TextView(this).apply {
-            text = "Select which time periods to display for each data type:"
+            text = getString(R.string.settings_instruction)
             textSize = 14f
             setPadding(0, 0, 0, 16)
         }
 
         // WiFi Section
         val wifiLabel = TextView(this).apply {
-            text = "WiFi Usage:"
+            text = getString(R.string.wifi_usage_label)
             textSize = 18f
             setPadding(0, 8, 0, 8)
             setTypeface(null, android.graphics.Typeface.BOLD)
         }
 
         wifiDailyCheckbox = CheckBox(this).apply {
-            text = "Daily"
+            text = getString(R.string.daily)
             setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         wifiWeeklyCheckbox = CheckBox(this).apply {
-            text = "Weekly"
+            text = getString(R.string.weekly)
             setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         wifiMonthlyCheckbox = CheckBox(this).apply {
-            text = "Monthly"
+            text = getString(R.string.monthly)
             setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         // Mobile Section
         val mobileLabel = TextView(this).apply {
-            text = "Mobile Data Usage:"
+            text = getString(R.string.mobile_data_usage_label)
             textSize = 18f
             setPadding(0, 16, 0, 8)
             setTypeface(null, android.graphics.Typeface.BOLD)
         }
 
         mobileDailyCheckbox = CheckBox(this).apply {
-            text = "Daily"
+            text = getString(R.string.daily)
             setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         mobileWeeklyCheckbox = CheckBox(this).apply {
-            text = "Weekly"
+            text = getString(R.string.weekly)
             setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         mobileMonthlyCheckbox = CheckBox(this).apply {
-            text = "Monthly"
+            text = getString(R.string.monthly)
             setOnCheckedChangeListener { _, _ -> updatePreview() }
+        }
+
+        // Notification Settings Section
+        val notificationLabel = TextView(this).apply {
+            text = getString(R.string.notification_settings_title)
+            textSize = 18f
+            setPadding(0, 24, 0, 8)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+
+        val notificationLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 0, 0, 8)
+        }
+
+        val notificationSwitchLabel = TextView(this).apply {
+            text = getString(R.string.show_data_usage_notification)
+            textSize = 16f
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        notificationEnabledSwitch = Switch(this).apply {
+            setOnCheckedChangeListener { _, isChecked ->
+                updatePreview()
+            }
+        }
+
+        notificationLayout.addView(notificationSwitchLabel)
+        notificationLayout.addView(notificationEnabledSwitch)
+
+        val notificationDescription = TextView(this).apply {
+            text = getString(R.string.notification_description)
+            textSize = 12f
+            setPadding(0, 0, 0, 8)
+        }
+
+        val notificationNote = TextView(this).apply {
+            text = getString(R.string.notification_disabled_note)
+            textSize = 11f
+            setPadding(0, 0, 0, 16)
+            alpha = 0.7f
         }
 
         // Preview Section
         val previewLabel = TextView(this).apply {
-            text = "Preview:"
+            text = getString(R.string.preview_label)
             textSize = 16f
             setPadding(0, 24, 0, 8)
             setTypeface(null, android.graphics.Typeface.BOLD)
         }
 
         previewText = TextView(this).apply {
-            text = "Preview will appear here"
+            text = getString(R.string.preview_default)
             textSize = 12f
             setPadding(16, 8, 16, 8)
             setBackgroundColor(0xFFF0F0F0.toInt())
@@ -109,7 +152,7 @@ class SettingsActivity : AppCompatActivity() {
 
         // Save Button
         saveButton = Button(this).apply {
-            text = "Save Settings"
+            text = getString(R.string.save_settings)
             setPadding(0, 24, 0, 0)
             setOnClickListener { saveSettings() }
         }
@@ -125,6 +168,10 @@ class SettingsActivity : AppCompatActivity() {
         mainLayout.addView(mobileDailyCheckbox)
         mainLayout.addView(mobileWeeklyCheckbox)
         mainLayout.addView(mobileMonthlyCheckbox)
+        mainLayout.addView(notificationLabel)
+        mainLayout.addView(notificationLayout)
+        mainLayout.addView(notificationDescription)
+        mainLayout.addView(notificationNote)
         mainLayout.addView(previewLabel)
         mainLayout.addView(previewText)
         mainLayout.addView(saveButton)
@@ -148,6 +195,9 @@ class SettingsActivity : AppCompatActivity() {
         mobileDailyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.DAILY)
         mobileWeeklyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.WEEKLY)
         mobileMonthlyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.MONTHLY)
+
+        // Set notification switch
+        notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
     }
 
     private fun updatePreview() {
@@ -172,7 +222,11 @@ class SettingsActivity : AppCompatActivity() {
         val (shortText, _) = settingsManager.getFormattedUsageText(sampleData)
         settingsManager.saveDisplaySettings(originalSettings) // Restore original settings
 
-        previewText.text = "Notification will show:\n$shortText"
+        previewText.text = if (notificationEnabledSwitch.isChecked) {
+            getString(R.string.notification_preview, shortText)
+        } else {
+            "Notification disabled - data will still be monitored for QS tiles"
+        }
     }
 
     private fun saveSettings() {
@@ -189,7 +243,16 @@ class SettingsActivity : AppCompatActivity() {
         val settings = DisplaySettings(wifiPeriods, mobilePeriods)
         settingsManager.saveDisplaySettings(settings)
 
-        Toast.makeText(this, "Settings saved successfully!", Toast.LENGTH_SHORT).show()
+        // Save notification preference
+        settingsManager.saveNotificationEnabled(notificationEnabledSwitch.isChecked)
+
+        // Notify service about notification toggle change
+        val serviceIntent = Intent(this, DataUsageService::class.java).apply {
+            action = DataUsageService.ACTION_NOTIFICATION_TOGGLE_CHANGED
+        }
+        startService(serviceIntent)
+
+        Toast.makeText(this, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
         finish()
     }
 }
