@@ -1,8 +1,12 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.data
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import com.redskul.macrostatshelper.notification.NotificationHelper
+import com.redskul.macrostatshelper.R
+import com.redskul.macrostatshelper.settings.SettingsManager
+import com.redskul.macrostatshelper.core.MainActivity
 import kotlinx.coroutines.*
 
 class DataUsageService : Service() {

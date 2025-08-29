@@ -1,7 +1,9 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.settings
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.redskul.macrostatshelper.R
+import com.redskul.macrostatshelper.data.UsageData
 
 class SettingsManager(private val context: Context) {
 

@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.core
 
 import android.Manifest
 import android.app.AppOpsManager
@@ -14,8 +14,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.lifecycleScope
+import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.tiles.QSTileSettingsActivity
+import com.redskul.macrostatshelper.R
+import com.redskul.macrostatshelper.settings.SettingsActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

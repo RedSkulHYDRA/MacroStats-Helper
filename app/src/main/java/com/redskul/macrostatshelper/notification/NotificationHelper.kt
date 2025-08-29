@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -6,6 +6,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import com.redskul.macrostatshelper.R
+import com.redskul.macrostatshelper.core.UpdateStatsReceiver
+import com.redskul.macrostatshelper.data.UsageData
+import com.redskul.macrostatshelper.settings.SettingsActivity
+import com.redskul.macrostatshelper.settings.SettingsManager
 
 class NotificationHelper(private val context: Context) {
 

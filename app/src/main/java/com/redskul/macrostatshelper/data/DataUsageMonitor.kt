@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.data
 
 import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager

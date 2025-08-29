@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.settings
 
 enum class TimePeriod {
     DAILY,

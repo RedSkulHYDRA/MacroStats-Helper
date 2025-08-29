@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.tiles
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,9 +7,12 @@ import android.content.IntentFilter
 import android.service.quicksettings.TileService
 import android.service.quicksettings.Tile
 import android.graphics.drawable.Icon
+import com.redskul.macrostatshelper.data.DataUsageMonitor
+import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.R
 import kotlinx.coroutines.*
 
-class WiFiDataUsageQSTileService : TileService() {
+class MobileDataUsageQSTileService : TileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var dataUsageMonitor: DataUsageMonitor
@@ -18,7 +21,7 @@ class WiFiDataUsageQSTileService : TileService() {
     private val dataUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == DataUsageService.ACTION_DATA_UPDATED) {
-                android.util.Log.d("WiFiQSTile", "Received data update broadcast")
+                android.util.Log.d("MobileQSTile", "Received data update broadcast")
                 updateTile()
             }
         }
@@ -53,7 +56,7 @@ class WiFiDataUsageQSTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
-        android.util.Log.d("WiFiQSTile", "Tile clicked - triggering immediate update")
+        android.util.Log.d("MobileQSTile", "Tile clicked - triggering immediate update")
 
         // Trigger immediate service update
         val serviceIntent = Intent(this, DataUsageService::class.java).apply {
@@ -69,7 +72,7 @@ class WiFiDataUsageQSTileService : TileService() {
         tileScope.launch {
             try {
                 val usageData = dataUsageMonitor.getUsageData()
-                val value = qsTileSettingsManager.getWiFiTileText(usageData)
+                val value = qsTileSettingsManager.getMobileTileText(usageData)
 
                 // Switch to main thread for UI updates
                 withContext(Dispatchers.Main) {
@@ -78,13 +81,15 @@ class WiFiDataUsageQSTileService : TileService() {
                     tile.state = Tile.STATE_INACTIVE
                     tile.label = "│ $value"
                     tile.subtitle = null
-                    tile.icon = Icon.createWithResource(this@WiFiDataUsageQSTileService, R.drawable.ic_wifi)
+                    tile.icon = Icon.createWithResource(this@MobileDataUsageQSTileService,
+                        R.drawable.ic_mobile
+                    )
 
                     tile.updateTile()
-                    android.util.Log.d("WiFiQSTile", "Tile updated with: $value")
+                    android.util.Log.d("MobileQSTile", "Tile updated with: $value")
                 }
             } catch (e: Exception) {
-                android.util.Log.e("WiFiQSTile", "Error updating WiFi tile", e)
+                android.util.Log.e("MobileQSTile", "Error updating Mobile tile", e)
             }
         }
     }

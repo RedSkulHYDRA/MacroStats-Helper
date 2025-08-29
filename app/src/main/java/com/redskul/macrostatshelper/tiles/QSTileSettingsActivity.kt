@@ -1,8 +1,11 @@
-package com.redskul.macrostatshelper
+package com.redskul.macrostatshelper.tiles
 
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.redskul.macrostatshelper.R
+import com.redskul.macrostatshelper.settings.TimePeriod
+import com.redskul.macrostatshelper.data.UsageData
 
 class QSTileSettingsActivity : AppCompatActivity() {
 
