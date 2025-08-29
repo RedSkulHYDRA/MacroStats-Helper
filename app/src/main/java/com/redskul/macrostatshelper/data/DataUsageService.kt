@@ -20,7 +20,7 @@ class DataUsageService : Service() {
     private var isForegroundService = false
 
     companion object {
-        const val UPDATE_INTERVAL = 600000L // 10 minutes
+        const val UPDATE_INTERVAL = 900000L // 15 minutes
         const val ACTION_UPDATE_NOW = "UPDATE_NOW"
         const val ACTION_DATA_UPDATED = "com.redskul.macrostatshelper.DATA_UPDATED"
         const val ACTION_NOTIFICATION_TOGGLE_CHANGED = "NOTIFICATION_TOGGLE_CHANGED"
