@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MacroStatsHelper" parent="Theme.AppCompat.Light" />
+    <style name="Theme.MacroStatsHelper.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar" />
+</resources>
