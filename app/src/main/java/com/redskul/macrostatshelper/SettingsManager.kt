@@ -1,4 +1,3 @@
-// Add this to a new file: SettingsManager.kt
 package com.redskul.macrostatshelper
 
 import android.content.Context
@@ -10,160 +9,133 @@ class SettingsManager(context: Context) {
         context.getSharedPreferences("display_settings", Context.MODE_PRIVATE)
 
     companion object {
-        private const val KEY_DATA_TYPE = "data_type"
-        private const val KEY_TIME_PERIOD = "time_period"
-        private const val KEY_WIFI_TIME_PERIOD = "wifi_time_period"
-        private const val KEY_MOBILE_TIME_PERIOD = "mobile_time_period"
+        private const val KEY_WIFI_PERIODS = "wifi_periods"
+        private const val KEY_MOBILE_PERIODS = "mobile_periods"
+        private const val KEY_FIRST_LAUNCH = "first_launch"
     }
 
     fun saveDisplaySettings(settings: DisplaySettings) {
         sharedPreferences.edit().apply {
-            putString(KEY_DATA_TYPE, settings.dataType.name)
-            putString(KEY_TIME_PERIOD, settings.timePeriod.name)
+            // Save WiFi periods as comma-separated string (empty string if no periods selected)
+            val wifiPeriodsString = settings.wifiTimePeriods.joinToString(",") { it.name }
+            putString(KEY_WIFI_PERIODS, wifiPeriodsString)
 
-            // Save custom settings if available
-            settings.customSettings?.let { custom ->
-                putString(KEY_WIFI_TIME_PERIOD, custom.wifiTimePeriod.name)
-                putString(KEY_MOBILE_TIME_PERIOD, custom.mobileTimePeriod.name)
-            }
+            // Save Mobile periods as comma-separated string (empty string if no periods selected)
+            val mobilePeriodsString = settings.mobileTimePeriods.joinToString(",") { it.name }
+            putString(KEY_MOBILE_PERIODS, mobilePeriodsString)
+
+            // Mark that settings have been saved at least once
+            putBoolean(KEY_FIRST_LAUNCH, false)
 
             apply()
         }
     }
 
     fun getDisplaySettings(): DisplaySettings {
-        val dataTypeString = sharedPreferences.getString(KEY_DATA_TYPE, DataType.BOTH.name)
-        val timePeriodString = sharedPreferences.getString(KEY_TIME_PERIOD, TimePeriod.DAILY.name)
+        val isFirstLaunch = sharedPreferences.getBoolean(KEY_FIRST_LAUNCH, true)
 
-        val dataType = try {
-            DataType.valueOf(dataTypeString ?: DataType.BOTH.name)
-        } catch (e: Exception) {
-            DataType.BOTH
+        // If it's the first launch, provide default settings
+        if (isFirstLaunch) {
+            return DisplaySettings(
+                wifiTimePeriods = listOf(TimePeriod.DAILY),
+                mobileTimePeriods = listOf(TimePeriod.DAILY)
+            )
         }
 
-        val timePeriod = try {
-            TimePeriod.valueOf(timePeriodString ?: TimePeriod.DAILY.name)
-        } catch (e: Exception) {
-            TimePeriod.DAILY
-        }
+        val wifiPeriodsString = sharedPreferences.getString(KEY_WIFI_PERIODS, "")
+        val mobilePeriodsString = sharedPreferences.getString(KEY_MOBILE_PERIODS, "")
 
-        val customSettings = if (dataType == DataType.CUSTOM) {
-            val wifiTimePeriodString = sharedPreferences.getString(KEY_WIFI_TIME_PERIOD, TimePeriod.DAILY.name)
-            val mobileTimePeriodString = sharedPreferences.getString(KEY_MOBILE_TIME_PERIOD, TimePeriod.DAILY.name)
-
-            val wifiTimePeriod = try {
-                TimePeriod.valueOf(wifiTimePeriodString ?: TimePeriod.DAILY.name)
-            } catch (e: Exception) {
-                TimePeriod.DAILY
-            }
-
-            val mobileTimePeriod = try {
-                TimePeriod.valueOf(mobileTimePeriodString ?: TimePeriod.DAILY.name)
-            } catch (e: Exception) {
-                TimePeriod.DAILY
-            }
-
-            CustomDisplaySettings(wifiTimePeriod, mobileTimePeriod)
+        val wifiPeriods = if (wifiPeriodsString.isNullOrEmpty()) {
+            emptyList()
         } else {
-            null
+            wifiPeriodsString.split(",").mapNotNull { periodName ->
+                try {
+                    TimePeriod.valueOf(periodName.trim())
+                } catch (e: Exception) {
+                    null
+                }
+            }
         }
 
-        return DisplaySettings(dataType, timePeriod, customSettings)
+        val mobilePeriods = if (mobilePeriodsString.isNullOrEmpty()) {
+            emptyList()
+        } else {
+            mobilePeriodsString.split(",").mapNotNull { periodName ->
+                try {
+                    TimePeriod.valueOf(periodName.trim())
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+
+        return DisplaySettings(wifiPeriods, mobilePeriods)
     }
 
     fun getFormattedUsageText(usageData: UsageData): Pair<String, String> {
         val settings = getDisplaySettings()
 
-        return when (settings.dataType) {
-            DataType.WIFI_ONLY -> {
-                val wifiValue = when (settings.timePeriod) {
-                    TimePeriod.DAILY -> usageData.wifiDaily
-                    TimePeriod.WEEKLY -> usageData.wifiWeekly
-                    TimePeriod.MONTHLY -> usageData.wifiMonthly
-                }
-                val shortText = "WiFi: $wifiValue (${settings.timePeriod.name.lowercase()})"
-                val expandedText = buildString {
-                    appendLine("WiFi Usage (${settings.timePeriod.name.lowercase()}):")
-                    appendLine("Current: $wifiValue")
-                    appendLine("")
-                    appendLine("All periods:")
-                    appendLine("Daily: ${usageData.wifiDaily}")
-                    appendLine("Weekly: ${usageData.wifiWeekly}")
-                    appendLine("Monthly: ${usageData.wifiMonthly}")
-                }
-                Pair(shortText, expandedText)
+        val wifiParts = mutableListOf<String>()
+        val mobileParts = mutableListOf<String>()
+
+        // Build WiFi parts
+        settings.wifiTimePeriods.forEach { period ->
+            val value = when (period) {
+                TimePeriod.DAILY -> usageData.wifiDaily
+                TimePeriod.WEEKLY -> usageData.wifiWeekly
+                TimePeriod.MONTHLY -> usageData.wifiMonthly
             }
+            val periodName = period.name.lowercase()
+            wifiParts.add("$value ($periodName)")
+        }
 
-            DataType.MOBILE_ONLY -> {
-                val mobileValue = when (settings.timePeriod) {
-                    TimePeriod.DAILY -> usageData.mobileDaily
-                    TimePeriod.WEEKLY -> usageData.mobileWeekly
-                    TimePeriod.MONTHLY -> usageData.mobileMonthly
-                }
-                val shortText = "Mobile: $mobileValue (${settings.timePeriod.name.lowercase()})"
-                val expandedText = buildString {
-                    appendLine("Mobile Data Usage (${settings.timePeriod.name.lowercase()}):")
-                    appendLine("Current: $mobileValue")
-                    appendLine("")
-                    appendLine("All periods:")
-                    appendLine("Daily: ${usageData.mobileDaily}")
-                    appendLine("Weekly: ${usageData.mobileWeekly}")
-                    appendLine("Monthly: ${usageData.mobileMonthly}")
-                }
-                Pair(shortText, expandedText)
+        // Build Mobile parts
+        settings.mobileTimePeriods.forEach { period ->
+            val value = when (period) {
+                TimePeriod.DAILY -> usageData.mobileDaily
+                TimePeriod.WEEKLY -> usageData.mobileWeekly
+                TimePeriod.MONTHLY -> usageData.mobileMonthly
             }
+            val periodName = period.name.lowercase()
+            mobileParts.add("$value ($periodName)")
+        }
 
-            DataType.BOTH -> {
-                val wifiValue = when (settings.timePeriod) {
-                    TimePeriod.DAILY -> usageData.wifiDaily
-                    TimePeriod.WEEKLY -> usageData.wifiWeekly
-                    TimePeriod.MONTHLY -> usageData.wifiMonthly
+        // Create short text
+        val shortTextParts = mutableListOf<String>()
+        if (wifiParts.isNotEmpty()) {
+            shortTextParts.add("WiFi: ${wifiParts.joinToString(", ")}")
+        }
+        if (mobileParts.isNotEmpty()) {
+            shortTextParts.add("Mobile: ${mobileParts.joinToString(", ")}")
+        }
+
+        val shortText = if (shortTextParts.isNotEmpty()) {
+            shortTextParts.joinToString(" | ")
+        } else {
+            "No data selected"
+        }
+
+        // Create expanded text (same as short text for now, since user only wants selected data)
+        val expandedText = buildString {
+            if (wifiParts.isNotEmpty()) {
+                appendLine("WiFi Usage:")
+                wifiParts.forEach { part ->
+                    appendLine("  $part")
                 }
-                val mobileValue = when (settings.timePeriod) {
-                    TimePeriod.DAILY -> usageData.mobileDaily
-                    TimePeriod.WEEKLY -> usageData.mobileWeekly
-                    TimePeriod.MONTHLY -> usageData.mobileMonthly
-                }
-                val shortText = "WiFi: $wifiValue | Mobile: $mobileValue (${settings.timePeriod.name.lowercase()})"
-                val expandedText = buildString {
-                    appendLine("Data Usage (${settings.timePeriod.name.lowercase()}):")
-                    appendLine("WiFi: $wifiValue")
-                    appendLine("Mobile: $mobileValue")
-                    appendLine("")
-                    appendLine("All periods:")
-                    appendLine("WiFi - Daily: ${usageData.wifiDaily}, Weekly: ${usageData.wifiWeekly}, Monthly: ${usageData.wifiMonthly}")
-                    appendLine("Mobile - Daily: ${usageData.mobileDaily}, Weekly: ${usageData.mobileWeekly}, Monthly: ${usageData.mobileMonthly}")
-                }
-                Pair(shortText, expandedText)
+                if (mobileParts.isNotEmpty()) appendLine()
             }
-
-            DataType.CUSTOM -> {
-                val customSettings = settings.customSettings ?: CustomDisplaySettings(TimePeriod.DAILY, TimePeriod.DAILY)
-
-                val wifiValue = when (customSettings.wifiTimePeriod) {
-                    TimePeriod.DAILY -> usageData.wifiDaily
-                    TimePeriod.WEEKLY -> usageData.wifiWeekly
-                    TimePeriod.MONTHLY -> usageData.wifiMonthly
+            if (mobileParts.isNotEmpty()) {
+                appendLine("Mobile Data Usage:")
+                mobileParts.forEach { part ->
+                    appendLine("  $part")
                 }
-
-                val mobileValue = when (customSettings.mobileTimePeriod) {
-                    TimePeriod.DAILY -> usageData.mobileDaily
-                    TimePeriod.WEEKLY -> usageData.mobileWeekly
-                    TimePeriod.MONTHLY -> usageData.mobileMonthly
-                }
-
-                val shortText = "WiFi: $wifiValue (${customSettings.wifiTimePeriod.name.lowercase()}) | Mobile: $mobileValue (${customSettings.mobileTimePeriod.name.lowercase()})"
-                val expandedText = buildString {
-                    appendLine("Custom Data Usage:")
-                    appendLine("WiFi (${customSettings.wifiTimePeriod.name.lowercase()}): $wifiValue")
-                    appendLine("Mobile (${customSettings.mobileTimePeriod.name.lowercase()}): $mobileValue")
-                    appendLine("")
-                    appendLine("All periods:")
-                    appendLine("WiFi - Daily: ${usageData.wifiDaily}, Weekly: ${usageData.wifiWeekly}, Monthly: ${usageData.wifiMonthly}")
-                    appendLine("Mobile - Daily: ${usageData.mobileDaily}, Weekly: ${usageData.mobileWeekly}, Monthly: ${usageData.mobileMonthly}")
-                }
-                Pair(shortText, expandedText)
+            }
+            if (wifiParts.isEmpty() && mobileParts.isEmpty()) {
+                appendLine("No data periods selected")
+                appendLine("Please configure your display settings")
             }
         }
+
+        return Pair(shortText, expandedText)
     }
 }

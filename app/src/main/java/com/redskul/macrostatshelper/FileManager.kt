@@ -1,4 +1,3 @@
-// Updated FileManager.kt
 package com.redskul.macrostatshelper
 
 import android.content.Context
@@ -23,7 +22,9 @@ class FileManager(private val context: Context) {
             appendLine("=== Data Usage Report ===")
             appendLine("Last Updated: $timestamp")
             appendLine("")
-            appendLine("Current Display Mode: ${settings.dataType.name}")
+            appendLine("Current Display Settings:")
+            appendLine("WiFi Periods: ${settings.wifiTimePeriods.joinToString(", ") { it.name.lowercase() }}")
+            appendLine("Mobile Periods: ${settings.mobileTimePeriods.joinToString(", ") { it.name.lowercase() }}")
             appendLine("Current Display: $shortText")
             appendLine("")
             appendLine("=== Full Data ===")
@@ -46,8 +47,8 @@ class FileManager(private val context: Context) {
             appendLine("mobile_monthly=${usageData.mobileMonthly}")
             appendLine("")
             appendLine("=== Current Display Setting ===")
-            appendLine("display_mode=${settings.dataType.name}")
-            appendLine("time_period=${settings.timePeriod.name}")
+            appendLine("wifi_periods=${settings.wifiTimePeriods.joinToString(",") { it.name }}")
+            appendLine("mobile_periods=${settings.mobileTimePeriods.joinToString(",") { it.name }}")
             appendLine("current_display_text=$shortText")
         }
 
@@ -63,52 +64,28 @@ class FileManager(private val context: Context) {
         // Create a file with current display setting
         writeToInternalStorage("current_display.txt", shortText)
 
-        // Create setting-specific files
-        when (settings.dataType) {
-            DataType.WIFI_ONLY -> {
-                val wifiValue = when (settings.timePeriod) {
+        // Create files for selected WiFi periods
+        if (settings.wifiTimePeriods.isNotEmpty()) {
+            val wifiValues = settings.wifiTimePeriods.map { period ->
+                when (period) {
                     TimePeriod.DAILY -> usageData.wifiDaily
                     TimePeriod.WEEKLY -> usageData.wifiWeekly
                     TimePeriod.MONTHLY -> usageData.wifiMonthly
                 }
-                writeToInternalStorage("wifi_current.txt", wifiValue)
             }
-            DataType.MOBILE_ONLY -> {
-                val mobileValue = when (settings.timePeriod) {
+            writeToInternalStorage("wifi_selected.txt", wifiValues.joinToString(" | "))
+        }
+
+        // Create files for selected Mobile periods
+        if (settings.mobileTimePeriods.isNotEmpty()) {
+            val mobileValues = settings.mobileTimePeriods.map { period ->
+                when (period) {
                     TimePeriod.DAILY -> usageData.mobileDaily
                     TimePeriod.WEEKLY -> usageData.mobileWeekly
                     TimePeriod.MONTHLY -> usageData.mobileMonthly
                 }
-                writeToInternalStorage("mobile_current.txt", mobileValue)
             }
-            DataType.BOTH -> {
-                val wifiValue = when (settings.timePeriod) {
-                    TimePeriod.DAILY -> usageData.wifiDaily
-                    TimePeriod.WEEKLY -> usageData.wifiWeekly
-                    TimePeriod.MONTHLY -> usageData.wifiMonthly
-                }
-                val mobileValue = when (settings.timePeriod) {
-                    TimePeriod.DAILY -> usageData.mobileDaily
-                    TimePeriod.WEEKLY -> usageData.mobileWeekly
-                    TimePeriod.MONTHLY -> usageData.mobileMonthly
-                }
-                writeToInternalStorage("both_current.txt", "WiFi: $wifiValue | Mobile: $mobileValue")
-            }
-            DataType.CUSTOM -> {
-                settings.customSettings?.let { custom ->
-                    val wifiValue = when (custom.wifiTimePeriod) {
-                        TimePeriod.DAILY -> usageData.wifiDaily
-                        TimePeriod.WEEKLY -> usageData.wifiWeekly
-                        TimePeriod.MONTHLY -> usageData.wifiMonthly
-                    }
-                    val mobileValue = when (custom.mobileTimePeriod) {
-                        TimePeriod.DAILY -> usageData.mobileDaily
-                        TimePeriod.WEEKLY -> usageData.mobileWeekly
-                        TimePeriod.MONTHLY -> usageData.mobileMonthly
-                    }
-                    writeToInternalStorage("custom_current.txt", "WiFi: $wifiValue (${custom.wifiTimePeriod.name.lowercase()}) | Mobile: $mobileValue (${custom.mobileTimePeriod.name.lowercase()})")
-                }
-            }
+            writeToInternalStorage("mobile_selected.txt", mobileValues.joinToString(" | "))
         }
     }
 
@@ -129,10 +106,8 @@ class FileManager(private val context: Context) {
             "wifi_usage" to File(context.filesDir, "wifi_usage.txt").absolutePath,
             "mobile_usage" to File(context.filesDir, "mobile_usage.txt").absolutePath,
             "current_display" to File(context.filesDir, "current_display.txt").absolutePath,
-            "wifi_current" to File(context.filesDir, "wifi_current.txt").absolutePath,
-            "mobile_current" to File(context.filesDir, "mobile_current.txt").absolutePath,
-            "both_current" to File(context.filesDir, "both_current.txt").absolutePath,
-            "custom_current" to File(context.filesDir, "custom_current.txt").absolutePath
+            "wifi_selected" to File(context.filesDir, "wifi_selected.txt").absolutePath,
+            "mobile_selected" to File(context.filesDir, "mobile_selected.txt").absolutePath
         )
     }
 }

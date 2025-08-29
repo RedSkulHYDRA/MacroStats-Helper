@@ -42,12 +42,52 @@
             android:label="Display Settings"
             android:theme="@style/Theme.MacroStatsHelper.NoActionBar" />
 
+        <!-- QS Tile Settings Activity -->
+        <activity
+            android:name=".QSTileSettingsActivity"
+            android:exported="false"
+            android:label="QS Tile Settings"
+            android:theme="@style/Theme.MacroStatsHelper.NoActionBar" />
+
         <!-- Foreground service for continuous monitoring -->
         <service
             android:name=".DataUsageService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <!-- BroadcastReceiver for Update Stats button -->
+        <receiver
+            android:name=".UpdateStatsReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.redskul.macrostatshelper.UPDATE_STATS" />
+            </intent-filter>
+        </receiver>
+
+        <!-- QS Tile Services -->
+        <service
+            android:name=".WiFiDataUsageQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_wifi"
+            android:label="@string/wifi_usage"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".MobileDataUsageQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_mobile"
+            android:label="@string/mobile_data"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
 
     </application>
 </manifest>

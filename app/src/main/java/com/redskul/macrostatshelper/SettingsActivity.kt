@@ -1,4 +1,3 @@
-// Add this to a new file: SettingsActivity.kt
 package com.redskul.macrostatshelper
 
 import android.os.Bundle
@@ -8,11 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var settingsManager: SettingsManager
-    private lateinit var dataTypeSpinner: Spinner
-    private lateinit var timePeriodSpinner: Spinner
-    private lateinit var customSettingsLayout: LinearLayout
-    private lateinit var wifiTimePeriodSpinner: Spinner
-    private lateinit var mobileTimePeriodSpinner: Spinner
+    private lateinit var wifiDailyCheckbox: CheckBox
+    private lateinit var wifiWeeklyCheckbox: CheckBox
+    private lateinit var wifiMonthlyCheckbox: CheckBox
+    private lateinit var mobileDailyCheckbox: CheckBox
+    private lateinit var mobileWeeklyCheckbox: CheckBox
+    private lateinit var mobileMonthlyCheckbox: CheckBox
     private lateinit var saveButton: Button
     private lateinit var previewText: TextView
 
@@ -39,96 +39,65 @@ class SettingsActivity : AppCompatActivity() {
             setPadding(0, 0, 0, 24)
         }
 
-        // Data Type Section
-        val dataTypeLabel = TextView(this).apply {
-            text = "What to Display:"
-            textSize = 16f
-            setPadding(0, 0, 0, 8)
+        // Instructions
+        val instructionText = TextView(this).apply {
+            text = "Select which time periods to display for each data type:"
+            textSize = 14f
+            setPadding(0, 0, 0, 16)
         }
 
-        dataTypeSpinner = Spinner(this).apply {
-            adapter = ArrayAdapter(
-                this@SettingsActivity,
-                android.R.layout.simple_spinner_item,
-                listOf("WiFi Only", "Mobile Only", "Both", "Custom Mix")
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-        }
-
-        // Time Period Section (for WiFi Only, Mobile Only, Both)
-        val timePeriodLabel = TextView(this).apply {
-            text = "Time Period:"
-            textSize = 16f
-            setPadding(0, 16, 0, 8)
-        }
-
-        timePeriodSpinner = Spinner(this).apply {
-            adapter = ArrayAdapter(
-                this@SettingsActivity,
-                android.R.layout.simple_spinner_item,
-                listOf("Daily", "Weekly", "Monthly")
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-        }
-
-        // Custom Settings Section
-        customSettingsLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(0, 16, 0, 0)
-            visibility = LinearLayout.GONE
-        }
-
-        val customLabel = TextView(this).apply {
-            text = "Custom Time Periods:"
-            textSize = 16f
-            setPadding(0, 0, 0, 8)
-        }
-
+        // WiFi Section
         val wifiLabel = TextView(this).apply {
-            text = "WiFi Time Period:"
-            textSize = 14f
-            setPadding(0, 0, 0, 4)
+            text = "WiFi Usage:"
+            textSize = 18f
+            setPadding(0, 8, 0, 8)
+            setTypeface(null, android.graphics.Typeface.BOLD)
         }
 
-        wifiTimePeriodSpinner = Spinner(this).apply {
-            adapter = ArrayAdapter(
-                this@SettingsActivity,
-                android.R.layout.simple_spinner_item,
-                listOf("Daily", "Weekly", "Monthly")
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
+        wifiDailyCheckbox = CheckBox(this).apply {
+            text = "Daily"
+            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
+        wifiWeeklyCheckbox = CheckBox(this).apply {
+            text = "Weekly"
+            setOnCheckedChangeListener { _, _ -> updatePreview() }
+        }
+
+        wifiMonthlyCheckbox = CheckBox(this).apply {
+            text = "Monthly"
+            setOnCheckedChangeListener { _, _ -> updatePreview() }
+        }
+
+        // Mobile Section
         val mobileLabel = TextView(this).apply {
-            text = "Mobile Time Period:"
-            textSize = 14f
-            setPadding(0, 8, 0, 4)
+            text = "Mobile Data Usage:"
+            textSize = 18f
+            setPadding(0, 16, 0, 8)
+            setTypeface(null, android.graphics.Typeface.BOLD)
         }
 
-        mobileTimePeriodSpinner = Spinner(this).apply {
-            adapter = ArrayAdapter(
-                this@SettingsActivity,
-                android.R.layout.simple_spinner_item,
-                listOf("Daily", "Weekly", "Monthly")
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
+        mobileDailyCheckbox = CheckBox(this).apply {
+            text = "Daily"
+            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
-        customSettingsLayout.addView(customLabel)
-        customSettingsLayout.addView(wifiLabel)
-        customSettingsLayout.addView(wifiTimePeriodSpinner)
-        customSettingsLayout.addView(mobileLabel)
-        customSettingsLayout.addView(mobileTimePeriodSpinner)
+        mobileWeeklyCheckbox = CheckBox(this).apply {
+            text = "Weekly"
+            setOnCheckedChangeListener { _, _ -> updatePreview() }
+        }
+
+        mobileMonthlyCheckbox = CheckBox(this).apply {
+            text = "Monthly"
+            setOnCheckedChangeListener { _, _ -> updatePreview() }
+        }
 
         // Preview Section
         val previewLabel = TextView(this).apply {
             text = "Preview:"
             textSize = 16f
             setPadding(0, 24, 0, 8)
+            setTypeface(null, android.graphics.Typeface.BOLD)
         }
 
         previewText = TextView(this).apply {
@@ -147,11 +116,15 @@ class SettingsActivity : AppCompatActivity() {
 
         // Add all views to main layout
         mainLayout.addView(titleText)
-        mainLayout.addView(dataTypeLabel)
-        mainLayout.addView(dataTypeSpinner)
-        mainLayout.addView(timePeriodLabel)
-        mainLayout.addView(timePeriodSpinner)
-        mainLayout.addView(customSettingsLayout)
+        mainLayout.addView(instructionText)
+        mainLayout.addView(wifiLabel)
+        mainLayout.addView(wifiDailyCheckbox)
+        mainLayout.addView(wifiWeeklyCheckbox)
+        mainLayout.addView(wifiMonthlyCheckbox)
+        mainLayout.addView(mobileLabel)
+        mainLayout.addView(mobileDailyCheckbox)
+        mainLayout.addView(mobileWeeklyCheckbox)
+        mainLayout.addView(mobileMonthlyCheckbox)
         mainLayout.addView(previewLabel)
         mainLayout.addView(previewText)
         mainLayout.addView(saveButton)
@@ -160,122 +133,60 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        dataTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                when (position) {
-                    3 -> { // Custom Mix
-                        customSettingsLayout.visibility = LinearLayout.VISIBLE
-                        timePeriodSpinner.visibility = Spinner.GONE
-                    }
-                    else -> {
-                        customSettingsLayout.visibility = LinearLayout.GONE
-                        timePeriodSpinner.visibility = Spinner.VISIBLE
-                    }
-                }
-                updatePreview()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        timePeriodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                updatePreview()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        wifiTimePeriodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                updatePreview()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        mobileTimePeriodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                updatePreview()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
+        // Listeners are already set in createUI()
     }
 
     private fun loadCurrentSettings() {
         val settings = settingsManager.getDisplaySettings()
 
-        // Set data type spinner
-        dataTypeSpinner.setSelection(when (settings.dataType) {
-            DataType.WIFI_ONLY -> 0
-            DataType.MOBILE_ONLY -> 1
-            DataType.BOTH -> 2
-            DataType.CUSTOM -> 3
-        })
+        // Set WiFi checkboxes
+        wifiDailyCheckbox.isChecked = settings.wifiTimePeriods.contains(TimePeriod.DAILY)
+        wifiWeeklyCheckbox.isChecked = settings.wifiTimePeriods.contains(TimePeriod.WEEKLY)
+        wifiMonthlyCheckbox.isChecked = settings.wifiTimePeriods.contains(TimePeriod.MONTHLY)
 
-        // Set time period spinner
-        timePeriodSpinner.setSelection(when (settings.timePeriod) {
-            TimePeriod.DAILY -> 0
-            TimePeriod.WEEKLY -> 1
-            TimePeriod.MONTHLY -> 2
-        })
-
-        // Set custom settings if available
-        settings.customSettings?.let { custom ->
-            wifiTimePeriodSpinner.setSelection(when (custom.wifiTimePeriod) {
-                TimePeriod.DAILY -> 0
-                TimePeriod.WEEKLY -> 1
-                TimePeriod.MONTHLY -> 2
-            })
-
-            mobileTimePeriodSpinner.setSelection(when (custom.mobileTimePeriod) {
-                TimePeriod.DAILY -> 0
-                TimePeriod.WEEKLY -> 1
-                TimePeriod.MONTHLY -> 2
-            })
-        }
+        // Set Mobile checkboxes
+        mobileDailyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.DAILY)
+        mobileWeeklyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.WEEKLY)
+        mobileMonthlyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.MONTHLY)
     }
 
     private fun updatePreview() {
         val sampleData = UsageData("125 MB", "850 MB", "3.2 GB", "45 MB", "320 MB", "1.8 GB")
+
+        // Create temporary settings based on current checkbox states
+        val wifiPeriods = mutableListOf<TimePeriod>()
+        if (wifiDailyCheckbox.isChecked) wifiPeriods.add(TimePeriod.DAILY)
+        if (wifiWeeklyCheckbox.isChecked) wifiPeriods.add(TimePeriod.WEEKLY)
+        if (wifiMonthlyCheckbox.isChecked) wifiPeriods.add(TimePeriod.MONTHLY)
+
+        val mobilePeriods = mutableListOf<TimePeriod>()
+        if (mobileDailyCheckbox.isChecked) mobilePeriods.add(TimePeriod.DAILY)
+        if (mobileWeeklyCheckbox.isChecked) mobilePeriods.add(TimePeriod.WEEKLY)
+        if (mobileMonthlyCheckbox.isChecked) mobilePeriods.add(TimePeriod.MONTHLY)
+
+        val tempSettings = DisplaySettings(wifiPeriods, mobilePeriods)
+
+        // Save temporarily to get formatted text
+        val originalSettings = settingsManager.getDisplaySettings()
+        settingsManager.saveDisplaySettings(tempSettings)
         val (shortText, _) = settingsManager.getFormattedUsageText(sampleData)
+        settingsManager.saveDisplaySettings(originalSettings) // Restore original settings
+
         previewText.text = "Notification will show:\n$shortText"
     }
 
     private fun saveSettings() {
-        val dataType = when (dataTypeSpinner.selectedItemPosition) {
-            0 -> DataType.WIFI_ONLY
-            1 -> DataType.MOBILE_ONLY
-            2 -> DataType.BOTH
-            3 -> DataType.CUSTOM
-            else -> DataType.BOTH
-        }
+        val wifiPeriods = mutableListOf<TimePeriod>()
+        if (wifiDailyCheckbox.isChecked) wifiPeriods.add(TimePeriod.DAILY)
+        if (wifiWeeklyCheckbox.isChecked) wifiPeriods.add(TimePeriod.WEEKLY)
+        if (wifiMonthlyCheckbox.isChecked) wifiPeriods.add(TimePeriod.MONTHLY)
 
-        val timePeriod = when (timePeriodSpinner.selectedItemPosition) {
-            0 -> TimePeriod.DAILY
-            1 -> TimePeriod.WEEKLY
-            2 -> TimePeriod.MONTHLY
-            else -> TimePeriod.DAILY
-        }
+        val mobilePeriods = mutableListOf<TimePeriod>()
+        if (mobileDailyCheckbox.isChecked) mobilePeriods.add(TimePeriod.DAILY)
+        if (mobileWeeklyCheckbox.isChecked) mobilePeriods.add(TimePeriod.WEEKLY)
+        if (mobileMonthlyCheckbox.isChecked) mobilePeriods.add(TimePeriod.MONTHLY)
 
-        val customSettings = if (dataType == DataType.CUSTOM) {
-            val wifiTimePeriod = when (wifiTimePeriodSpinner.selectedItemPosition) {
-                0 -> TimePeriod.DAILY
-                1 -> TimePeriod.WEEKLY
-                2 -> TimePeriod.MONTHLY
-                else -> TimePeriod.DAILY
-            }
-
-            val mobileTimePeriod = when (mobileTimePeriodSpinner.selectedItemPosition) {
-                0 -> TimePeriod.DAILY
-                1 -> TimePeriod.WEEKLY
-                2 -> TimePeriod.MONTHLY
-                else -> TimePeriod.DAILY
-            }
-
-            CustomDisplaySettings(wifiTimePeriod, mobileTimePeriod)
-        } else {
-            null
-        }
-
-        val settings = DisplaySettings(dataType, timePeriod, customSettings)
+        val settings = DisplaySettings(wifiPeriods, mobilePeriods)
         settingsManager.saveDisplaySettings(settings)
 
         Toast.makeText(this, "Settings saved successfully!", Toast.LENGTH_SHORT).show()

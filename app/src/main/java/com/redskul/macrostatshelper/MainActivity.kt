@@ -88,6 +88,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val qsTileSettingsButton = Button(this).apply {
+            text = "QS Tile Settings"
+            setPadding(0, 16, 0, 16)
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, QSTileSettingsActivity::class.java))
+            }
+        }
+
         val stopServiceButton = Button(this).apply {
             text = "Stop Monitoring"
             setPadding(0, 16, 0, 16)
@@ -112,6 +120,7 @@ class MainActivity : AppCompatActivity() {
         layout.addView(titleText)
         layout.addView(statusText)
         layout.addView(settingsButton)
+        layout.addView(qsTileSettingsButton)
         layout.addView(stopServiceButton)
         layout.addView(pathsText)
 

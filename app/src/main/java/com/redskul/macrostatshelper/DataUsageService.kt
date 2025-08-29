@@ -16,6 +16,7 @@ class DataUsageService : Service() {
 
     companion object {
         const val UPDATE_INTERVAL = 30000L // 30 seconds
+        const val ACTION_UPDATE_NOW = "UPDATE_NOW"
     }
 
     override fun onCreate() {
@@ -32,6 +33,16 @@ class DataUsageService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Start foreground immediately
         startForeground(NotificationHelper.NOTIFICATION_ID, createServiceNotification())
+
+        // Handle immediate update request
+        if (intent?.action == ACTION_UPDATE_NOW) {
+            android.util.Log.d("DataUsageService", "Received immediate update request")
+            // Trigger immediate update
+            handler.post {
+                updateUsageData()
+            }
+            return START_STICKY
+        }
 
         // Start monitoring after a short delay to ensure service is properly started
         handler.postDelayed({
@@ -75,10 +86,12 @@ class DataUsageService : Service() {
 
     private fun updateUsageData() {
         try {
+            android.util.Log.d("DataUsageService", "Updating usage data")
             val usageData = dataUsageMonitor.getUsageData()
             fileManager.writeUsageToFile(usageData)
             notificationHelper.showUsageNotification(usageData)
         } catch (e: Exception) {
+            android.util.Log.e("DataUsageService", "Error updating usage data", e)
             e.printStackTrace()
         }
     }

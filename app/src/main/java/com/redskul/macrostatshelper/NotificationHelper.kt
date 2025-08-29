@@ -1,4 +1,3 @@
-// Updated NotificationHelper.kt
 package com.redskul.macrostatshelper
 
 import android.app.NotificationChannel
@@ -37,9 +36,18 @@ class NotificationHelper(private val context: Context) {
     fun showUsageNotification(usageData: UsageData) {
         try {
             // Create intent to open settings when notification is clicked
-            val intent = Intent(context, SettingsActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
+            val settingsIntent = Intent(context, SettingsActivity::class.java)
+            val settingsPendingIntent = PendingIntent.getActivity(
+                context, 0, settingsIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // Create intent for update button
+            val updateIntent = Intent(context, UpdateStatsReceiver::class.java).apply {
+                action = UpdateStatsReceiver.ACTION_UPDATE_STATS
+            }
+            val updatePendingIntent = PendingIntent.getBroadcast(
+                context, 1, updateIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
@@ -51,7 +59,12 @@ class NotificationHelper(private val context: Context) {
                 .setContentTitle("Data Usage Stats")
                 .setContentText(shortText)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(expandedText))
-                .setContentIntent(pendingIntent)
+                .setContentIntent(settingsPendingIntent)
+                .addAction(
+                    0,
+                    "Update",
+                    updatePendingIntent
+                )
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
