@@ -5,11 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.service.quicksettings.TileService
-import android.service.quicksettings.Tile
-import android.graphics.drawable.Icon
 import com.redskul.macrostatshelper.data.DataUsageMonitor
 import com.redskul.macrostatshelper.data.DataUsageService
-import com.redskul.macrostatshelper.R
 import kotlinx.coroutines.*
 
 class WiFiDataUsageQSTileService : TileService() {
@@ -35,7 +32,6 @@ class WiFiDataUsageQSTileService : TileService() {
 
     override fun onStartListening() {
         super.onStartListening()
-        // Register for data update broadcasts (Android 13+ only)
         registerReceiver(
             dataUpdateReceiver,
             IntentFilter(DataUsageService.ACTION_DATA_UPDATED),
@@ -46,7 +42,6 @@ class WiFiDataUsageQSTileService : TileService() {
 
     override fun onStopListening() {
         super.onStopListening()
-        // Unregister broadcast receiver
         try {
             unregisterReceiver(dataUpdateReceiver)
         } catch (e: IllegalArgumentException) {
@@ -58,13 +53,10 @@ class WiFiDataUsageQSTileService : TileService() {
         super.onClick()
         android.util.Log.d("WiFiQSTile", "Tile clicked - triggering immediate update")
 
-        // Trigger immediate service update
         val serviceIntent = Intent(this, DataUsageService::class.java).apply {
             action = DataUsageService.ACTION_UPDATE_NOW
         }
         startService(serviceIntent)
-
-        // Also update tile immediately with current data
         updateTile()
     }
 
@@ -73,18 +65,11 @@ class WiFiDataUsageQSTileService : TileService() {
             try {
                 val usageData = dataUsageMonitor.getUsageData()
                 val value = qsTileSettingsManager.getWiFiTileText(usageData)
+                val config = TileConfigHelper.getWiFiTileConfig(this@WiFiDataUsageQSTileService)
 
-                // Switch to main thread for UI updates
                 withContext(Dispatchers.Main) {
                     val tile = qsTile ?: return@withContext
-
-                    tile.state = Tile.STATE_INACTIVE
-                    tile.label = "│ $value"
-                    tile.subtitle = null
-                    tile.icon = Icon.createWithResource(this@WiFiDataUsageQSTileService,
-                        R.drawable.ic_wifi
-                    )
-
+                    TileConfigHelper.applyConfigToTile(tile, config, value)
                     tile.updateTile()
                     android.util.Log.d("WiFiQSTile", "Tile updated with: $value")
                 }

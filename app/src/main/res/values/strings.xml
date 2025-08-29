@@ -52,6 +52,12 @@
     <string name="qs_tile_instruction_2">\nAfter saving, add the tiles to your Quick Settings:\n1. Pull down notification panel\n2. Tap Edit (pencil icon)\n3. Drag \'WiFi Usage\' and \'Mobile Usage\' tiles to active area</string>
     <string name="qs_settings_saved">QS Tile settings saved successfully!\nTiles will update automatically when visible.</string>
 
+    <!-- QS Tile strings -->
+    <string name="wifi_tile_prefix">│ </string>
+    <string name="mobile_tile_prefix">│ </string>
+    <string name="tile_state_active">Active</string>
+    <string name="tile_state_inactive">Inactive</string>
+
     <!-- NotificationHelper strings -->
     <string name="data_usage_monitor_channel">Data Usage Monitor</string>
     <string name="data_usage_stats_title">Data Usage Stats</string>
@@ -60,7 +66,7 @@
 
     <!-- DataUsageService strings -->
     <string name="data_usage_monitor_service">Data Usage Monitor</string>
-    <string name="monitoring_data_usage">Monitoring data usage...</string>
+    <string name="monitoring_data_usage">Monitoring data usage…</string>
 
     <!-- Common strings -->
     <string name="no_data_selected">No data selected</string>
