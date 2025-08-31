@@ -4,11 +4,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.data.UsageData
+import com.redskul.macrostatshelper.utils.PermissionHelper
 
 class SettingsManager(private val context: Context) {
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("display_settings", Context.MODE_PRIVATE)
+
+    private val permissionHelper = PermissionHelper(context)
 
     companion object {
         private const val KEY_WIFI_PERIODS = "wifi_periods"
@@ -83,11 +86,36 @@ class SettingsManager(private val context: Context) {
     }
 
     fun saveNotificationEnabled(enabled: Boolean) {
+        // Check permission before saving
+        if (enabled && !permissionHelper.hasUsageStatsPermission()) {
+            android.util.Log.w("SettingsManager", "Cannot enable notifications without usage stats permission")
+            return
+        }
         sharedPreferences.edit().putBoolean(KEY_SHOW_NOTIFICATION, enabled).apply()
     }
 
     fun isNotificationEnabled(): Boolean {
-        return sharedPreferences.getBoolean(KEY_SHOW_NOTIFICATION, true) // Default to true
+        // Return false if permission is not granted, regardless of saved preference
+        if (!permissionHelper.hasUsageStatsPermission()) {
+            return false
+        }
+        return sharedPreferences.getBoolean(KEY_SHOW_NOTIFICATION, true)
+    }
+
+    fun canEnableNotifications(): Boolean {
+        return permissionHelper.hasUsageStatsPermission()
+    }
+
+    fun enforcePermissionRestrictions() {
+        // If usage stats permission is revoked, disable notifications
+        if (!permissionHelper.hasUsageStatsPermission() && isNotificationEnabledRaw()) {
+            sharedPreferences.edit().putBoolean(KEY_SHOW_NOTIFICATION, false).apply()
+            android.util.Log.i("SettingsManager", "Disabled notifications due to missing usage stats permission")
+        }
+    }
+
+    private fun isNotificationEnabledRaw(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_NOTIFICATION, true)
     }
 
     fun getFormattedUsageText(usageData: UsageData): Pair<String, String> {

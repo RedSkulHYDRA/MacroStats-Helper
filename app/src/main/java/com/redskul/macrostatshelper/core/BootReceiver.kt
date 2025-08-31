@@ -33,6 +33,9 @@ class BootReceiver : BroadcastReceiver() {
                         val batteryServiceIntent = Intent(context, BatteryService::class.java)
                         context.startService(batteryServiceIntent)
                         android.util.Log.d("BootReceiver", "BatteryService started successfully after boot")
+
+                        // Note: Accessibility service will auto-start if enabled by user
+                        android.util.Log.d("BootReceiver", "AutoSync accessibility service will auto-start if enabled")
                     } catch (e: Exception) {
                         android.util.Log.e("BootReceiver", "Failed to start services after boot", e)
                     }

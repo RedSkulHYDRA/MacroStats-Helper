@@ -9,20 +9,27 @@
     <string name="data_usage_monitoring_running">Data usage monitoring is running in the background.\n\nTap notification to access settings or use the button below.</string>
     <string name="display_settings">Display Settings</string>
     <string name="qs_tile_settings">QS Tile Settings</string>
+    <string name="accessibility_settings">Accessibility Settings</string>
     <string name="stop_monitoring">Stop Monitoring</string>
     <string name="monitoring_stopped">Monitoring stopped</string>
     <string name="setup_title">MacroStats Helper Setup</string>
     <string name="setup_description">This app needs permissions to monitor your data usage and show notifications. Please grant the required permissions.</string>
+    <string name="setup_description_autosync">This app needs permissions to monitor your data usage, show notifications, and manage AutoSync. Please grant all required permissions.</string>
     <string name="grant_notification_permission">Grant Notification Permission</string>
     <string name="grant_usage_stats_permission">Grant Usage Stats Permission</string>
+    <string name="grant_accessibility_permission">Grant Accessibility Permission</string>
     <string name="start_monitoring">Start Monitoring</string>
     <string name="notification_permission_required">Notification permission is required for the app to work properly</string>
     <string name="usage_stats_permission_required">Usage stats permission is required to monitor data usage</string>
+    <string name="accessibility_permission_info">Accessibility permission is required for AutoSync management</string>
     <string name="grant_all_permissions">Please grant all required permissions</string>
     <string name="grant_required_permissions">Please grant all required permissions</string>
+    <string name="grant_required_permissions_autosync">Please grant all required permissions including accessibility access</string>
     <string name="monitoring_started_success">Data usage monitoring started successfully</string>
     <string name="service_start_failed">Failed to start monitoring service</string>
     <string name="service_error">Error starting service: %1$s</string>
+    <string name="autosync_service_running">AutoSync service is running</string>
+    <string name="autosync_service_disabled">AutoSync service is disabled (enable in accessibility settings)</string>
 
     <!-- SettingsActivity strings -->
     <string name="settings_title">Display Settings</string>
@@ -43,6 +50,21 @@
     <string name="show_data_usage_notification">Show Data Usage Notification</string>
     <string name="notification_description">Display persistent notification with current data usage</string>
     <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background for QS tiles.</string>
+
+    <!-- AutoSync Settings -->
+    <string name="autosync_settings_title">AutoSync Management</string>
+    <string name="enable_autosync_management">Enable AutoSync Management</string>
+    <string name="autosync_description">Automatically turn on sync when unlocked and turn off sync after delay when locked</string>
+    <string name="autosync_delay_label">Turn off sync after:</string>
+    <string name="autosync_delay_description">Time delay before turning off sync when device is locked</string>
+    <string name="autosync_preview">AutoSync: Turn off after %1$d minutes when locked</string>
+    <string name="accessibility_service_enabled">✓ Accessibility service is enabled</string>
+    <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
+    <string name="open_accessibility_settings">Open Accessibility Settings</string>
+    <string name="accessibility_permission_guide">Find "MacroStats Helper" in the list and enable it for AutoSync to work</string>
+
+    <!-- Accessibility Service -->
+    <string name="accessibility_service_description">Manages AutoSync based on device lock state to optimize battery usage</string>
 
     <!-- QSTileSettingsActivity strings -->
     <string name="qs_tile_settings_title">QS Tile Settings</string>

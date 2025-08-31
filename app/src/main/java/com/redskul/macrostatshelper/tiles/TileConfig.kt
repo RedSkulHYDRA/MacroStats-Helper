@@ -64,10 +64,19 @@ object TileConfigHelper {
         showPeriodInTitle: Boolean = false,
         period: TimePeriod? = null,
         isWifi: Boolean = true,
+        hasPermission: Boolean = true,
         context: Context? = null
     ) {
-        tile.state = config.defaultState
         tile.icon = config.icon
+
+        if (!hasPermission) {
+            tile.state = Tile.STATE_INACTIVE
+            tile.label = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
+            tile.subtitle = context?.getString(R.string.tap_to_grant) ?: "Tap to grant"
+            return
+        }
+
+        tile.state = config.defaultState
 
         if (showPeriodInTitle && period != null && context != null) {
             // Show period in title WITHOUT separator, value as subtitle

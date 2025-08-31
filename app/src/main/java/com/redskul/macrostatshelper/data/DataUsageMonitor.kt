@@ -6,7 +6,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.telephony.TelephonyManager
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -25,7 +24,6 @@ class DataUsageMonitor(private val context: Context) {
         context.getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
     }
 
-    @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE")
     fun getUsageData(): UsageData {
         Log.d("DataUsageMonitor", "Starting data usage collection")
 
@@ -214,16 +212,24 @@ class DataUsageMonitor(private val context: Context) {
         }
     }
 
-    @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE")
+    // Removed @RequiresPermission annotation and made method more robust
     private fun getSubscriberId(): String? {
         return try {
             val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            val subscriberId = telephonyManager.subscriberId
+
+            // Try to get subscriber ID, but handle security exceptions gracefully
+            val subscriberId = try {
+                telephonyManager.subscriberId
+            } catch (e: SecurityException) {
+                Log.i("DataUsageMonitor", "Cannot access subscriber ID due to permission restriction, using null")
+                null
+            } catch (e: Exception) {
+                Log.w("DataUsageMonitor", "Cannot access subscriber ID: ${e.message}")
+                null
+            }
+
             Log.d("DataUsageMonitor", "Retrieved subscriber ID: $subscriberId")
             subscriberId
-        } catch (e: SecurityException) {
-            Log.w("DataUsageMonitor", "Cannot access subscriber ID (SecurityException): ${e.message}")
-            null
         } catch (e: Exception) {
             Log.e("DataUsageMonitor", "Error getting subscriber ID", e)
             null

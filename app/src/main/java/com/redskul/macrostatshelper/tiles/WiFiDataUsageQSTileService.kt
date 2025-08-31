@@ -1,18 +1,24 @@
 package com.redskul.macrostatshelper.tiles
 
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
+import android.provider.Settings
 import android.service.quicksettings.TileService
+import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.data.DataUsageMonitor
 import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.utils.PermissionHelper
 import kotlinx.coroutines.*
 
 class WiFiDataUsageQSTileService : TileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var dataUsageMonitor: DataUsageMonitor
+    private lateinit var permissionHelper: PermissionHelper
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val dataUpdateReceiver = object : BroadcastReceiver() {
@@ -28,6 +34,7 @@ class WiFiDataUsageQSTileService : TileService() {
         super.onCreate()
         qsTileSettingsManager = QSTileSettingsManager(this)
         dataUsageMonitor = DataUsageMonitor(this)
+        permissionHelper = PermissionHelper(this)
     }
 
     override fun onStartListening() {
@@ -49,8 +56,17 @@ class WiFiDataUsageQSTileService : TileService() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onClick() {
         super.onClick()
+
+        if (!permissionHelper.hasUsageStatsPermission()) {
+            // Request permission by opening settings
+            requestUsageStatsPermission()
+            return
+        }
+
+        // Permission is granted, proceed with normal functionality
         android.util.Log.d("WiFiQSTile", "Tile clicked - triggering immediate update")
 
         val serviceIntent = Intent(this, DataUsageService::class.java).apply {
@@ -60,28 +76,74 @@ class WiFiDataUsageQSTileService : TileService() {
         updateTile()
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private fun requestUsageStatsPermission() {
+        try {
+            // Create intent for usage stats permission
+            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            // Create PendingIntent
+            val pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            // Start the activity and collapse the panel using PendingIntent
+            startActivityAndCollapse(pendingIntent)
+
+            android.util.Log.d("WiFiQSTile", "Permission request activity started with PendingIntent")
+        } catch (e: Exception) {
+            android.util.Log.e("WiFiQSTile", "Error starting permission activity", e)
+        }
+    }
+
     private fun updateTile() {
         tileScope.launch {
             try {
-                val usageData = dataUsageMonitor.getUsageData()
-                val value = qsTileSettingsManager.getWiFiTileText(usageData)
+                val hasPermission = permissionHelper.hasUsageStatsPermission()
                 val config = TileConfigHelper.getWiFiTileConfig(this@WiFiDataUsageQSTileService)
                 val showPeriodInTitle = qsTileSettingsManager.getShowPeriodInTitle()
                 val period = qsTileSettingsManager.getWiFiTilePeriod()
 
-                withContext(Dispatchers.Main) {
-                    val tile = qsTile ?: return@withContext
-                    TileConfigHelper.applyConfigToTile(
-                        tile,
-                        config,
-                        value,
-                        showPeriodInTitle,
-                        period,
-                        isWifi = true,
-                        context = this@WiFiDataUsageQSTileService
-                    )
-                    tile.updateTile()
-                    android.util.Log.d("WiFiQSTile", "Tile updated with: $value")
+                if (hasPermission) {
+                    val usageData = dataUsageMonitor.getUsageData()
+                    val value = qsTileSettingsManager.getWiFiTileText(usageData)
+
+                    withContext(Dispatchers.Main) {
+                        val tile = qsTile ?: return@withContext
+                        TileConfigHelper.applyConfigToTile(
+                            tile,
+                            config,
+                            value,
+                            showPeriodInTitle,
+                            period,
+                            isWifi = true,
+                            hasPermission = true,
+                            context = this@WiFiDataUsageQSTileService
+                        )
+                        tile.updateTile()
+                        android.util.Log.d("WiFiQSTile", "Tile updated with: $value")
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        val tile = qsTile ?: return@withContext
+                        TileConfigHelper.applyConfigToTile(
+                            tile,
+                            config,
+                            "",
+                            showPeriodInTitle,
+                            period,
+                            isWifi = true,
+                            hasPermission = false,
+                            context = this@WiFiDataUsageQSTileService
+                        )
+                        tile.updateTile()
+                        android.util.Log.d("WiFiQSTile", "Tile updated - Permission required")
+                    }
                 }
             } catch (e: Exception) {
                 android.util.Log.e("WiFiQSTile", "Error updating WiFi tile", e)

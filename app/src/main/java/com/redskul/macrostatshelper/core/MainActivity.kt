@@ -19,21 +19,28 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.data.DataUsageService
 import com.redskul.macrostatshelper.data.BatteryService
+import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
+import com.redskul.macrostatshelper.autosync.AutoSyncManager
 import com.redskul.macrostatshelper.tiles.QSTileSettingsActivity
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.SettingsActivity
+import com.redskul.macrostatshelper.settings.SettingsManager
+import com.redskul.macrostatshelper.utils.PermissionHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var permissionHelper: PermissionHelper
+    private lateinit var settingsManager: SettingsManager
+    private lateinit var autoSyncManager: AutoSyncManager
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            checkUsageStatsPermission()
+            showToast("Notification permission granted")
         } else {
             showToast(getString(R.string.notification_permission_required))
         }
@@ -42,8 +49,8 @@ class MainActivity : AppCompatActivity() {
     private val usageStatsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        if (hasUsageStatsPermission()) {
-            checkWriteSettingsPermission()
+        if (permissionHelper.hasUsageStatsPermission()) {
+            showToast("Usage stats permission granted")
         } else {
             showToast(getString(R.string.usage_stats_permission_required))
         }
@@ -52,10 +59,20 @@ class MainActivity : AppCompatActivity() {
     private val writeSettingsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        if (hasWriteSettingsPermission()) {
-            completeSetup()
+        if (permissionHelper.hasWriteSettingsPermission()) {
+            showToast("Write settings permission granted")
         } else {
             showToast(getString(R.string.write_settings_permission_info))
+        }
+    }
+
+    private val accessibilityPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (permissionHelper.hasAccessibilityPermission()) {
+            showToast("Accessibility service enabled")
+        } else {
+            showToast(getString(R.string.accessibility_permission_info))
         }
     }
 
@@ -63,11 +80,45 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        permissionHelper = PermissionHelper(this)
+        settingsManager = SettingsManager(this)
+        autoSyncManager = AutoSyncManager(this)
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
         } else {
             showMainUI()
+            startPermissionMonitoring()
+        }
+    }
+
+    private fun startPermissionMonitoring() {
+        lifecycleScope.launch {
+            var lastUsageStats = permissionHelper.hasUsageStatsPermission()
+            var lastAccessibility = permissionHelper.hasAccessibilityPermission()
+
+            while (true) {
+                delay(2000) // Check every 2 seconds
+
+                val currentUsageStats = permissionHelper.hasUsageStatsPermission()
+                val currentAccessibility = permissionHelper.hasAccessibilityPermission()
+
+                // Check if permissions were revoked
+                if (lastUsageStats && !currentUsageStats) {
+                    android.util.Log.i("MainActivity", "Usage stats permission was revoked")
+                    settingsManager.enforcePermissionRestrictions()
+                    showToast("Data usage features disabled due to missing permission")
+                }
+
+                if (lastAccessibility && !currentAccessibility) {
+                    android.util.Log.i("MainActivity", "Accessibility permission was revoked")
+                    autoSyncManager.enforcePermissionRestrictions()
+                    showToast("AutoSync features disabled due to missing permission")
+                }
+
+                lastUsageStats = currentUsageStats
+                lastAccessibility = currentAccessibility
+            }
         }
     }
 
@@ -89,7 +140,19 @@ class MainActivity : AppCompatActivity() {
 
         val statusText = TextView(this).apply {
             text = getString(R.string.data_usage_monitoring_running)
+            setPadding(0, 0, 0, 16)
+        }
+
+        // AutoSync status
+        val autoSyncStatusText = TextView(this).apply {
+            val isAccessibilityEnabled = permissionHelper.hasAccessibilityPermission()
+            text = if (isAccessibilityEnabled) {
+                getString(R.string.autosync_service_running)
+            } else {
+                getString(R.string.autosync_service_disabled)
+            }
             setPadding(0, 0, 0, 32)
+            setTextColor(if (isAccessibilityEnabled) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt())
         }
 
         val settingsButton = Button(this).apply {
@@ -115,20 +178,51 @@ class MainActivity : AppCompatActivity() {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
                 stopService(Intent(this@MainActivity, BatteryService::class.java))
                 showToast(getString(R.string.monitoring_stopped))
-                finish()
+                statusText.text = "Monitoring has been stopped. You can restart it using the Start Monitoring button below."
+
+                this.text = getString(R.string.start_monitoring)
+                this.setOnClickListener {
+                    startServicesAndShowSuccess()
+                    this.text = getString(R.string.stop_monitoring)
+                    statusText.text = getString(R.string.data_usage_monitoring_running)
+                    this.setOnClickListener {
+                        stopService(Intent(this@MainActivity, DataUsageService::class.java))
+                        stopService(Intent(this@MainActivity, BatteryService::class.java))
+                        showToast(getString(R.string.monitoring_stopped))
+                        statusText.text = "Monitoring has been stopped. You can restart it using the Start Monitoring button below."
+                        this.text = getString(R.string.start_monitoring)
+                        setupStopServiceButton(this, statusText)
+                    }
+                }
             }
         }
 
         layout.addView(titleText)
         layout.addView(statusText)
+        layout.addView(autoSyncStatusText)
         layout.addView(settingsButton)
         layout.addView(qsTileSettingsButton)
         layout.addView(stopServiceButton)
 
         setContentView(layout)
 
-        // Ensure services are running
         ensureServicesRunning()
+    }
+
+    private fun setupStopServiceButton(button: Button, statusText: TextView) {
+        button.setOnClickListener {
+            if (button.text == getString(R.string.stop_monitoring)) {
+                stopService(Intent(this@MainActivity, DataUsageService::class.java))
+                stopService(Intent(this@MainActivity, BatteryService::class.java))
+                showToast(getString(R.string.monitoring_stopped))
+                statusText.text = "Monitoring has been stopped. You can restart it using the Start Monitoring button below."
+                button.text = getString(R.string.start_monitoring)
+            } else {
+                startServicesAndShowSuccess()
+                statusText.text = getString(R.string.data_usage_monitoring_running)
+                button.text = getString(R.string.stop_monitoring)
+            }
+        }
     }
 
     private fun showPermissionSetupUI() {
@@ -144,7 +238,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val descriptionText = TextView(this).apply {
-            text = getString(R.string.setup_description)
+            text = getString(R.string.setup_description_autosync)
             setPadding(0, 0, 0, 32)
         }
 
@@ -158,21 +252,24 @@ class MainActivity : AppCompatActivity() {
             text = getString(R.string.grant_usage_stats_permission)
             setPadding(0, 16, 0, 16)
             setOnClickListener { requestUsageStatsPermission() }
-            isEnabled = hasNotificationPermission()
         }
 
         val writeSettingsButton = Button(this).apply {
             text = getString(R.string.grant_write_settings_permission)
             setPadding(0, 16, 0, 16)
             setOnClickListener { requestWriteSettingsPermission() }
-            isEnabled = hasNotificationPermission() && hasUsageStatsPermission()
+        }
+
+        val accessibilityButton = Button(this).apply {
+            text = getString(R.string.grant_accessibility_permission)
+            setPadding(0, 16, 0, 16)
+            setOnClickListener { requestAccessibilityPermission() }
         }
 
         val startButton = Button(this).apply {
             text = getString(R.string.start_monitoring)
             setPadding(0, 16, 0, 16)
             setOnClickListener { completeSetup() }
-            isEnabled = hasNotificationPermission() && hasUsageStatsPermission() && hasWriteSettingsPermission()
         }
 
         layout.addView(titleText)
@@ -180,20 +277,48 @@ class MainActivity : AppCompatActivity() {
         layout.addView(notificationButton)
         layout.addView(usageStatsButton)
         layout.addView(writeSettingsButton)
+        layout.addView(accessibilityButton)
         layout.addView(startButton)
 
         setContentView(layout)
 
-        // Update button states using coroutines
         lifecycleScope.launch {
             while (true) {
-                val hasNotification = hasNotificationPermission()
-                val hasUsageStats = hasUsageStatsPermission()
-                val hasWriteSettings = hasWriteSettingsPermission()
+                val hasNotification = permissionHelper.hasNotificationPermission()
+                val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+                val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+                val hasAccessibility = permissionHelper.hasAccessibilityPermission()
 
-                usageStatsButton.isEnabled = hasNotification
-                writeSettingsButton.isEnabled = hasNotification && hasUsageStats
-                startButton.isEnabled = hasNotification && hasUsageStats && hasWriteSettings
+                notificationButton.text = if (hasNotification) {
+                    "✓ " + getString(R.string.grant_notification_permission)
+                } else {
+                    getString(R.string.grant_notification_permission)
+                }
+                notificationButton.alpha = if (hasNotification) 0.7f else 1.0f
+
+                usageStatsButton.text = if (hasUsageStats) {
+                    "✓ " + getString(R.string.grant_usage_stats_permission)
+                } else {
+                    getString(R.string.grant_usage_stats_permission)
+                }
+                usageStatsButton.alpha = if (hasUsageStats) 0.7f else 1.0f
+
+                writeSettingsButton.text = if (hasWriteSettings) {
+                    "✓ " + getString(R.string.grant_write_settings_permission)
+                } else {
+                    getString(R.string.grant_write_settings_permission)
+                }
+                writeSettingsButton.alpha = if (hasWriteSettings) 0.7f else 1.0f
+
+                accessibilityButton.text = if (hasAccessibility) {
+                    "✓ " + getString(R.string.grant_accessibility_permission)
+                } else {
+                    getString(R.string.grant_accessibility_permission)
+                }
+                accessibilityButton.alpha = if (hasAccessibility) 0.7f else 1.0f
+
+                startButton.isEnabled = hasNotification && hasUsageStats && hasWriteSettings && hasAccessibility
+                startButton.alpha = if (startButton.isEnabled) 1.0f else 0.5f
 
                 delay(1000)
             }
@@ -202,11 +327,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun ensureServicesRunning() {
         try {
-            // Start data usage service
             val dataServiceIntent = Intent(this, DataUsageService::class.java)
             startForegroundService(dataServiceIntent)
 
-            // Start battery service
             val batteryServiceIntent = Intent(this, BatteryService::class.java)
             startService(batteryServiceIntent)
         } catch (e: Exception) {
@@ -220,91 +343,71 @@ class MainActivity : AppCompatActivity() {
                 != PackageManager.PERMISSION_GRANTED) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
-                checkUsageStatsPermission()
+                showToast("Notification permission already granted")
             }
         } else {
-            checkUsageStatsPermission()
+            showToast("Notification permission not required on this Android version")
         }
     }
 
     private fun requestUsageStatsPermission() {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-        usageStatsPermissionLauncher.launch(intent)
+        if (!permissionHelper.hasUsageStatsPermission()) {
+            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+            usageStatsPermissionLauncher.launch(intent)
+        } else {
+            showToast("Usage stats permission already granted")
+        }
     }
 
     private fun requestWriteSettingsPermission() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                data = Uri.parse("package:$packageName")
+            if (!permissionHelper.hasWriteSettingsPermission()) {
+                val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                writeSettingsPermissionLauncher.launch(intent)
+            } else {
+                showToast("Write settings permission already granted")
             }
-            writeSettingsPermissionLauncher.launch(intent)
-        }
-    }
-
-    private fun checkUsageStatsPermission() {
-        if (!hasUsageStatsPermission()) {
-            requestUsageStatsPermission()
-        }
-    }
-
-    private fun checkWriteSettingsPermission() {
-        if (!hasWriteSettingsPermission()) {
-            requestWriteSettingsPermission()
-        }
-    }
-
-    private fun hasNotificationPermission(): Boolean {
-        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         } else {
-            true
+            showToast("Write settings permission not required on this Android version")
         }
     }
 
-    private fun hasUsageStatsPermission(): Boolean {
-        val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            android.os.Process.myUid(),
-            packageName
-        )
-        return mode == AppOpsManager.MODE_ALLOWED
-    }
-
-    private fun hasWriteSettingsPermission(): Boolean {
-        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Settings.System.canWrite(this)
+    private fun requestAccessibilityPermission() {
+        if (!permissionHelper.hasAccessibilityPermission()) {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            accessibilityPermissionLauncher.launch(intent)
+            showToast(getString(R.string.accessibility_permission_guide))
         } else {
-            true // Permission not required on older versions
+            showToast("Accessibility service already enabled")
         }
     }
 
     private fun completeSetup() {
-        if (hasNotificationPermission() && hasUsageStatsPermission() && hasWriteSettingsPermission()) {
+        if (permissionHelper.hasAllPermissions()) {
             sharedPreferences.edit().putBoolean("setup_complete", true).apply()
-            startServicesAndFinish()
+            startServicesAndTransitionToMain()
         } else {
-            showToast(getString(R.string.grant_required_permissions))
+            showToast(getString(R.string.grant_required_permissions_autosync))
         }
     }
 
-    private fun startServicesAndFinish() {
+    private fun startServicesAndTransitionToMain() {
         try {
-            // Start data usage service
             val dataServiceIntent = Intent(this, DataUsageService::class.java)
             val dataResult = startForegroundService(dataServiceIntent)
 
-            // Start battery service
             val batteryServiceIntent = Intent(this, BatteryService::class.java)
             val batteryResult = startService(batteryServiceIntent)
 
             if (dataResult != null && batteryResult != null) {
                 showToast(getString(R.string.monitoring_started_success))
 
-                // Use coroutines for delay instead of Handler
                 lifecycleScope.launch {
-                    delay(3000) // 3 second delay
-                    finishAndRemoveTask()
+                    delay(1500)
+                    showMainUI()
+                    startPermissionMonitoring()
                 }
             } else {
                 showToast(getString(R.string.service_start_failed))
@@ -315,7 +418,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startServicesAndShowSuccess() {
+        try {
+            val dataServiceIntent = Intent(this, DataUsageService::class.java)
+            startForegroundService(dataServiceIntent)
+
+            val batteryServiceIntent = Intent(this, BatteryService::class.java)
+            startService(batteryServiceIntent)
+
+            showToast("Monitoring started successfully")
+        } catch (e: Exception) {
+            showToast("Error starting monitoring: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }

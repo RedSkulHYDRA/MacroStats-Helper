@@ -4,17 +4,24 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.TimePeriod
 import com.redskul.macrostatshelper.data.UsageData
 import com.redskul.macrostatshelper.data.BatteryHealthMonitor
+import com.redskul.macrostatshelper.utils.PermissionHelper
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class QSTileSettingsActivity : AppCompatActivity() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var batteryHealthMonitor: BatteryHealthMonitor
+    private lateinit var permissionHelper: PermissionHelper
     private lateinit var wifiTileSpinner: Spinner
     private lateinit var mobileTileSpinner: Spinner
     private lateinit var showPeriodInTitleSwitch: Switch
@@ -30,36 +37,133 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         qsTileSettingsManager = QSTileSettingsManager(this)
         batteryHealthMonitor = BatteryHealthMonitor(this)
+        permissionHelper = PermissionHelper(this)
         createUI()
         loadCurrentSettings()
         setupListeners()
+        updatePreview()
+        startPermissionMonitoring()
+    }
+
+    private fun startPermissionMonitoring() {
+        lifecycleScope.launch {
+            var lastUsageStats = permissionHelper.hasUsageStatsPermission()
+            var lastWriteSettings = permissionHelper.hasWriteSettingsPermission()
+
+            while (true) {
+                delay(1000)
+
+                val currentUsageStats = permissionHelper.hasUsageStatsPermission()
+                val currentWriteSettings = permissionHelper.hasWriteSettingsPermission()
+
+                if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings) {
+                    updatePermissionBasedUI()
+                    if (lastUsageStats && !currentUsageStats) {
+                        showToast("Data usage tiles disabled due to missing permission")
+                    }
+                    if (lastWriteSettings && !currentWriteSettings) {
+                        showToast("Screen timeout tile disabled due to missing permission")
+                    }
+                }
+
+                lastUsageStats = currentUsageStats
+                lastWriteSettings = currentWriteSettings
+            }
+        }
+    }
+
+    private fun updatePermissionBasedUI() {
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+
+        // Enable/disable data usage related controls
+        wifiTileSpinner.isEnabled = hasUsageStats
+        mobileTileSpinner.isEnabled = hasUsageStats
+        showPeriodInTitleSwitch.isEnabled = hasUsageStats
+
+        // Enable/disable screen timeout controls
+        showScreenTimeoutInTitleSwitch.isEnabled = hasWriteSettings
+
         updatePreview()
     }
 
     private fun createUI() {
         val mainLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(32, 32, 32, 32)
+            setPadding(24, 24, 24, 24)
         }
 
+        // Title
         val titleText = TextView(this).apply {
             text = getString(R.string.qs_tile_settings_title)
-            textSize = 24f
-            setPadding(0, 0, 0, 24)
+            textSize = 26f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding(8, 0, 8, 32)
         }
 
         val instructionText = TextView(this).apply {
             text = getString(R.string.qs_tile_instruction)
             textSize = 14f
-            setPadding(0, 0, 0, 24)
+            setPadding(8, 0, 8, 24)
+            alpha = 0.8f
         }
 
-        // Data Usage Tile Display Mode Section
-        val displayModeLabel = TextView(this).apply {
-            text = getString(R.string.tile_display_mode_label)
+        // Data Usage Tiles Card
+        val dataUsageCard = createDataUsageTilesCard()
+
+        // Battery Tiles Card
+        val batteryCard = createBatteryTilesCard()
+
+        // Screen Timeout Card
+        val screenTimeoutCard = createScreenTimeoutCard()
+
+        // Preview Card
+        val previewCard = createPreviewCard()
+
+        // Save Button
+        saveButton = Button(this).apply {
+            text = getString(R.string.save_settings)
+            textSize = 16f
+            setPadding(32, 16, 32, 16)
+            setBackgroundResource(android.R.drawable.btn_default)
+            setOnClickListener { saveSettings() }
+        }
+
+        val instructionText2 = TextView(this).apply {
+            text = getString(R.string.qs_tile_instruction_2)
+            textSize = 12f
+            setPadding(8, 16, 8, 0)
+            alpha = 0.7f
+        }
+
+        // Add all components to main layout
+        mainLayout.addView(titleText)
+        mainLayout.addView(instructionText)
+        mainLayout.addView(dataUsageCard)
+        addSpacing(mainLayout, 16)
+        mainLayout.addView(batteryCard)
+        addSpacing(mainLayout, 16)
+        mainLayout.addView(screenTimeoutCard)
+        addSpacing(mainLayout, 16)
+        mainLayout.addView(previewCard)
+        addSpacing(mainLayout, 24)
+        mainLayout.addView(saveButton)
+        mainLayout.addView(instructionText2)
+
+        setContentView(ScrollView(this).apply { addView(mainLayout) })
+    }
+
+    private fun createDataUsageTilesCard(): LinearLayout {
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = resources.getDrawable(R.drawable.card_background, theme)
+        }
+
+        val cardTitle = TextView(this).apply {
+            text = "Data Usage Tiles"
             textSize = 18f
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
+            setPadding(0, 0, 0, 16)
         }
 
         val switchLayout = LinearLayout(this).apply {
@@ -74,7 +178,14 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         showPeriodInTitleSwitch = Switch(this).apply {
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
+            setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
+                    this.isChecked = false
+                    showPermissionRequiredDialog("Data Usage Tiles", "Usage Stats Permission")
+                    return@setOnCheckedChangeListener
+                }
+                updatePreview()
+            }
         }
 
         switchLayout.addView(switchLabelText)
@@ -84,12 +195,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
             text = getString(R.string.tile_display_mode_description)
             textSize = 12f
             setPadding(0, 0, 0, 16)
+            alpha = 0.7f
         }
 
         // WiFi Tile Section
         val wifiLabel = TextView(this).apply {
             text = getString(R.string.wifi_tile_label)
-            textSize = 18f
+            textSize = 16f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setPadding(0, 0, 0, 8)
         }
@@ -98,6 +210,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             text = getString(R.string.wifi_tile_description)
             textSize = 14f
             setPadding(0, 0, 0, 8)
+            alpha = 0.8f
         }
 
         wifiTileSpinner = Spinner(this).apply {
@@ -113,7 +226,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Mobile Tile Section
         val mobileLabel = TextView(this).apply {
             text = getString(R.string.mobile_tile_label)
-            textSize = 18f
+            textSize = 16f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setPadding(0, 16, 0, 8)
         }
@@ -122,6 +235,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             text = getString(R.string.mobile_tile_description)
             textSize = 14f
             setPadding(0, 0, 0, 8)
+            alpha = 0.8f
         }
 
         mobileTileSpinner = Spinner(this).apply {
@@ -134,12 +248,38 @@ class QSTileSettingsActivity : AppCompatActivity() {
             }
         }
 
-        // Charge Cycles Tile Section
-        val chargeLabel = TextView(this).apply {
-            text = getString(R.string.charge_tile_label)
+        card.addView(cardTitle)
+        card.addView(switchLayout)
+        card.addView(switchDescription)
+        card.addView(wifiLabel)
+        card.addView(wifiDescription)
+        card.addView(wifiTileSpinner)
+        card.addView(mobileLabel)
+        card.addView(mobileDescription)
+        card.addView(mobileTileSpinner)
+
+        return card
+    }
+
+    private fun createBatteryTilesCard(): LinearLayout {
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = resources.getDrawable(R.drawable.card_background, theme)
+        }
+
+        val cardTitle = TextView(this).apply {
+            text = "Battery Tiles"
             textSize = 18f
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 16, 0, 8)
+            setPadding(0, 0, 0, 16)
+        }
+
+        // Charge Cycles Section
+        val chargeLabel = TextView(this).apply {
+            text = getString(R.string.charge_tile_label)
+            textSize = 16f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, 8)
         }
 
         val chargeSwitchLayout = LinearLayout(this).apply {
@@ -164,14 +304,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
             text = getString(R.string.charge_tile_description)
             textSize = 12f
             setPadding(0, 0, 0, 16)
+            alpha = 0.7f
         }
 
-        // Battery Health Tile Section
+        // Battery Health Section
         val healthLabel = TextView(this).apply {
             text = getString(R.string.battery_health_tile_label)
-            textSize = 18f
+            textSize = 16f
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 16, 0, 8)
+            setPadding(0, 0, 0, 8)
         }
 
         val healthSwitchLayout = LinearLayout(this).apply {
@@ -196,6 +337,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             text = getString(R.string.battery_health_tile_description)
             textSize = 12f
             setPadding(0, 0, 0, 8)
+            alpha = 0.7f
         }
 
         // Design Capacity Input
@@ -209,21 +351,41 @@ class QSTileSettingsActivity : AppCompatActivity() {
         designCapacityEditText = EditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
             hint = getString(R.string.design_capacity_hint)
-            setPadding(16, 8, 16, 8)
+            setPadding(16, 12, 16, 12)
         }
 
         val capacityDescription = TextView(this).apply {
             text = getString(R.string.design_capacity_description)
             textSize = 12f
-            setPadding(0, 4, 0, 16)
+            setPadding(0, 4, 0, 0)
+            alpha = 0.7f
         }
 
-        // Screen Timeout Tile Section
-        val screenTimeoutLabel = TextView(this).apply {
-            text = getString(R.string.screen_timeout_tile_label)
+        card.addView(cardTitle)
+        card.addView(chargeLabel)
+        card.addView(chargeSwitchLayout)
+        card.addView(chargeDescription)
+        card.addView(healthLabel)
+        card.addView(healthSwitchLayout)
+        card.addView(healthDescription)
+        card.addView(capacityLabel)
+        card.addView(designCapacityEditText)
+        card.addView(capacityDescription)
+
+        return card
+    }
+
+    private fun createScreenTimeoutCard(): LinearLayout {
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = resources.getDrawable(R.drawable.card_background, theme)
+        }
+
+        val cardTitle = TextView(this).apply {
+            text = "Screen Timeout Tile"
             textSize = 18f
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 16, 0, 8)
+            setPadding(0, 0, 0, 16)
         }
 
         val screenTimeoutSwitchLayout = LinearLayout(this).apply {
@@ -238,7 +400,14 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         showScreenTimeoutInTitleSwitch = Switch(this).apply {
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
+            setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked && !permissionHelper.hasWriteSettingsPermission()) {
+                    this.isChecked = false
+                    showPermissionRequiredDialog("Screen Timeout Tile", "Write Settings Permission")
+                    return@setOnCheckedChangeListener
+                }
+                updatePreview()
+            }
         }
 
         screenTimeoutSwitchLayout.addView(screenTimeoutSwitchLabelText)
@@ -247,65 +416,52 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val screenTimeoutDescription = TextView(this).apply {
             text = getString(R.string.screen_timeout_tile_description)
             textSize = 12f
-            setPadding(0, 0, 0, 16)
+            setPadding(0, 0, 0, 0)
+            alpha = 0.7f
         }
 
-        // Preview Section
+        card.addView(cardTitle)
+        card.addView(screenTimeoutSwitchLayout)
+        card.addView(screenTimeoutDescription)
+
+        return card
+    }
+
+    private fun createPreviewCard(): LinearLayout {
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = resources.getDrawable(R.drawable.card_background, theme)
+        }
+
         val previewLabel = TextView(this).apply {
             text = getString(R.string.preview_label)
-            textSize = 16f
+            textSize = 18f
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 24, 0, 8)
+            setPadding(0, 0, 0, 16)
         }
 
         previewText = TextView(this).apply {
             text = getString(R.string.preview_default)
             textSize = 12f
-            setPadding(16, 8, 16, 8)
-            setBackgroundColor(0xFFF0F0F0.toInt())
+            setPadding(12, 12, 12, 12)
+            setBackgroundColor(0xFFF5F5F5.toInt())
+            setTypeface(android.graphics.Typeface.MONOSPACE)
         }
 
-        val instructionText2 = TextView(this).apply {
-            text = getString(R.string.qs_tile_instruction_2)
-            textSize = 12f
-            setPadding(0, 16, 0, 0)
+        card.addView(previewLabel)
+        card.addView(previewText)
+
+        return card
+    }
+
+    private fun addSpacing(parent: LinearLayout, dpSize: Int) {
+        val spacer = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (dpSize * resources.displayMetrics.density).toInt()
+            )
         }
-
-        saveButton = Button(this).apply {
-            text = getString(R.string.save_settings)
-            setPadding(0, 24, 0, 0)
-            setOnClickListener { saveSettings() }
-        }
-
-        mainLayout.addView(titleText)
-        mainLayout.addView(instructionText)
-        mainLayout.addView(displayModeLabel)
-        mainLayout.addView(switchLayout)
-        mainLayout.addView(switchDescription)
-        mainLayout.addView(wifiLabel)
-        mainLayout.addView(wifiDescription)
-        mainLayout.addView(wifiTileSpinner)
-        mainLayout.addView(mobileLabel)
-        mainLayout.addView(mobileDescription)
-        mainLayout.addView(mobileTileSpinner)
-        mainLayout.addView(chargeLabel)
-        mainLayout.addView(chargeSwitchLayout)
-        mainLayout.addView(chargeDescription)
-        mainLayout.addView(healthLabel)
-        mainLayout.addView(healthSwitchLayout)
-        mainLayout.addView(healthDescription)
-        mainLayout.addView(capacityLabel)
-        mainLayout.addView(designCapacityEditText)
-        mainLayout.addView(capacityDescription)
-        mainLayout.addView(screenTimeoutLabel)
-        mainLayout.addView(screenTimeoutSwitchLayout)
-        mainLayout.addView(screenTimeoutDescription)
-        mainLayout.addView(previewLabel)
-        mainLayout.addView(previewText)
-        mainLayout.addView(instructionText2)
-        mainLayout.addView(saveButton)
-
-        setContentView(ScrollView(this).apply { addView(mainLayout) })
+        parent.addView(spacer)
     }
 
     private fun setupListeners() {
@@ -363,6 +519,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         if (designCapacity > 0) {
             designCapacityEditText.setText(designCapacity.toString())
         }
+
+        updatePermissionBasedUI()
     }
 
     private fun updatePreview() {
@@ -402,40 +560,64 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val showHealthInTitle = showBatteryHealthInTitleSwitch.isChecked
         val showScreenTimeoutInTitle = showScreenTimeoutInTitleSwitch.isChecked
 
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+
         previewText.text = buildString {
-            if (showPeriodInTitle) {
-                appendLine("│ WiFi Usage (${wifiPeriod.name.lowercase().replaceFirstChar { it.uppercase() }})")
-                appendLine(wifiValue)
+            if (hasUsageStats) {
+                if (showPeriodInTitle) {
+                    appendLine("📶 WiFi Usage (${wifiPeriod.name.lowercase().replaceFirstChar { it.uppercase() }})")
+                    appendLine("   $wifiValue")
+                    appendLine()
+                    appendLine("📱 Mobile Data Usage (${mobilePeriod.name.lowercase().replaceFirstChar { it.uppercase() }})")
+                    appendLine("   $mobileValue")
+                } else {
+                    appendLine("📶 $wifiValue")
+                    appendLine()
+                    appendLine("📱 $mobileValue")
+                }
                 appendLine()
-                appendLine("│ Mobile Data Usage (${mobilePeriod.name.lowercase().replaceFirstChar { it.uppercase() }})")
-                appendLine(mobileValue)
             } else {
-                appendLine("│ $wifiValue")
+                appendLine("📶📱 Data usage tiles disabled")
+                appendLine("     (Usage stats permission required)")
                 appendLine()
-                appendLine("│ $mobileValue")
             }
-            appendLine()
+
             if (showChargeInTitle) {
-                appendLine("│ Charge Cycles")
-                appendLine(sampleChargeCycles)
+                appendLine("🔋 Charge Cycles")
+                appendLine("   $sampleChargeCycles")
             } else {
-                appendLine("│ $sampleChargeCycles")
+                appendLine("🔋 $sampleChargeCycles")
             }
             appendLine()
             if (showHealthInTitle) {
-                appendLine("│ Battery Health")
-                appendLine(sampleBatteryHealth)
+                appendLine("💚 Battery Health")
+                appendLine("   $sampleBatteryHealth")
             } else {
-                appendLine("│ $sampleBatteryHealth")
+                appendLine("💚 $sampleBatteryHealth")
             }
             appendLine()
-            if (showScreenTimeoutInTitle) {
-                appendLine("│ Screen Timeout")
-                appendLine(sampleScreenTimeout)
+
+            if (hasWriteSettings) {
+                if (showScreenTimeoutInTitle) {
+                    appendLine("⏰ Screen Timeout")
+                    appendLine("   $sampleScreenTimeout")
+                } else {
+                    appendLine("⏰ $sampleScreenTimeout")
+                }
             } else {
-                appendLine("│ $sampleScreenTimeout")
+                appendLine("⏰ Screen timeout tile disabled")
+                appendLine("   (Write settings permission required)")
             }
         }
+    }
+
+    private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Permission Required")
+            .setMessage("$featureName requires $permissionName to work properly. Please grant the permission in your device settings.")
+            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     private fun saveSettings() {
@@ -469,5 +651,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_LONG).show()
         finish()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }
