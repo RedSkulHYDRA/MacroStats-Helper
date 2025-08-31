@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.data.BatteryService
 import com.redskul.macrostatshelper.tiles.QSTileSettingsActivity
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.SettingsActivity
@@ -41,18 +42,10 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (hasUsageStatsPermission()) {
-            checkAccessibilityPermission()
+            completeSetup()
         } else {
             showToast(getString(R.string.usage_stats_permission_required))
         }
-    }
-
-    private val accessibilityPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        // Note: We don't require accessibility permission to complete setup
-        // It's optional for enhanced features
-        completeSetup()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,24 +97,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val accessibilityButton = Button(this).apply {
-            text = if (hasAccessibilityPermission()) {
-                getString(R.string.accessibility_enabled)
-            } else {
-                getString(R.string.enable_accessibility_service)
-            }
-            setPadding(0, 16, 0, 16)
-            setOnClickListener {
-                requestAccessibilityPermission()
-            }
-            isEnabled = !hasAccessibilityPermission()
-        }
-
         val stopServiceButton = Button(this).apply {
             text = getString(R.string.stop_monitoring)
             setPadding(0, 16, 0, 16)
             setOnClickListener {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
+                stopService(Intent(this@MainActivity, BatteryService::class.java))
                 showToast(getString(R.string.monitoring_stopped))
                 finish()
             }
@@ -131,27 +112,12 @@ class MainActivity : AppCompatActivity() {
         layout.addView(statusText)
         layout.addView(settingsButton)
         layout.addView(qsTileSettingsButton)
-        layout.addView(accessibilityButton)
         layout.addView(stopServiceButton)
 
         setContentView(layout)
 
-        // Ensure service is running
-        ensureServiceRunning()
-
-        // Update accessibility button state periodically
-        lifecycleScope.launch {
-            while (true) {
-                val hasAccessibility = hasAccessibilityPermission()
-                accessibilityButton.text = if (hasAccessibility) {
-                    getString(R.string.accessibility_enabled)
-                } else {
-                    getString(R.string.enable_accessibility_service)
-                }
-                accessibilityButton.isEnabled = !hasAccessibility
-                delay(2000)
-            }
-        }
+        // Ensure services are running
+        ensureServicesRunning()
     }
 
     private fun showPermissionSetupUI() {
@@ -184,20 +150,6 @@ class MainActivity : AppCompatActivity() {
             isEnabled = hasNotificationPermission()
         }
 
-        val accessibilityButton = Button(this).apply {
-            text = getString(R.string.grant_accessibility_permission)
-            setPadding(0, 16, 0, 16)
-            setOnClickListener { requestAccessibilityPermission() }
-            isEnabled = hasNotificationPermission() && hasUsageStatsPermission()
-        }
-
-        val accessibilityNote = TextView(this).apply {
-            text = getString(R.string.accessibility_optional_note)
-            textSize = 12f
-            setPadding(0, 0, 0, 16)
-            alpha = 0.7f
-        }
-
         val startButton = Button(this).apply {
             text = getString(R.string.start_monitoring)
             setPadding(0, 16, 0, 16)
@@ -209,8 +161,6 @@ class MainActivity : AppCompatActivity() {
         layout.addView(descriptionText)
         layout.addView(notificationButton)
         layout.addView(usageStatsButton)
-        layout.addView(accessibilityButton)
-        layout.addView(accessibilityNote)
         layout.addView(startButton)
 
         setContentView(layout)
@@ -220,30 +170,26 @@ class MainActivity : AppCompatActivity() {
             while (true) {
                 val hasNotification = hasNotificationPermission()
                 val hasUsageStats = hasUsageStatsPermission()
-                val hasAccessibility = hasAccessibilityPermission()
 
                 usageStatsButton.isEnabled = hasNotification
-                accessibilityButton.isEnabled = hasNotification && hasUsageStats
                 startButton.isEnabled = hasNotification && hasUsageStats
-
-                // Update accessibility button text
-                accessibilityButton.text = if (hasAccessibility) {
-                    getString(R.string.accessibility_granted)
-                } else {
-                    getString(R.string.grant_accessibility_permission)
-                }
 
                 delay(1000)
             }
         }
     }
 
-    private fun ensureServiceRunning() {
+    private fun ensureServicesRunning() {
         try {
-            val serviceIntent = Intent(this, DataUsageService::class.java)
-            startForegroundService(serviceIntent)
+            // Start data usage service
+            val dataServiceIntent = Intent(this, DataUsageService::class.java)
+            startForegroundService(dataServiceIntent)
+
+            // Start battery service
+            val batteryServiceIntent = Intent(this, BatteryService::class.java)
+            startService(batteryServiceIntent)
         } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Error ensuring service is running", e)
+            android.util.Log.e("MainActivity", "Error ensuring services are running", e)
         }
     }
 
@@ -265,24 +211,9 @@ class MainActivity : AppCompatActivity() {
         usageStatsPermissionLauncher.launch(intent)
     }
 
-    private fun requestAccessibilityPermission() {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        accessibilityPermissionLauncher.launch(intent)
-        showToast(getString(R.string.accessibility_permission_instruction))
-    }
-
     private fun checkUsageStatsPermission() {
         if (!hasUsageStatsPermission()) {
             requestUsageStatsPermission()
-        } else {
-            checkAccessibilityPermission()
-        }
-    }
-
-    private fun checkAccessibilityPermission() {
-        if (!hasAccessibilityPermission()) {
-            // Don't automatically request accessibility - let user decide
-            android.util.Log.d("MainActivity", "Accessibility service not enabled, but continuing setup")
         }
     }
 
@@ -304,46 +235,26 @@ class MainActivity : AppCompatActivity() {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    private fun hasAccessibilityPermission(): Boolean {
-        return try {
-            val accessibilityEnabled = Settings.Secure.getInt(
-                contentResolver,
-                Settings.Secure.ACCESSIBILITY_ENABLED
-            )
-
-            if (accessibilityEnabled == 1) {
-                val enabledServices = Settings.Secure.getString(
-                    contentResolver,
-                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-                )
-                val serviceName = "$packageName/com.redskul.macrostatshelper.accessibility.MacroStatsAccessibilityService"
-                enabledServices?.contains(serviceName) == true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Error checking accessibility permission", e)
-            false
-        }
-    }
-
     private fun completeSetup() {
         if (hasNotificationPermission() && hasUsageStatsPermission()) {
             sharedPreferences.edit().putBoolean("setup_complete", true).apply()
-            startServiceAndFinish()
+            startServicesAndFinish()
         } else {
             showToast(getString(R.string.grant_required_permissions))
         }
     }
 
-    private fun startServiceAndFinish() {
+    private fun startServicesAndFinish() {
         try {
-            val serviceIntent = Intent(this, DataUsageService::class.java)
+            // Start data usage service
+            val dataServiceIntent = Intent(this, DataUsageService::class.java)
+            val dataResult = startForegroundService(dataServiceIntent)
 
-            // Start the service
-            val result = startForegroundService(serviceIntent)
+            // Start battery service
+            val batteryServiceIntent = Intent(this, BatteryService::class.java)
+            val batteryResult = startService(batteryServiceIntent)
 
-            if (result != null) {
+            if (dataResult != null && batteryResult != null) {
                 showToast(getString(R.string.monitoring_started_success))
 
                 // Use coroutines for delay instead of Handler

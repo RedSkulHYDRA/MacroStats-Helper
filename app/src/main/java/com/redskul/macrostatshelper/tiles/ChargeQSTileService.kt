@@ -5,20 +5,20 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.service.quicksettings.TileService
-import com.redskul.macrostatshelper.data.DataUsageMonitor
-import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.data.BatteryChargeMonitor
+import com.redskul.macrostatshelper.data.BatteryService
 import kotlinx.coroutines.*
 
-class MobileDataUsageQSTileService : TileService() {
+class ChargeQSTileService : TileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
-    private lateinit var dataUsageMonitor: DataUsageMonitor
+    private lateinit var batteryChargeMonitor: BatteryChargeMonitor
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    private val dataUpdateReceiver = object : BroadcastReceiver() {
+    private val batteryUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == DataUsageService.ACTION_DATA_UPDATED) {
-                android.util.Log.d("MobileQSTile", "Received data update broadcast")
+            if (intent?.action == BatteryService.ACTION_BATTERY_UPDATED) {
+                android.util.Log.d("ChargeQSTile", "Received battery update broadcast")
                 updateTile()
             }
         }
@@ -27,14 +27,14 @@ class MobileDataUsageQSTileService : TileService() {
     override fun onCreate() {
         super.onCreate()
         qsTileSettingsManager = QSTileSettingsManager(this)
-        dataUsageMonitor = DataUsageMonitor(this)
+        batteryChargeMonitor = BatteryChargeMonitor(this)
     }
 
     override fun onStartListening() {
         super.onStartListening()
         registerReceiver(
-            dataUpdateReceiver,
-            IntentFilter(DataUsageService.ACTION_DATA_UPDATED),
+            batteryUpdateReceiver,
+            IntentFilter(BatteryService.ACTION_BATTERY_UPDATED),
             Context.RECEIVER_NOT_EXPORTED
         )
         updateTile()
@@ -43,7 +43,7 @@ class MobileDataUsageQSTileService : TileService() {
     override fun onStopListening() {
         super.onStopListening()
         try {
-            unregisterReceiver(dataUpdateReceiver)
+            unregisterReceiver(batteryUpdateReceiver)
         } catch (e: IllegalArgumentException) {
             // Receiver already unregistered
         }
@@ -51,10 +51,10 @@ class MobileDataUsageQSTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
-        android.util.Log.d("MobileQSTile", "Tile clicked - triggering immediate update")
+        android.util.Log.d("ChargeQSTile", "Tile clicked - triggering immediate update")
 
-        val serviceIntent = Intent(this, DataUsageService::class.java).apply {
-            action = DataUsageService.ACTION_UPDATE_NOW
+        val serviceIntent = Intent(this, BatteryService::class.java).apply {
+            action = BatteryService.ACTION_UPDATE_NOW
         }
         startService(serviceIntent)
         updateTile()
@@ -63,27 +63,24 @@ class MobileDataUsageQSTileService : TileService() {
     private fun updateTile() {
         tileScope.launch {
             try {
-                val usageData = dataUsageMonitor.getUsageData()
-                val value = qsTileSettingsManager.getMobileTileText(usageData)
-                val config = TileConfigHelper.getMobileTileConfig(this@MobileDataUsageQSTileService)
-                val showPeriodInTitle = qsTileSettingsManager.getShowPeriodInTitle()
-                val period = qsTileSettingsManager.getMobileTilePeriod()
+                val chargeData = batteryChargeMonitor.getChargeData()
+                val value = chargeData.chargeCycles
+                val config = TileConfigHelper.getChargeTileConfig(this@ChargeQSTileService)
+                val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
 
                 withContext(Dispatchers.Main) {
                     val tile = qsTile ?: return@withContext
-                    TileConfigHelper.applyConfigToTile(
+                    TileConfigHelper.applyChargeConfigToTile(
                         tile,
                         config,
                         value,
-                        showPeriodInTitle,
-                        period,
-                        isWifi = false
+                        showChargeInTitle
                     )
                     tile.updateTile()
-                    android.util.Log.d("MobileQSTile", "Tile updated with: $value")
+                    android.util.Log.d("ChargeQSTile", "Tile updated with: $value")
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MobileQSTile", "Error updating Mobile tile", e)
+                android.util.Log.e("ChargeQSTile", "Error updating Charge tile", e)
             }
         }
     }

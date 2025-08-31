@@ -13,6 +13,8 @@ class QSTileSettingsManager(context: Context) {
     companion object {
         private const val KEY_WIFI_TILE_PERIOD = "wifi_tile_period"
         private const val KEY_MOBILE_TILE_PERIOD = "mobile_tile_period"
+        private const val KEY_SHOW_PERIOD_IN_TITLE = "show_period_in_title"
+        private const val KEY_SHOW_CHARGE_IN_TITLE = "show_charge_in_title"
     }
 
     fun saveWiFiTilePeriod(timePeriod: TimePeriod) {
@@ -21,6 +23,14 @@ class QSTileSettingsManager(context: Context) {
 
     fun saveMobileTilePeriod(timePeriod: TimePeriod) {
         sharedPreferences.edit().putString(KEY_MOBILE_TILE_PERIOD, timePeriod.name).apply()
+    }
+
+    fun saveShowPeriodInTitle(showPeriod: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_PERIOD_IN_TITLE, showPeriod).apply()
+    }
+
+    fun saveShowChargeInTitle(showCharge: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_CHARGE_IN_TITLE, showCharge).apply()
     }
 
     fun getWiFiTilePeriod(): TimePeriod {
@@ -39,6 +49,14 @@ class QSTileSettingsManager(context: Context) {
         } catch (e: Exception) {
             TimePeriod.DAILY
         }
+    }
+
+    fun getShowPeriodInTitle(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_PERIOD_IN_TITLE, false)
+    }
+
+    fun getShowChargeInTitle(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_CHARGE_IN_TITLE, false)
     }
 
     fun getWiFiTileText(usageData: UsageData): String {

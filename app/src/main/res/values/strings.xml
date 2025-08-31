@@ -3,6 +3,7 @@
     <string name="app_name">MacroStats Helper</string>
     <string name="wifi_usage">WiFi Usage</string>
     <string name="mobile_data">Mobile Data</string>
+    <string name="charge_cycles">Charge Cycles</string>
 
     <!-- MainActivity strings -->
     <string name="data_usage_monitoring_running">Data usage monitoring is running in the background.\n\nTap notification to access settings or use the button below.</string>
@@ -14,7 +15,6 @@
     <string name="setup_description">This app needs permissions to monitor your data usage and show notifications. Please grant the required permissions.</string>
     <string name="grant_notification_permission">Grant Notification Permission</string>
     <string name="grant_usage_stats_permission">Grant Usage Stats Permission</string>
-    <string name="grant_accessibility_permission">Grant Accessibility Permission (Optional)</string>
     <string name="start_monitoring">Start Monitoring</string>
     <string name="notification_permission_required">Notification permission is required for the app to work properly</string>
     <string name="usage_stats_permission_required">Usage stats permission is required to monitor data usage</string>
@@ -23,14 +23,6 @@
     <string name="monitoring_started_success">Data usage monitoring started successfully</string>
     <string name="service_start_failed">Failed to start monitoring service</string>
     <string name="service_error">Error starting service: %1$s</string>
-
-    <!-- Accessibility Service strings -->
-    <string name="enable_accessibility_service">Enable Accessibility Service (Optional)</string>
-    <string name="accessibility_enabled">Accessibility Service Enabled</string>
-    <string name="accessibility_granted">Accessibility Permission Granted</string>
-    <string name="accessibility_permission_instruction">Find \"MacroStats Helper\" in the accessibility settings and turn it on for enhanced features</string>
-    <string name="accessibility_optional_note">Note: Accessibility service is optional and provides enhanced app monitoring features</string>
-    <string name="accessibility_service_description">MacroStats Helper uses accessibility service to provide enhanced app usage monitoring and data tracking features. This service does not collect personal information and only monitors system events for statistical purposes.</string>
 
     <!-- SettingsActivity strings -->
     <string name="settings_title">Display Settings</string>
@@ -55,16 +47,23 @@
     <!-- QSTileSettingsActivity strings -->
     <string name="qs_tile_settings_title">QS Tile Settings</string>
     <string name="qs_tile_instruction">Configure what time period each Quick Settings tile shows. These settings are independent from your notification settings.</string>
+    <string name="tile_display_mode_label">Data Usage Tile Display Mode:</string>
+    <string name="show_period_in_title">Show time period in tile title</string>
+    <string name="tile_display_mode_description">When enabled, tiles will show \"WiFi Usage (Daily)\" as title with data usage below. When disabled, data usage becomes the title.</string>
     <string name="wifi_tile_label">WiFi Usage Tile:</string>
     <string name="wifi_tile_description">Select time period for WiFi tile:</string>
     <string name="mobile_tile_label">Mobile Data Usage Tile:</string>
     <string name="mobile_tile_description">Select time period for Mobile tile:</string>
-    <string name="qs_tile_instruction_2">\nAfter saving, add the tiles to your Quick Settings:\n1. Pull down notification panel\n2. Tap Edit (pencil icon)\n3. Drag \'WiFi Usage\' and \'Mobile Usage\' tiles to active area</string>
+    <string name="charge_tile_label">Charge Cycles Tile:</string>
+    <string name="show_charge_cycles_in_title">Show "Charge Cycles" in tile title</string>
+    <string name="charge_tile_description">When enabled, tile shows \"Charge Cycles\" as title with count below. When disabled, count becomes the title.</string>
+    <string name="qs_tile_instruction_2">\nAfter saving, add the tiles to your Quick Settings:\n1. Pull down notification panel\n2. Tap Edit (pencil icon)\n3. Drag \'WiFi Usage\', \'Mobile Usage\', and \'Charge Cycles\' tiles to active area</string>
     <string name="qs_settings_saved">QS Tile settings saved successfully!\nTiles will update automatically when visible.</string>
 
     <!-- QS Tile strings -->
     <string name="wifi_tile_prefix">│ </string>
     <string name="mobile_tile_prefix">│ </string>
+    <string name="charge_tile_prefix">│ </string>
     <string name="tile_state_active">Active</string>
     <string name="tile_state_inactive">Inactive</string>
 

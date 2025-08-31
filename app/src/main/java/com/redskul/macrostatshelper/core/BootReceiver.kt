@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.data.BatteryService
 
 class BootReceiver : BroadcastReceiver() {
 
@@ -20,14 +21,20 @@ class BootReceiver : BroadcastReceiver() {
                 val setupComplete = sharedPreferences.getBoolean("setup_complete", false)
 
                 if (setupComplete) {
-                    android.util.Log.d("BootReceiver", "Setup complete, starting service")
+                    android.util.Log.d("BootReceiver", "Setup complete, starting services")
 
                     try {
-                        val serviceIntent = Intent(context, DataUsageService::class.java)
-                        context.startForegroundService(serviceIntent)
+                        // Start data usage service
+                        val dataServiceIntent = Intent(context, DataUsageService::class.java)
+                        context.startForegroundService(dataServiceIntent)
                         android.util.Log.d("BootReceiver", "DataUsageService started successfully after boot")
+
+                        // Start battery service
+                        val batteryServiceIntent = Intent(context, BatteryService::class.java)
+                        context.startService(batteryServiceIntent)
+                        android.util.Log.d("BootReceiver", "BatteryService started successfully after boot")
                     } catch (e: Exception) {
-                        android.util.Log.e("BootReceiver", "Failed to start service after boot", e)
+                        android.util.Log.e("BootReceiver", "Failed to start services after boot", e)
                     }
                 } else {
                     android.util.Log.d("BootReceiver", "Setup not complete, skipping service start")

@@ -66,10 +66,19 @@ class WiFiDataUsageQSTileService : TileService() {
                 val usageData = dataUsageMonitor.getUsageData()
                 val value = qsTileSettingsManager.getWiFiTileText(usageData)
                 val config = TileConfigHelper.getWiFiTileConfig(this@WiFiDataUsageQSTileService)
+                val showPeriodInTitle = qsTileSettingsManager.getShowPeriodInTitle()
+                val period = qsTileSettingsManager.getWiFiTilePeriod()
 
                 withContext(Dispatchers.Main) {
                     val tile = qsTile ?: return@withContext
-                    TileConfigHelper.applyConfigToTile(tile, config, value)
+                    TileConfigHelper.applyConfigToTile(
+                        tile,
+                        config,
+                        value,
+                        showPeriodInTitle,
+                        period,
+                        isWifi = true
+                    )
                     tile.updateTile()
                     android.util.Log.d("WiFiQSTile", "Tile updated with: $value")
                 }
