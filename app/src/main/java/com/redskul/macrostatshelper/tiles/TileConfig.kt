@@ -35,7 +35,7 @@ object TileConfigHelper {
 
     fun getChargeTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
-            icon = Icon.createWithResource(context, R.drawable.ic_battery),
+            icon = Icon.createWithResource(context, R.drawable.ic_battery_cc),
             labelPrefix = context.getString(R.string.charge_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
@@ -43,7 +43,7 @@ object TileConfigHelper {
 
     fun getBatteryHealthTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
-            icon = Icon.createWithResource(context, R.drawable.ic_health),
+            icon = Icon.createWithResource(context, R.drawable.ic__battery_health),
             labelPrefix = context.getString(R.string.battery_health_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
