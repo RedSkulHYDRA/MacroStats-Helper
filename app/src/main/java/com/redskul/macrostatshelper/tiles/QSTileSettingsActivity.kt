@@ -1,19 +1,26 @@
 package com.redskul.macrostatshelper.tiles
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.TimePeriod
 import com.redskul.macrostatshelper.data.UsageData
+import com.redskul.macrostatshelper.data.BatteryHealthMonitor
 
 class QSTileSettingsActivity : AppCompatActivity() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
+    private lateinit var batteryHealthMonitor: BatteryHealthMonitor
     private lateinit var wifiTileSpinner: Spinner
     private lateinit var mobileTileSpinner: Spinner
     private lateinit var showPeriodInTitleSwitch: Switch
     private lateinit var showChargeInTitleSwitch: Switch
+    private lateinit var showBatteryHealthInTitleSwitch: Switch
+    private lateinit var designCapacityEditText: EditText
     private lateinit var saveButton: Button
     private lateinit var previewText: TextView
 
@@ -21,6 +28,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         qsTileSettingsManager = QSTileSettingsManager(this)
+        batteryHealthMonitor = BatteryHealthMonitor(this)
         createUI()
         loadCurrentSettings()
         setupListeners()
@@ -157,6 +165,58 @@ class QSTileSettingsActivity : AppCompatActivity() {
             setPadding(0, 0, 0, 16)
         }
 
+        // Battery Health Tile Section
+        val healthLabel = TextView(this).apply {
+            text = getString(R.string.battery_health_tile_label)
+            textSize = 18f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding(0, 16, 0, 8)
+        }
+
+        val healthSwitchLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 0, 0, 8)
+        }
+
+        val healthSwitchLabelText = TextView(this).apply {
+            text = getString(R.string.show_battery_health_in_title)
+            textSize = 16f
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        showBatteryHealthInTitleSwitch = Switch(this).apply {
+            setOnCheckedChangeListener { _, _ -> updatePreview() }
+        }
+
+        healthSwitchLayout.addView(healthSwitchLabelText)
+        healthSwitchLayout.addView(showBatteryHealthInTitleSwitch)
+
+        val healthDescription = TextView(this).apply {
+            text = getString(R.string.battery_health_tile_description)
+            textSize = 12f
+            setPadding(0, 0, 0, 8)
+        }
+
+        // Design Capacity Input
+        val capacityLabel = TextView(this).apply {
+            text = getString(R.string.design_capacity_label)
+            textSize = 14f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding(0, 8, 0, 4)
+        }
+
+        designCapacityEditText = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = getString(R.string.design_capacity_hint)
+            setPadding(16, 8, 16, 8)
+        }
+
+        val capacityDescription = TextView(this).apply {
+            text = getString(R.string.design_capacity_description)
+            textSize = 12f
+            setPadding(0, 4, 0, 16)
+        }
+
         // Preview Section
         val previewLabel = TextView(this).apply {
             text = getString(R.string.preview_label)
@@ -198,6 +258,12 @@ class QSTileSettingsActivity : AppCompatActivity() {
         mainLayout.addView(chargeLabel)
         mainLayout.addView(chargeSwitchLayout)
         mainLayout.addView(chargeDescription)
+        mainLayout.addView(healthLabel)
+        mainLayout.addView(healthSwitchLayout)
+        mainLayout.addView(healthDescription)
+        mainLayout.addView(capacityLabel)
+        mainLayout.addView(designCapacityEditText)
+        mainLayout.addView(capacityDescription)
         mainLayout.addView(previewLabel)
         mainLayout.addView(previewText)
         mainLayout.addView(instructionText2)
@@ -220,6 +286,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
+        // CORRECTED: Use addTextChangedListener instead of setOnTextChangedListener
+        designCapacityEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updatePreview()
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
     }
 
     private fun loadCurrentSettings() {
@@ -227,6 +304,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val mobilePeriod = qsTileSettingsManager.getMobileTilePeriod()
         val showPeriodInTitle = qsTileSettingsManager.getShowPeriodInTitle()
         val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
+        val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
+        val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
 
         wifiTileSpinner.setSelection(when (wifiPeriod) {
             TimePeriod.DAILY -> 0
@@ -242,11 +321,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         showPeriodInTitleSwitch.isChecked = showPeriodInTitle
         showChargeInTitleSwitch.isChecked = showChargeInTitle
+        showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
+
+        if (designCapacity > 0) {
+            designCapacityEditText.setText(designCapacity.toString())
+        }
     }
 
     private fun updatePreview() {
         val sampleData = UsageData("125 MB", "850 MB", "3.2 GB", "45 MB", "320 MB", "1.8 GB")
         val sampleChargeCycles = "342"
+        val sampleBatteryHealth = "87%"
 
         val wifiPeriod = when (wifiTileSpinner.selectedItemPosition) {
             0 -> TimePeriod.DAILY
@@ -276,6 +361,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val showPeriodInTitle = showPeriodInTitleSwitch.isChecked
         val showChargeInTitle = showChargeInTitleSwitch.isChecked
+        val showHealthInTitle = showBatteryHealthInTitleSwitch.isChecked
 
         previewText.text = buildString {
             if (showPeriodInTitle) {
@@ -296,6 +382,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
             } else {
                 appendLine("│ $sampleChargeCycles")
             }
+            appendLine()
+            if (showHealthInTitle) {
+                appendLine("│ Battery Health")
+                appendLine(sampleBatteryHealth)
+            } else {
+                appendLine("│ $sampleBatteryHealth")
+            }
         }
     }
 
@@ -314,10 +407,18 @@ class QSTileSettingsActivity : AppCompatActivity() {
             else -> TimePeriod.DAILY
         }
 
+        val designCapacity = designCapacityEditText.text.toString().toIntOrNull() ?: 0
+
         qsTileSettingsManager.saveWiFiTilePeriod(wifiPeriod)
         qsTileSettingsManager.saveMobileTilePeriod(mobilePeriod)
         qsTileSettingsManager.saveShowPeriodInTitle(showPeriodInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowChargeInTitle(showChargeInTitleSwitch.isChecked)
+        qsTileSettingsManager.saveShowBatteryHealthInTitle(showBatteryHealthInTitleSwitch.isChecked)
+
+        if (designCapacity > 0) {
+            qsTileSettingsManager.saveBatteryDesignCapacity(designCapacity)
+            batteryHealthMonitor.setDesignCapacity(designCapacity)
+        }
 
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_LONG).show()
         finish()

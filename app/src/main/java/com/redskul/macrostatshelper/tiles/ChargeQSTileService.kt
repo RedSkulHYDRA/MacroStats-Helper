@@ -74,7 +74,8 @@ class ChargeQSTileService : TileService() {
                         tile,
                         config,
                         value,
-                        showChargeInTitle
+                        showChargeInTitle,
+                        context = this@ChargeQSTileService
                     )
                     tile.updateTile()
                     android.util.Log.d("ChargeQSTile", "Tile updated with: $value")

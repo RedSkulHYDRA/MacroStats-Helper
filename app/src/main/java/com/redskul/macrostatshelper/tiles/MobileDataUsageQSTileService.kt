@@ -77,7 +77,8 @@ class MobileDataUsageQSTileService : TileService() {
                         value,
                         showPeriodInTitle,
                         period,
-                        isWifi = false
+                        isWifi = false,
+                        context = this@MobileDataUsageQSTileService
                     )
                     tile.updateTile()
                     android.util.Log.d("MobileQSTile", "Tile updated with: $value")

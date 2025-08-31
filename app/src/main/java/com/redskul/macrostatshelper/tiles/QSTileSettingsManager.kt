@@ -15,6 +15,8 @@ class QSTileSettingsManager(context: Context) {
         private const val KEY_MOBILE_TILE_PERIOD = "mobile_tile_period"
         private const val KEY_SHOW_PERIOD_IN_TITLE = "show_period_in_title"
         private const val KEY_SHOW_CHARGE_IN_TITLE = "show_charge_in_title"
+        private const val KEY_SHOW_BATTERY_HEALTH_IN_TITLE = "show_battery_health_in_title"
+        private const val KEY_BATTERY_DESIGN_CAPACITY = "battery_design_capacity"
     }
 
     fun saveWiFiTilePeriod(timePeriod: TimePeriod) {
@@ -31,6 +33,14 @@ class QSTileSettingsManager(context: Context) {
 
     fun saveShowChargeInTitle(showCharge: Boolean) {
         sharedPreferences.edit().putBoolean(KEY_SHOW_CHARGE_IN_TITLE, showCharge).apply()
+    }
+
+    fun saveShowBatteryHealthInTitle(showHealth: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, showHealth).apply()
+    }
+
+    fun saveBatteryDesignCapacity(capacity: Int) {
+        sharedPreferences.edit().putInt(KEY_BATTERY_DESIGN_CAPACITY, capacity).apply()
     }
 
     fun getWiFiTilePeriod(): TimePeriod {
@@ -57,6 +67,14 @@ class QSTileSettingsManager(context: Context) {
 
     fun getShowChargeInTitle(): Boolean {
         return sharedPreferences.getBoolean(KEY_SHOW_CHARGE_IN_TITLE, false)
+    }
+
+    fun getShowBatteryHealthInTitle(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, false)
+    }
+
+    fun getBatteryDesignCapacity(): Int {
+        return sharedPreferences.getInt(KEY_BATTERY_DESIGN_CAPACITY, 0)
     }
 
     fun getWiFiTileText(usageData: UsageData): String {

@@ -39,16 +39,27 @@ class DataUsageMonitor(private val context: Context) {
         calendar.set(Calendar.MILLISECOND, 0)
         val dailyStart = calendar.timeInMillis
 
-        // Weekly: This week from Monday 00:00 to now
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+        // FIXED: Weekly from Monday 00:00 to now
+        val currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val daysSinceMonday = when (currentDayOfWeek) {
+            Calendar.SUNDAY -> 6
+            Calendar.MONDAY -> 0
+            Calendar.TUESDAY -> 1
+            Calendar.WEDNESDAY -> 2
+            Calendar.THURSDAY -> 3
+            Calendar.FRIDAY -> 4
+            Calendar.SATURDAY -> 5
+            else -> 0
+        }
+        calendar.add(Calendar.DAY_OF_MONTH, -daysSinceMonday)
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         val weeklyStart = calendar.timeInMillis
 
-        // Monthly: This month from 1st 00:00 to now
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        // FIXED: Monthly from 1st 00:00 to now (was using last day before)
+        calendar.set(Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), 1)
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
@@ -57,9 +68,9 @@ class DataUsageMonitor(private val context: Context) {
 
         // Debug: Log the time periods
         val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
-        android.util.Log.d("DataUsageMonitor", "Daily period (today): ${dateFormat.format(dailyStart)} to ${dateFormat.format(now)}")
-        android.util.Log.d("DataUsageMonitor", "Weekly period (this week): ${dateFormat.format(weeklyStart)} to ${dateFormat.format(now)}")
-        android.util.Log.d("DataUsageMonitor", "Monthly period (this month): ${dateFormat.format(monthlyStart)} to ${dateFormat.format(now)}")
+        android.util.Log.d("DataUsageMonitor", "Daily period: ${dateFormat.format(dailyStart)} to ${dateFormat.format(now)}")
+        android.util.Log.d("DataUsageMonitor", "Weekly period: ${dateFormat.format(weeklyStart)} to ${dateFormat.format(now)}")
+        android.util.Log.d("DataUsageMonitor", "Monthly period: ${dateFormat.format(monthlyStart)} to ${dateFormat.format(now)}")
 
         val wifiDaily = getWifiUsage(dailyStart, now)
         val wifiWeekly = getWifiUsage(weeklyStart, now)
@@ -130,10 +141,8 @@ class DataUsageMonitor(private val context: Context) {
     private fun getSubscriberId(): String? {
         return try {
             val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            // This will return null on most devices without privileged access, which is fine
             telephonyManager.subscriberId
         } catch (e: SecurityException) {
-            // Expected - we don't have privileged access
             android.util.Log.d("DataUsageMonitor", "Cannot access subscriber ID (expected for non-system apps)")
             null
         } catch (e: Exception) {

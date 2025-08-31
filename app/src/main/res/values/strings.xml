@@ -49,14 +49,14 @@
     <string name="qs_tile_instruction">Configure what time period each Quick Settings tile shows. These settings are independent from your notification settings.</string>
     <string name="tile_display_mode_label">Data Usage Tile Display Mode:</string>
     <string name="show_period_in_title">Show time period in tile title</string>
-    <string name="tile_display_mode_description">When enabled, tiles will show \"WiFi Usage (Daily)\" as title with data usage below. When disabled, data usage becomes the title.</string>
+    <string name="tile_display_mode_description">When enabled, tiles will show "WiFi Usage (Daily)" as title with data usage below. When disabled, data usage becomes the title.</string>
     <string name="wifi_tile_label">WiFi Usage Tile:</string>
     <string name="wifi_tile_description">Select time period for WiFi tile:</string>
     <string name="mobile_tile_label">Mobile Data Usage Tile:</string>
     <string name="mobile_tile_description">Select time period for Mobile tile:</string>
     <string name="charge_tile_label">Charge Cycles Tile:</string>
     <string name="show_charge_cycles_in_title">Show "Charge Cycles" in tile title</string>
-    <string name="charge_tile_description">When enabled, tile shows \"Charge Cycles\" as title with count below. When disabled, count becomes the title.</string>
+    <string name="charge_tile_description">When enabled, tile shows "Charge Cycles" as title with count below. When disabled, count becomes the title.</string>
     <string name="qs_tile_instruction_2">\nAfter saving, add the tiles to your Quick Settings:\n1. Pull down notification panel\n2. Tap Edit (pencil icon)\n3. Drag \'WiFi Usage\', \'Mobile Usage\', and \'Charge Cycles\' tiles to active area</string>
     <string name="qs_settings_saved">QS Tile settings saved successfully!\nTiles will update automatically when visible.</string>
 
@@ -85,6 +85,50 @@
     <string name="no_data_selected">No data selected</string>
     <string name="configure_display_settings">Please configure your display settings</string>
     <string name="no_data_periods_selected">No data periods selected</string>
+
+    <!-- Battery Health Tile strings -->
+    <string name="battery_health">Battery Health</string>
+    <string name="battery_health_tile_prefix">│ </string>
+    <string name="battery_health_tile_label">Battery Health Tile:</string>
+    <string name="show_battery_health_in_title">Show "Battery Health" in tile title</string>
+    <string name="battery_health_tile_description">When enabled, tile shows "Battery Health" as title with percentage below. When disabled, percentage becomes the title.</string>
+    <string name="design_capacity_label">Battery Design Capacity (mAh):</string>
+    <string name="design_capacity_hint">e.g., 4000</string>
+    <string name="design_capacity_description">Enter your battery\'s design capacity to calculate health percentage. Check your device specifications or battery label.</string>
+
+    <!-- Battery Health Status strings -->
+    <string name="set_design_capacity">Set design capacity</string>
+    <string name="calculating_health">Calculating…</string>
+    <string name="estimating_fcc">Estimating…</string>
+    <string name="not_set">Not set</string>
+    <string name="health_enter_design_capacity">Enter battery design capacity in QS Tile Settings to calculate health percentage</string>
+    <string name="health_calculated_successfully">Health calculated successfully</string>
+    <string name="charge_battery_to_100">Charge battery to 100%% to calculate health (currently %1$d%%)</string>
+    <string name="wait_for_charging_complete">Wait for charging to complete (current: %1$dmA, need: &lt;%2$dmA)</string>
+    <string name="calculating_ensure_conditions">Calculating… Ensure battery is at 100% and charging current is low</string>
+
+    <!-- Battery Charge Monitor strings -->
+    <string name="android_14_required">Android 14+ required</string>
+    <string name="not_supported_by_device">Not supported by device</string>
+    <string name="not_available">Not available</string>
+    <string name="error_message">Error: %1$s</string>
+    <string name="battery_health_good">Good</string>
+    <string name="battery_health_overheat">Overheat</string>
+    <string name="battery_health_dead">Dead</string>
+    <string name="battery_health_over_voltage">Over Voltage</string>
+    <string name="battery_health_unspecified_failure">Unspecified Failure</string>
+    <string name="battery_health_cold">Cold</string>
+    <string name="battery_health_unknown">Unknown</string>
+    <string name="battery_health_error">Error</string>
+
+    <!-- Tile Label formats -->
+    <string name="wifi_usage_daily">WiFi Usage (Daily)</string>
+    <string name="wifi_usage_weekly">WiFi Usage (Weekly)</string>
+    <string name="wifi_usage_monthly">WiFi Usage (Monthly)</string>
+    <string name="mobile_data_usage_daily">Mobile Data Usage (Daily)</string>
+    <string name="mobile_data_usage_weekly">Mobile Data Usage (Weekly)</string>
+    <string name="mobile_data_usage_monthly">Mobile Data Usage (Monthly)</string>
+    <string name="charging_cycles">Charging Cycles</string>
 
     <!-- Preview samples -->
     <string name="wifi_tile_preview">WiFi Tile will show:\nWiFi (%1$s)\n%2$s</string>
