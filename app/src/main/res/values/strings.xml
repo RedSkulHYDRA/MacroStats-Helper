@@ -62,9 +62,7 @@
     <string name="qs_settings_saved">QS Tile settings saved successfully!\nTiles will update automatically when visible.</string>
 
     <!-- QS Tile strings -->
-    <string name="wifi_tile_prefix">│ </string>
-    <string name="mobile_tile_prefix">│ </string>
-    <string name="charge_tile_prefix">│ </string>
+    <string name="qs_tile_prefix">│ </string>
     <string name="tile_state_active">Active</string>
     <string name="tile_state_inactive">Inactive</string>
 
@@ -89,7 +87,6 @@
 
     <!-- Battery Health Tile strings -->
     <string name="battery_health">Battery Health</string>
-    <string name="battery_health_tile_prefix">│ </string>
     <string name="battery_health_tile_label">Battery Health Tile:</string>
     <string name="show_battery_health_in_title">Show "Battery Health" in tile title</string>
     <string name="battery_health_tile_description">When enabled, tile shows "Battery Health" as title with percentage below. When disabled, percentage becomes the title.</string>
@@ -133,7 +130,6 @@
 
     <!-- Screen Timeout Tile strings -->
     <string name="screen_timeout">Screen Timeout</string>
-    <string name="screen_timeout_tile_prefix">│ </string>
     <string name="screen_timeout_tile_label">Screen Timeout Tile:</string>
     <string name="show_screen_timeout_in_title">Show "Screen Timeout" in tile title</string>
     <string name="screen_timeout_tile_description">When enabled, tile shows "Screen Timeout" as title with current timeout below. When disabled, timeout becomes the title.</string>

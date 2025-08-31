@@ -20,7 +20,7 @@ object TileConfigHelper {
     fun getWiFiTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
             icon = Icon.createWithResource(context, R.drawable.ic_wifi),
-            labelPrefix = context.getString(R.string.wifi_tile_prefix),
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
@@ -28,7 +28,7 @@ object TileConfigHelper {
     fun getMobileTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
             icon = Icon.createWithResource(context, R.drawable.ic_mobile),
-            labelPrefix = context.getString(R.string.mobile_tile_prefix),
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
@@ -36,7 +36,7 @@ object TileConfigHelper {
     fun getChargeTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
             icon = Icon.createWithResource(context, R.drawable.ic_battery_cc),
-            labelPrefix = context.getString(R.string.charge_tile_prefix),
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
@@ -44,7 +44,7 @@ object TileConfigHelper {
     fun getBatteryHealthTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
             icon = Icon.createWithResource(context, R.drawable.ic__battery_health),
-            labelPrefix = context.getString(R.string.battery_health_tile_prefix),
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
@@ -52,7 +52,7 @@ object TileConfigHelper {
     fun getScreenTimeoutTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
             icon = Icon.createWithResource(context, R.drawable.ic_screen_timeout),
-            labelPrefix = context.getString(R.string.screen_timeout_tile_prefix),
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
