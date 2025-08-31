@@ -10,6 +10,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Usage stats permission (special permission) -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
@@ -125,6 +128,17 @@
             android:exported="true"
             android:icon="@drawable/ic__battery_health"
             android:label="@string/battery_health"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".tiles.ScreenTimeoutQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_screen_timeout"
+            android:label="@string/screen_timeout"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />

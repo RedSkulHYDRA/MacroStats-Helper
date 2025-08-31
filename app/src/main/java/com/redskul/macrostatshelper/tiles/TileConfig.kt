@@ -49,6 +49,14 @@ object TileConfigHelper {
         )
     }
 
+    fun getScreenTimeoutTileConfig(context: Context): TileConfiguration {
+        return TileConfiguration(
+            icon = Icon.createWithResource(context, R.drawable.ic_screen_timeout),
+            labelPrefix = context.getString(R.string.screen_timeout_tile_prefix),
+            defaultState = Tile.STATE_ACTIVE
+        )
+    }
+
     fun applyConfigToTile(
         tile: Tile,
         config: TileConfiguration,
@@ -134,6 +142,39 @@ object TileConfigHelper {
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
 
             tile.label = if (prefix.isNotEmpty()) "$prefix $valueText" else valueText
+            tile.subtitle = null
+        }
+    }
+
+    fun applyScreenTimeoutConfigToTile(
+        tile: Tile,
+        config: TileConfiguration,
+        timeoutValue: String,
+        showTimeoutInTitle: Boolean = false,
+        hasPermission: Boolean = true,
+        context: Context? = null
+    ) {
+        tile.icon = config.icon
+
+        if (!hasPermission) {
+            tile.state = Tile.STATE_INACTIVE
+            tile.label = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
+            tile.subtitle = context?.getString(R.string.tap_to_grant) ?: "Tap to grant"
+            return
+        }
+
+        tile.state = config.defaultState
+
+        if (showTimeoutInTitle && context != null) {
+            // Show "Screen Timeout" in title, value as subtitle
+            tile.label = context.getString(R.string.screen_timeout)
+            tile.subtitle = timeoutValue
+        } else {
+            // Show value directly in title with prefix if short enough
+            val showDivider = timeoutValue.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
+
+            tile.label = if (prefix.isNotEmpty()) "$prefix $timeoutValue" else timeoutValue
             tile.subtitle = null
         }
     }

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
@@ -42,9 +43,19 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (hasUsageStatsPermission()) {
-            completeSetup()
+            checkWriteSettingsPermission()
         } else {
             showToast(getString(R.string.usage_stats_permission_required))
+        }
+    }
+
+    private val writeSettingsPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (hasWriteSettingsPermission()) {
+            completeSetup()
+        } else {
+            showToast(getString(R.string.write_settings_permission_info))
         }
     }
 
@@ -150,17 +161,25 @@ class MainActivity : AppCompatActivity() {
             isEnabled = hasNotificationPermission()
         }
 
+        val writeSettingsButton = Button(this).apply {
+            text = getString(R.string.grant_write_settings_permission)
+            setPadding(0, 16, 0, 16)
+            setOnClickListener { requestWriteSettingsPermission() }
+            isEnabled = hasNotificationPermission() && hasUsageStatsPermission()
+        }
+
         val startButton = Button(this).apply {
             text = getString(R.string.start_monitoring)
             setPadding(0, 16, 0, 16)
             setOnClickListener { completeSetup() }
-            isEnabled = hasNotificationPermission() && hasUsageStatsPermission()
+            isEnabled = hasNotificationPermission() && hasUsageStatsPermission() && hasWriteSettingsPermission()
         }
 
         layout.addView(titleText)
         layout.addView(descriptionText)
         layout.addView(notificationButton)
         layout.addView(usageStatsButton)
+        layout.addView(writeSettingsButton)
         layout.addView(startButton)
 
         setContentView(layout)
@@ -170,9 +189,11 @@ class MainActivity : AppCompatActivity() {
             while (true) {
                 val hasNotification = hasNotificationPermission()
                 val hasUsageStats = hasUsageStatsPermission()
+                val hasWriteSettings = hasWriteSettingsPermission()
 
                 usageStatsButton.isEnabled = hasNotification
-                startButton.isEnabled = hasNotification && hasUsageStats
+                writeSettingsButton.isEnabled = hasNotification && hasUsageStats
+                startButton.isEnabled = hasNotification && hasUsageStats && hasWriteSettings
 
                 delay(1000)
             }
@@ -211,9 +232,24 @@ class MainActivity : AppCompatActivity() {
         usageStatsPermissionLauncher.launch(intent)
     }
 
+    private fun requestWriteSettingsPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
+                data = Uri.parse("package:$packageName")
+            }
+            writeSettingsPermissionLauncher.launch(intent)
+        }
+    }
+
     private fun checkUsageStatsPermission() {
         if (!hasUsageStatsPermission()) {
             requestUsageStatsPermission()
+        }
+    }
+
+    private fun checkWriteSettingsPermission() {
+        if (!hasWriteSettingsPermission()) {
+            requestWriteSettingsPermission()
         }
     }
 
@@ -235,8 +271,16 @@ class MainActivity : AppCompatActivity() {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
+    private fun hasWriteSettingsPermission(): Boolean {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            Settings.System.canWrite(this)
+        } else {
+            true // Permission not required on older versions
+        }
+    }
+
     private fun completeSetup() {
-        if (hasNotificationPermission() && hasUsageStatsPermission()) {
+        if (hasNotificationPermission() && hasUsageStatsPermission() && hasWriteSettingsPermission()) {
             sharedPreferences.edit().putBoolean("setup_complete", true).apply()
             startServicesAndFinish()
         } else {

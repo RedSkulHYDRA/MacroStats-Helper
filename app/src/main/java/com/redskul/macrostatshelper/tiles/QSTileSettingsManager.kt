@@ -16,7 +16,9 @@ class QSTileSettingsManager(context: Context) {
         private const val KEY_SHOW_PERIOD_IN_TITLE = "show_period_in_title"
         private const val KEY_SHOW_CHARGE_IN_TITLE = "show_charge_in_title"
         private const val KEY_SHOW_BATTERY_HEALTH_IN_TITLE = "show_battery_health_in_title"
+        private const val KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE = "show_screen_timeout_in_title"
         private const val KEY_BATTERY_DESIGN_CAPACITY = "battery_design_capacity"
+        private const val KEY_VIBRATION_ENABLED = "vibration_enabled"
     }
 
     fun saveWiFiTilePeriod(timePeriod: TimePeriod) {
@@ -39,8 +41,16 @@ class QSTileSettingsManager(context: Context) {
         sharedPreferences.edit().putBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, showHealth).apply()
     }
 
+    fun saveShowScreenTimeoutInTitle(showTimeout: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE, showTimeout).apply()
+    }
+
     fun saveBatteryDesignCapacity(capacity: Int) {
         sharedPreferences.edit().putInt(KEY_BATTERY_DESIGN_CAPACITY, capacity).apply()
+    }
+
+    fun saveVibrationEnabled(enabled: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
     }
 
     fun getWiFiTilePeriod(): TimePeriod {
@@ -73,8 +83,16 @@ class QSTileSettingsManager(context: Context) {
         return sharedPreferences.getBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, false)
     }
 
+    fun getShowScreenTimeoutInTitle(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE, false)
+    }
+
     fun getBatteryDesignCapacity(): Int {
         return sharedPreferences.getInt(KEY_BATTERY_DESIGN_CAPACITY, 0)
+    }
+
+    fun isVibrationEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_VIBRATION_ENABLED, true) // Default to enabled
     }
 
     fun getWiFiTileText(usageData: UsageData): String {
