@@ -5,6 +5,9 @@ import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.net.ConnectivityManager
 import android.telephony.TelephonyManager
+import android.util.Log
+import androidx.annotation.RequiresPermission
+import java.text.SimpleDateFormat
 import java.util.*
 
 data class UsageData(
@@ -22,13 +25,11 @@ class DataUsageMonitor(private val context: Context) {
         context.getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
     }
 
+    @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE")
     fun getUsageData(): UsageData {
-        android.util.Log.d("DataUsageMonitor", "Starting data usage collection")
+        Log.d("DataUsageMonitor", "Starting data usage collection")
 
-        val subscriberId = getSubscriberId()
-        android.util.Log.d("DataUsageMonitor", "Subscriber ID: $subscriberId")
-
-        // Calculate time periods
+        // Calculate time periods with proper timezone handling
         val now = System.currentTimeMillis()
         val calendar = Calendar.getInstance()
 
@@ -39,7 +40,7 @@ class DataUsageMonitor(private val context: Context) {
         calendar.set(Calendar.MILLISECOND, 0)
         val dailyStart = calendar.timeInMillis
 
-        // FIXED: Weekly from Monday 00:00 to now
+        // Weekly from Monday 00:00 to now
         val currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
         val daysSinceMonday = when (currentDayOfWeek) {
             Calendar.SUNDAY -> 6
@@ -58,7 +59,7 @@ class DataUsageMonitor(private val context: Context) {
         calendar.set(Calendar.MILLISECOND, 0)
         val weeklyStart = calendar.timeInMillis
 
-        // FIXED: Monthly from 1st 00:00 to now (was using last day before)
+        // Monthly from 1st 00:00 to now
         calendar.set(Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), 1)
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
@@ -67,21 +68,23 @@ class DataUsageMonitor(private val context: Context) {
         val monthlyStart = calendar.timeInMillis
 
         // Debug: Log the time periods
-        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
-        android.util.Log.d("DataUsageMonitor", "Daily period: ${dateFormat.format(dailyStart)} to ${dateFormat.format(now)}")
-        android.util.Log.d("DataUsageMonitor", "Weekly period: ${dateFormat.format(weeklyStart)} to ${dateFormat.format(now)}")
-        android.util.Log.d("DataUsageMonitor", "Monthly period: ${dateFormat.format(monthlyStart)} to ${dateFormat.format(now)}")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        Log.d("DataUsageMonitor", "Daily period: ${dateFormat.format(dailyStart)} to ${dateFormat.format(now)}")
+        Log.d("DataUsageMonitor", "Weekly period: ${dateFormat.format(weeklyStart)} to ${dateFormat.format(now)}")
+        Log.d("DataUsageMonitor", "Monthly period: ${dateFormat.format(monthlyStart)} to ${dateFormat.format(now)}")
 
-        val wifiDaily = getWifiUsage(dailyStart, now)
-        val wifiWeekly = getWifiUsage(weeklyStart, now)
-        val wifiMonthly = getWifiUsage(monthlyStart, now)
+        val subscriberId = getSubscriberId()
+
+        val wifiDaily = getWifiUsage(subscriberId, dailyStart, now)
+        val wifiWeekly = getWifiUsage(subscriberId, weeklyStart, now)
+        val wifiMonthly = getWifiUsage(subscriberId, monthlyStart, now)
         val mobileDaily = getMobileUsage(subscriberId, dailyStart, now)
         val mobileWeekly = getMobileUsage(subscriberId, weeklyStart, now)
         val mobileMonthly = getMobileUsage(subscriberId, monthlyStart, now)
 
-        android.util.Log.d("DataUsageMonitor", "Raw bytes - WiFi Daily: $wifiDaily, Mobile Daily: $mobileDaily")
-        android.util.Log.d("DataUsageMonitor", "Raw bytes - WiFi Weekly: $wifiWeekly, Mobile Weekly: $mobileWeekly")
-        android.util.Log.d("DataUsageMonitor", "Raw bytes - WiFi Monthly: $wifiMonthly, Mobile Monthly: $mobileMonthly")
+        Log.d("DataUsageMonitor", "Raw bytes - WiFi Daily: $wifiDaily, Mobile Daily: $mobileDaily")
+        Log.d("DataUsageMonitor", "Raw bytes - WiFi Weekly: $wifiWeekly, Mobile Weekly: $mobileWeekly")
+        Log.d("DataUsageMonitor", "Raw bytes - WiFi Monthly: $wifiMonthly, Mobile Monthly: $mobileMonthly")
 
         return UsageData(
             wifiDaily = formatBytes(wifiDaily),
@@ -93,11 +96,62 @@ class DataUsageMonitor(private val context: Context) {
         )
     }
 
-    private fun getWifiUsage(startTime: Long, endTime: Long): Long {
+    private fun getWifiUsage(subscriberId: String?, startTime: Long, endTime: Long): Long {
+        return try {
+            // Use querySummaryForDevice to get device-wide WiFi usage
+            val bucket = networkStatsManager.querySummaryForDevice(
+                ConnectivityManager.TYPE_WIFI,
+                subscriberId, // Can be null for WiFi
+                startTime,
+                endTime
+            )
+
+            val totalBytes = if (bucket != null) {
+                bucket.rxBytes + bucket.txBytes
+            } else {
+                0L
+            }
+
+            android.util.Log.d("DataUsageMonitor", "WiFi device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes")
+            totalBytes
+        } catch (e: Exception) {
+            android.util.Log.e("DataUsageMonitor", "Error getting WiFi device usage", e)
+            // Fallback to original method
+            getWifiUsageFallback(startTime, endTime)
+        }
+    }
+
+    private fun getMobileUsage(subscriberId: String?, startTime: Long, endTime: Long): Long {
+        return try {
+            // Use querySummaryForDevice to get device-wide mobile usage
+            val bucket = networkStatsManager.querySummaryForDevice(
+                ConnectivityManager.TYPE_MOBILE,
+                subscriberId,
+                startTime,
+                endTime
+            )
+
+            val totalBytes = if (bucket != null) {
+                bucket.rxBytes + bucket.txBytes
+            } else {
+                0L
+            }
+
+            android.util.Log.d("DataUsageMonitor", "Mobile device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes")
+            totalBytes
+        } catch (e: Exception) {
+            android.util.Log.e("DataUsageMonitor", "Error getting mobile device usage", e)
+            // Fallback to original method
+            getMobileUsageFallback(subscriberId, startTime, endTime)
+        }
+    }
+
+    // Fallback methods using the original querySummary approach
+    private fun getWifiUsageFallback(startTime: Long, endTime: Long): Long {
         return try {
             val networkStats = networkStatsManager.querySummary(
                 ConnectivityManager.TYPE_WIFI,
-                null,
+                null, // WiFi doesn't need subscriberId
                 startTime,
                 endTime
             )
@@ -109,15 +163,18 @@ class DataUsageMonitor(private val context: Context) {
                 totalBytes += bucket.rxBytes + bucket.txBytes
             }
             networkStats.close()
+            android.util.Log.d("DataUsageMonitor", "WiFi fallback total bytes: $totalBytes")
             totalBytes
         } catch (e: Exception) {
+            android.util.Log.e("DataUsageMonitor", "Error in WiFi fallback", e)
             0L
         }
     }
 
-    private fun getMobileUsage(subscriberId: String?, startTime: Long, endTime: Long): Long {
+    private fun getMobileUsageFallback(subscriberId: String?, startTime: Long, endTime: Long): Long {
         return try {
-            val networkStats = networkStatsManager.querySummary(
+            // Try with subscriberId first
+            var networkStats = networkStatsManager.querySummary(
                 ConnectivityManager.TYPE_MOBILE,
                 subscriberId,
                 startTime,
@@ -131,22 +188,44 @@ class DataUsageMonitor(private val context: Context) {
                 totalBytes += bucket.rxBytes + bucket.txBytes
             }
             networkStats.close()
+
+            // If no data found and subscriberId was provided, try without subscriberId
+            if (totalBytes == 0L && subscriberId != null) {
+                android.util.Log.d("DataUsageMonitor", "No mobile data with subscriberId, trying without...")
+                networkStats = networkStatsManager.querySummary(
+                    ConnectivityManager.TYPE_MOBILE,
+                    null,
+                    startTime,
+                    endTime
+                )
+
+                while (networkStats.hasNextBucket()) {
+                    networkStats.getNextBucket(bucket)
+                    totalBytes += bucket.rxBytes + bucket.txBytes
+                }
+                networkStats.close()
+            }
+
+            android.util.Log.d("DataUsageMonitor", "Mobile fallback total bytes: $totalBytes")
             totalBytes
         } catch (e: Exception) {
+            android.util.Log.e("DataUsageMonitor", "Error in mobile fallback", e)
             0L
         }
     }
 
-    @Suppress("MissingPermission")
+    @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE")
     private fun getSubscriberId(): String? {
         return try {
             val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            telephonyManager.subscriberId
+            val subscriberId = telephonyManager.subscriberId
+            Log.d("DataUsageMonitor", "Retrieved subscriber ID: $subscriberId")
+            subscriberId
         } catch (e: SecurityException) {
-            android.util.Log.d("DataUsageMonitor", "Cannot access subscriber ID (expected for non-system apps)")
+            Log.w("DataUsageMonitor", "Cannot access subscriber ID (SecurityException): ${e.message}")
             null
         } catch (e: Exception) {
-            android.util.Log.e("DataUsageMonitor", "Error getting subscriber ID", e)
+            Log.e("DataUsageMonitor", "Error getting subscriber ID", e)
             null
         }
     }
