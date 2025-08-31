@@ -53,9 +53,6 @@ class WiFiDataUsageQSTileService : TileService() {
         super.onClick()
         android.util.Log.d("WiFiQSTile", "Tile clicked - triggering immediate update")
 
-        // Provide vibration feedback
-        TileVibrationHelper.vibrateTile(this)
-
         val serviceIntent = Intent(this, DataUsageService::class.java).apply {
             action = DataUsageService.ACTION_UPDATE_NOW
         }

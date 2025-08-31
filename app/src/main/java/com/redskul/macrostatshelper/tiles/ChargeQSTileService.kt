@@ -53,9 +53,6 @@ class ChargeQSTileService : TileService() {
         super.onClick()
         android.util.Log.d("ChargeQSTile", "Tile clicked - triggering immediate update")
 
-        // Provide vibration feedback
-        TileVibrationHelper.vibrateTile(this)
-
         val serviceIntent = Intent(this, BatteryService::class.java).apply {
             action = BatteryService.ACTION_UPDATE_NOW
         }

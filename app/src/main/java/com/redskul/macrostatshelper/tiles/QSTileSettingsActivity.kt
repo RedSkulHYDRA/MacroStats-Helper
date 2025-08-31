@@ -21,7 +21,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var showChargeInTitleSwitch: Switch
     private lateinit var showBatteryHealthInTitleSwitch: Switch
     private lateinit var showScreenTimeoutInTitleSwitch: Switch
-    private lateinit var vibrationEnabledSwitch: Switch
     private lateinit var designCapacityEditText: EditText
     private lateinit var saveButton: Button
     private lateinit var previewText: TextView
@@ -53,38 +52,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
             text = getString(R.string.qs_tile_instruction)
             textSize = 14f
             setPadding(0, 0, 0, 24)
-        }
-
-        // Vibration Settings Section
-        val vibrationLabel = TextView(this).apply {
-            text = getString(R.string.vibration_settings_label)
-            textSize = 18f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
-        }
-
-        val vibrationLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 8)
-        }
-
-        val vibrationSwitchLabelText = TextView(this).apply {
-            text = getString(R.string.enable_tile_vibration)
-            textSize = 16f
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-
-        vibrationEnabledSwitch = Switch(this).apply {
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
-        }
-
-        vibrationLayout.addView(vibrationSwitchLabelText)
-        vibrationLayout.addView(vibrationEnabledSwitch)
-
-        val vibrationDescription = TextView(this).apply {
-            text = getString(R.string.vibration_description)
-            textSize = 12f
-            setPadding(0, 0, 0, 16)
         }
 
         // Data Usage Tile Display Mode Section
@@ -312,9 +279,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         mainLayout.addView(titleText)
         mainLayout.addView(instructionText)
-        mainLayout.addView(vibrationLabel)
-        mainLayout.addView(vibrationLayout)
-        mainLayout.addView(vibrationDescription)
         mainLayout.addView(displayModeLabel)
         mainLayout.addView(switchLayout)
         mainLayout.addView(switchDescription)
@@ -377,7 +341,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
         val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
         val showScreenTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
-        val vibrationEnabled = qsTileSettingsManager.isVibrationEnabled()
         val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
 
         wifiTileSpinner.setSelection(when (wifiPeriod) {
@@ -396,7 +359,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         showChargeInTitleSwitch.isChecked = showChargeInTitle
         showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
         showScreenTimeoutInTitleSwitch.isChecked = showScreenTimeoutInTitle
-        vibrationEnabledSwitch.isChecked = vibrationEnabled
 
         if (designCapacity > 0) {
             designCapacityEditText.setText(designCapacity.toString())
@@ -439,17 +401,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val showChargeInTitle = showChargeInTitleSwitch.isChecked
         val showHealthInTitle = showBatteryHealthInTitleSwitch.isChecked
         val showScreenTimeoutInTitle = showScreenTimeoutInTitleSwitch.isChecked
-        val vibrationEnabled = vibrationEnabledSwitch.isChecked
 
         previewText.text = buildString {
-            if (vibrationEnabled) {
-                appendLine("✨ Vibration: Enabled for all tiles")
-                appendLine()
-            } else {
-                appendLine("🔇 Vibration: Disabled")
-                appendLine()
-            }
-
             if (showPeriodInTitle) {
                 appendLine("│ WiFi Usage (${wifiPeriod.name.lowercase().replaceFirstChar { it.uppercase() }})")
                 appendLine(wifiValue)
@@ -508,7 +461,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager.saveShowChargeInTitle(showChargeInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowBatteryHealthInTitle(showBatteryHealthInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowScreenTimeoutInTitle(showScreenTimeoutInTitleSwitch.isChecked)
-        qsTileSettingsManager.saveVibrationEnabled(vibrationEnabledSwitch.isChecked)
 
         if (designCapacity > 0) {
             qsTileSettingsManager.saveBatteryDesignCapacity(designCapacity)

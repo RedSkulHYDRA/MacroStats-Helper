@@ -48,11 +48,6 @@
     <string name="qs_tile_settings_title">QS Tile Settings</string>
     <string name="qs_tile_instruction">Configure what time period each Quick Settings tile shows. These settings are independent from your notification settings.</string>
 
-    <!-- NEW: Vibration Settings -->
-    <string name="vibration_settings_label">Vibration Settings:</string>
-    <string name="enable_tile_vibration">Enable vibration for all tiles</string>
-    <string name="vibration_description">Provides haptic feedback when any QS tile is tapped</string>
-
     <string name="tile_display_mode_label">Data Usage Tile Display Mode:</string>
     <string name="show_period_in_title">Show time period in tile title</string>
     <string name="tile_display_mode_description">When enabled, tiles will show "WiFi Usage (Daily)" as title with data usage below. When disabled, data usage becomes the title.</string>

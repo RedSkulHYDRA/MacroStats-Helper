@@ -59,9 +59,6 @@ class BatteryHealthQSTileService : TileService() {
         super.onClick()
         android.util.Log.d("BatteryHealthQSTile", "Tile clicked - triggering immediate update")
 
-        // Provide vibration feedback
-        TileVibrationHelper.vibrateTile(this)
-
         updateTile()
 
         // Send broadcast to trigger update

@@ -73,9 +73,8 @@ class ScreenTimeoutQSTileService : TileService() {
                 val nextTimeout = getNextTimeout(currentTimeout)
 
                 if (setScreenTimeout(nextTimeout)) {
-                    // Provide vibration feedback
+                    // Update tile
                     withContext(Dispatchers.Main) {
-                        TileVibrationHelper.vibrateTile(this@ScreenTimeoutQSTileService)
                         updateTile()
                     }
                 } else {

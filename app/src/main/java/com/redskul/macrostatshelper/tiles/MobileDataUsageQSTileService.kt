@@ -53,9 +53,6 @@ class MobileDataUsageQSTileService : TileService() {
         super.onClick()
         android.util.Log.d("MobileQSTile", "Tile clicked - triggering immediate update")
 
-        // Provide vibration feedback
-        TileVibrationHelper.vibrateTile(this)
-
         val serviceIntent = Intent(this, DataUsageService::class.java).apply {
             action = DataUsageService.ACTION_UPDATE_NOW
         }
