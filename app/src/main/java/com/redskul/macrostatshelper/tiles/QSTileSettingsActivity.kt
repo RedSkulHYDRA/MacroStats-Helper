@@ -17,6 +17,8 @@ import com.redskul.macrostatshelper.settings.TimePeriod
 import com.redskul.macrostatshelper.data.UsageData
 import com.redskul.macrostatshelper.data.BatteryHealthMonitor
 import com.redskul.macrostatshelper.utils.PermissionHelper
+import android.content.Intent
+import android.provider.Settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -33,6 +35,10 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var showScreenTimeoutInTitleSwitch: Switch
     private lateinit var designCapacityEditText: EditText
     private lateinit var saveButton: Button
+
+    // Permission status text views
+    private lateinit var usageAccessStatusText: TextView
+    private lateinit var writeSettingsStatusText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +68,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
                 if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings) {
                     updatePermissionBasedUI()
+                    updatePermissionStatuses()
+
                     if (lastUsageStats && !currentUsageStats) {
                         showToast(getString(R.string.data_tiles_disabled))
                     }
@@ -87,6 +95,32 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Enable/disable screen timeout controls
         showScreenTimeoutInTitleSwitch.isEnabled = hasWriteSettings
+    }
+
+    private fun updatePermissionStatuses() {
+        if (::usageAccessStatusText.isInitialized) {
+            val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+            usageAccessStatusText.text = if (hasUsageStats) {
+                getString(R.string.usage_access_permission_enabled)
+            } else {
+                getString(R.string.usage_access_permission_disabled)
+            }
+            usageAccessStatusText.setTextColor(
+                if (hasUsageStats) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
+            )
+        }
+
+        if (::writeSettingsStatusText.isInitialized) {
+            val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+            writeSettingsStatusText.text = if (hasWriteSettings) {
+                getString(R.string.write_settings_permission_enabled)
+            } else {
+                getString(R.string.write_settings_permission_disabled)
+            }
+            writeSettingsStatusText.setTextColor(
+                if (hasWriteSettings) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
+            )
+        }
     }
 
     private fun createUI() {
@@ -256,8 +290,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val mobileDescription = TextView(this).apply {
             text = getString(R.string.mobile_tile_description)
             textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
-            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
-            setPadding(0, 0, 0, spacingSm)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
             alpha = 0.8f
         }
 
@@ -271,6 +305,24 @@ class QSTileSettingsActivity : AppCompatActivity() {
             }
         }
 
+        // Usage Access Permission Status (moved to bottom)
+        usageAccessStatusText = TextView(this).apply {
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, spacingMd, 0, spacingMd)
+        }
+
+        val usageAccessButton = Button(this).apply {
+            text = getString(R.string.open_usage_access_settings)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_small_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_small_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
+            setOnClickListener {
+                requestUsageStatsPermission()
+            }
+        }
+
         card.addView(cardTitle)
         card.addView(switchLayout)
         card.addView(wifiLabel)
@@ -279,6 +331,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         card.addView(mobileLabel)
         card.addView(mobileDescription)
         card.addView(mobileTileSpinner)
+        card.addView(usageAccessStatusText)
+        card.addView(usageAccessButton)
 
         return card
     }
@@ -404,8 +458,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val screenTimeoutSwitchLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
-            setPadding(0, 0, 0, spacingSm)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         val screenTimeoutSwitchLabelText = TextView(this).apply {
@@ -427,8 +481,28 @@ class QSTileSettingsActivity : AppCompatActivity() {
         screenTimeoutSwitchLayout.addView(screenTimeoutSwitchLabelText)
         screenTimeoutSwitchLayout.addView(showScreenTimeoutInTitleSwitch)
 
+        // Write Settings Permission Status (moved to bottom)
+        writeSettingsStatusText = TextView(this).apply {
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, spacingMd, 0, spacingMd)
+        }
+
+        val writeSettingsButton = Button(this).apply {
+            text = getString(R.string.open_write_settings)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_small_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_small_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
+            setOnClickListener {
+                requestWriteSettingsPermission()
+            }
+        }
+
         card.addView(cardTitle)
         card.addView(screenTimeoutSwitchLayout)
+        card.addView(writeSettingsStatusText)
+        card.addView(writeSettingsButton)
 
         return card
     }
@@ -478,6 +552,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         updatePermissionBasedUI()
+        updatePermissionStatuses()
     }
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {
@@ -486,6 +561,24 @@ class QSTileSettingsActivity : AppCompatActivity() {
             .setMessage(getString(R.string.permission_required_settings_dialog_message, featureName, permissionName))
             .setPositiveButton(getString(R.string.ok_button)) { dialog, _ -> dialog.dismiss() }
             .show()
+    }
+
+    private fun requestUsageStatsPermission() {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        startActivity(intent)
+        showToast(getString(R.string.enable_usage_access_helper))
+    }
+
+    private fun requestWriteSettingsPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
+                data = android.net.Uri.parse("package:$packageName")
+            }
+            startActivity(intent)
+            showToast(getString(R.string.enable_write_settings_helper))
+        } else {
+            showToast(getString(R.string.permission_not_required_version))
+        }
     }
 
     private fun saveSettings() {

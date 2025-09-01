@@ -145,6 +145,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Update battery optimization UI
                 updateBatteryOptimizationUI()
+                updateAccessibilityStatus()
 
                 lastUsageStats = currentUsageStats
                 lastAccessibility = currentAccessibility
@@ -233,7 +234,6 @@ class MainActivity : AppCompatActivity() {
                 stopService(Intent(this@MainActivity, BatteryService::class.java))
                 showToast(getString(R.string.monitoring_stopped))
                 statusText.text = getString(R.string.monitoring_stopped_restart_note)
-
                 this.text = getString(R.string.start_monitoring)
                 this.setOnClickListener {
                     startServicesAndShowSuccess()
@@ -387,13 +387,6 @@ class MainActivity : AppCompatActivity() {
             setPadding(0, 0, 0, spacingSm)
         }
 
-        // Accessibility Status
-        accessibilityStatusText = TextView(this).apply {
-            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-        }
-
         val autoSyncLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
@@ -477,6 +470,13 @@ class MainActivity : AppCompatActivity() {
             alpha = 0.6f
         }
 
+        // Accessibility Status (moved to bottom)
+        accessibilityStatusText = TextView(this).apply {
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, spacingMd, 0, spacingMd)
+        }
+
         val accessibilityButton = Button(this).apply {
             text = getString(R.string.open_accessibility_settings)
             textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
@@ -489,12 +489,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         card.addView(cardTitle)
-        card.addView(accessibilityStatusText)
         card.addView(autoSyncLayout)
         card.addView(autoSyncDescription)
         card.addView(delayLabel)
         card.addView(autoSyncDelaySpinner)
         card.addView(delayDescription)
+        card.addView(accessibilityStatusText)
         card.addView(accessibilityButton)
 
         updateAccessibilityStatus()
@@ -790,14 +790,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestAccessibilityPermission() {
-        if (!permissionHelper.hasAccessibilityPermission()) {
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-            accessibilityPermissionLauncher.launch(intent)
-            showToast(getString(R.string.permission_guide_short))
-        } else {
-            showToast(getString(R.string.permission_granted, getString(R.string.permission_accessibility)))
-        }
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+        startActivity(intent)
     }
+
 
     private fun completeSetup() {
         if (permissionHelper.hasAllPermissions()) {

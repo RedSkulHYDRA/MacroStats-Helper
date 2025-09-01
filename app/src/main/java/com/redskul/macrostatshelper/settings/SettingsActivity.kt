@@ -31,6 +31,9 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var notificationEnabledSwitch: Switch
     private lateinit var saveButton: Button
 
+    // Permission status text view for notifications
+    private lateinit var notificationPermissionStatusText: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,6 +51,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionBasedUI()
+        updatePermissionStatus()
     }
 
     private fun startPermissionMonitoring() {
@@ -61,6 +65,7 @@ class SettingsActivity : AppCompatActivity() {
 
                 if (lastUsageStats != currentUsageStats) {
                     updatePermissionBasedUI()
+                    updatePermissionStatus()
                     if (lastUsageStats && !currentUsageStats) {
                         notificationEnabledSwitch.isChecked = false
                         showToast(getString(R.string.data_tiles_disabled))
@@ -79,6 +84,20 @@ class SettingsActivity : AppCompatActivity() {
         notificationEnabledSwitch.isEnabled = hasUsageStats
         if (!hasUsageStats && notificationEnabledSwitch.isChecked) {
             notificationEnabledSwitch.isChecked = false
+        }
+    }
+
+    private fun updatePermissionStatus() {
+        if (::notificationPermissionStatusText.isInitialized) {
+            val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+            notificationPermissionStatusText.text = if (hasUsageStats) {
+                getString(R.string.usage_access_permission_enabled)
+            } else {
+                getString(R.string.usage_access_permission_disabled)
+            }
+            notificationPermissionStatusText.setTextColor(
+                if (hasUsageStats) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
+            )
         }
     }
 
@@ -277,14 +296,35 @@ class SettingsActivity : AppCompatActivity() {
         val notificationNote = TextView(this).apply {
             text = getString(R.string.notification_disabled_note)
             textSize = resources.getDimension(R.dimen.text_size_caption) / resources.displayMetrics.scaledDensity
-            setPadding(0, 0, 0, 0)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
             alpha = 0.6f
+        }
+
+        // Permission status (moved to bottom)
+        notificationPermissionStatusText = TextView(this).apply {
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, spacingMd, 0, spacingMd)
+        }
+
+        val usageAccessButton = Button(this).apply {
+            text = getString(R.string.open_usage_access_settings)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_small_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_small_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
+            setOnClickListener {
+                requestUsageStatsPermission()
+            }
         }
 
         card.addView(cardTitle)
         card.addView(notificationLayout)
         card.addView(notificationDescription)
         card.addView(notificationNote)
+        card.addView(notificationPermissionStatusText)
+        card.addView(usageAccessButton)
 
         return card
     }
@@ -320,6 +360,7 @@ class SettingsActivity : AppCompatActivity() {
         notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
 
         updatePermissionBasedUI()
+        updatePermissionStatus()
     }
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {

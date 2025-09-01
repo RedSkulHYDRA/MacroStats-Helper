@@ -59,9 +59,7 @@
     <string name="autosync_description">Auto-manage sync based on lock state</string>
     <string name="autosync_delay_label">Turn off sync after:</string>
     <string name="autosync_delay_description">Delay before turning off sync when locked</string>
-    <string name="accessibility_service_enabled">✓ Accessibility service is enabled</string>
-    <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
-    <string name="open_accessibility_settings">Open Accessibility Settings</string>
+
 
     <!-- Accessibility Service -->
     <string name="accessibility_service_description">Manages AutoSync based on device lock state</string>
@@ -138,6 +136,20 @@
     <string name="screen_timeout">Screen Timeout</string>
     <string name="screen_timeout_permission_required">Permission Required</string>
     <string name="tap_to_grant">Tap to grant</string>
+
+    <!-- Permission Status strings for QS Tile Settings -->
+    <string name="usage_access_permission_enabled">✓ Usage Access permission is granted</string>
+    <string name="usage_access_permission_disabled">⚠ Usage Access permission is required</string>
+    <string name="write_settings_permission_enabled">✓ Modify System Settings permission is granted</string>
+    <string name="write_settings_permission_disabled">⚠ Modify System Settings permission is required</string>
+    <string name="accessibility_service_enabled">✓ Accessibility service is enabled</string>
+    <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
+
+    <!-- Permission Button strings -->
+    <string name="open_usage_access_settings">Enable Usage Access Settings</string>
+    <string name="open_write_settings">Enable Modify System Settings</string>
+    <string name="enable_write_settings_helper">Enable Modify System Settings</string>
+    <string name="open_accessibility_settings">Enable Accessibility Settings</string>
 
     <!-- Additional strings for hardcoded text -->
     <string name="monitoring_stopped_restart_note">Monitoring stopped. Use Start button to restart.</string>
