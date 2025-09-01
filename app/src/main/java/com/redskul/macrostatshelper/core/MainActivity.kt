@@ -9,14 +9,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
 import android.widget.Toast
 import android.widget.AdapterView
-import android.widget.Spinner
-import android.widget.Switch
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +28,8 @@ import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.SettingsActivity
 import com.redskul.macrostatshelper.settings.SettingsManager
 import com.redskul.macrostatshelper.utils.PermissionHelper
+import com.redskul.macrostatshelper.databinding.ActivityMainBinding
+import com.redskul.macrostatshelper.databinding.ActivitySetupBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -44,12 +40,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var settingsManager: SettingsManager
     private lateinit var autoSyncManager: AutoSyncManager
 
-    private lateinit var batteryOptimizationButton: Button
-    private lateinit var batteryOptimizationDescription: TextView
-    private lateinit var updateIntervalSpinner: Spinner
-    private lateinit var autoSyncEnabledSwitch: Switch
-    private lateinit var autoSyncDelaySpinner: Spinner
-    private lateinit var accessibilityStatusText: TextView
+    private var mainBinding: ActivityMainBinding? = null
+    private var setupBinding: ActivitySetupBinding? = null
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -119,6 +111,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        mainBinding = null
+        setupBinding = null
+    }
+
     private fun startPermissionMonitoring() {
         lifecycleScope.launch {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
@@ -143,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                     showToast("AutoSync disabled")
                 }
 
-                // Update battery optimization UI
+                // Update UI
                 updateBatteryOptimizationUI()
                 updateAccessibilityStatus()
 
@@ -158,376 +156,267 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMainUI() {
-        val scrollView = ScrollView(this)
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
-            setPadding(mainPadding, mainPadding, mainPadding, mainPadding)
+        mainBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(mainBinding!!.root)
+
+        setupWindowInsets(mainBinding!!.root, mainBinding!!.mainLayout)
+        setupMainUIComponents()
+        ensureServicesRunning()
+    }
+
+    private fun setupMainUIComponents() {
+        val binding = mainBinding ?: return
+
+        // Setup battery optimization card
+        setupBatteryOptimizationCard(binding)
+
+        // Setup update interval card
+        setupUpdateIntervalCard(binding)
+
+        // Setup autosync card
+        setupAutoSyncCard(binding)
+
+        // Setup action buttons
+        setupActionButtons(binding)
+    }
+
+    private fun setupBatteryOptimizationCard(binding: ActivityMainBinding) {
+        updateBatteryOptimizationUI()
+
+        binding.batteryOptButton.setOnClickListener {
+            requestBatteryOptimizationExemption()
+        }
+    }
+
+    private fun setupUpdateIntervalCard(binding: ActivityMainBinding) {
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            settingsManager.getUpdateIntervalOptions()
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
 
-        // Handle window insets for notch and system bars
-        ViewCompat.setOnApplyWindowInsetsListener(scrollView) { view, windowInsets ->
+        binding.updateIntervalSpinner.adapter = adapter
+
+        // Load current setting
+        val currentInterval = settingsManager.getUpdateInterval()
+        val currentIndex = settingsManager.getUpdateIntervalValues().indexOf(currentInterval)
+        if (currentIndex >= 0) {
+            binding.updateIntervalSpinner.setSelection(currentIndex)
+        }
+
+        binding.updateIntervalSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val selectedInterval = settingsManager.getUpdateIntervalValues()[position]
+                settingsManager.setUpdateInterval(selectedInterval)
+                restartServicesWithNewInterval()
+                showToast(getString(R.string.update_frequency_changed))
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    private fun setupAutoSyncCard(binding: ActivityMainBinding) {
+        binding.autosyncEnabledSwitch.isChecked = autoSyncManager.isAutoSyncEnabled()
+
+        binding.autosyncEnabledSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !permissionHelper.hasAccessibilityPermission()) {
+                binding.autosyncEnabledSwitch.isChecked = false
+                showPermissionRequiredDialog("AutoSync Management", getString(R.string.permission_accessibility)) {
+                    requestAccessibilityPermission()
+                }
+                return@setOnCheckedChangeListener
+            }
+            autoSyncManager.setAutoSyncEnabled(isChecked)
+            binding.autosyncDelaySpinner.isEnabled = isChecked && permissionHelper.hasAccessibilityPermission()
+        }
+
+        // Setup delay spinner
+        val delayAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            autoSyncManager.getDelayOptions()
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        binding.autosyncDelaySpinner.adapter = delayAdapter
+
+        val delayMinutes = autoSyncManager.getAutoSyncDelay()
+        val delayIndex = autoSyncManager.getAllowedDelays().indexOf(delayMinutes)
+        if (delayIndex >= 0) {
+            binding.autosyncDelaySpinner.setSelection(delayIndex)
+        }
+
+        binding.autosyncDelaySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val delayMinutes = autoSyncManager.getAllowedDelays()[position]
+                autoSyncManager.setAutoSyncDelay(delayMinutes)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        binding.autosyncDelaySpinner.isEnabled = binding.autosyncEnabledSwitch.isChecked && permissionHelper.hasAccessibilityPermission()
+
+        binding.accessibilityButton.setOnClickListener {
+            requestAccessibilityPermission()
+        }
+
+        updateAccessibilityStatus()
+    }
+
+    private fun setupActionButtons(binding: ActivityMainBinding) {
+        binding.settingsButton.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        binding.qsTileSettingsButton.setOnClickListener {
+            startActivity(Intent(this, QSTileSettingsActivity::class.java))
+        }
+
+        setupStopServiceButton(binding)
+    }
+
+    private fun setupStopServiceButton(binding: ActivityMainBinding) {
+        binding.stopServiceButton.setOnClickListener {
+            if (binding.stopServiceButton.text == getString(R.string.stop_monitoring)) {
+                stopService(Intent(this, DataUsageService::class.java))
+                stopService(Intent(this, BatteryService::class.java))
+                showToast(getString(R.string.monitoring_stopped))
+                binding.statusText.text = getString(R.string.monitoring_stopped_restart_note)
+                binding.stopServiceButton.text = getString(R.string.start_monitoring)
+            } else {
+                startServicesAndShowSuccess()
+                binding.statusText.text = getString(R.string.data_usage_monitoring_running)
+                binding.stopServiceButton.text = getString(R.string.stop_monitoring)
+            }
+        }
+    }
+
+    private fun updateBatteryOptimizationUI() {
+        val binding = mainBinding ?: return
+
+        if (permissionHelper.isBatteryOptimizationDisabled()) {
+            binding.batteryOptButton.text = getString(R.string.battery_optimization_disabled_check)
+            binding.batteryOptButton.alpha = 0.7f
+            binding.batteryOptButton.isEnabled = false
+            binding.batteryOptDescription.text = getString(R.string.battery_optimization_disabled_desc)
+        } else {
+            binding.batteryOptButton.text = getString(R.string.disable_battery_optimization)
+            binding.batteryOptButton.alpha = 1.0f
+            binding.batteryOptButton.isEnabled = true
+            binding.batteryOptDescription.text = getString(R.string.disable_optimization_desc)
+        }
+    }
+
+    private fun updateAccessibilityStatus() {
+        val binding = mainBinding ?: return
+
+        val isAccessibilityEnabled = AutoSyncAccessibilityService.isAccessibilityServiceEnabled(this)
+        binding.accessibilityStatusText.text = if (isAccessibilityEnabled) {
+            getString(R.string.accessibility_service_enabled)
+        } else {
+            getString(R.string.accessibility_service_disabled)
+        }
+        binding.accessibilityStatusText.setTextColor(
+            if (isAccessibilityEnabled) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
+        )
+    }
+
+    private fun showPermissionSetupUI() {
+        setupBinding = ActivitySetupBinding.inflate(layoutInflater)
+        setContentView(setupBinding!!.root)
+
+        setupWindowInsets(setupBinding!!.root, setupBinding!!.setupLayout)
+        setupPermissionButtons()
+        startPermissionStatusUpdates()
+    }
+
+    private fun setupPermissionButtons() {
+        val binding = setupBinding ?: return
+
+        binding.notificationButton.setOnClickListener { requestNotificationPermission() }
+        binding.usageStatsButton.setOnClickListener { requestUsageStatsPermission() }
+        binding.writeSettingsButton.setOnClickListener { requestWriteSettingsPermission() }
+        binding.setupAccessibilityButton.setOnClickListener { requestAccessibilityPermission() }
+        binding.setupBatteryOptButton.setOnClickListener { requestBatteryOptimizationExemption() }
+        binding.startButton.setOnClickListener { completeSetup() }
+    }
+
+    private fun startPermissionStatusUpdates() {
+        lifecycleScope.launch {
+            while (setupBinding != null) {
+                updatePermissionButtonStates()
+                delay(1000)
+            }
+        }
+    }
+
+    private fun updatePermissionButtonStates() {
+        val binding = setupBinding ?: return
+
+        val hasNotification = permissionHelper.hasNotificationPermission()
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+        val hasAccessibility = permissionHelper.hasAccessibilityPermission()
+        val hasBatteryOpt = permissionHelper.isBatteryOptimizationDisabled()
+
+        // Update button texts and states
+        binding.notificationButton.text = if (hasNotification) {
+            "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_notification))
+        } else {
+            getString(R.string.grant_permission_button, getString(R.string.permission_notification))
+        }
+        binding.notificationButton.alpha = if (hasNotification) 0.7f else 1.0f
+
+        binding.usageStatsButton.text = if (hasUsageStats) {
+            "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
+        } else {
+            getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
+        }
+        binding.usageStatsButton.alpha = if (hasUsageStats) 0.7f else 1.0f
+
+        binding.writeSettingsButton.text = if (hasWriteSettings) {
+            "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
+        } else {
+            getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
+        }
+        binding.writeSettingsButton.alpha = if (hasWriteSettings) 0.7f else 1.0f
+
+        binding.setupAccessibilityButton.text = if (hasAccessibility) {
+            "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
+        } else {
+            getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
+        }
+        binding.setupAccessibilityButton.alpha = if (hasAccessibility) 0.7f else 1.0f
+
+        binding.setupBatteryOptButton.text = if (hasBatteryOpt) {
+            getString(R.string.battery_optimization_disabled_check_full)
+        } else {
+            getString(R.string.disable_battery_optimization)
+        }
+        binding.setupBatteryOptButton.alpha = if (hasBatteryOpt) 0.7f else 1.0f
+
+        binding.startButton.isEnabled = hasNotification && hasUsageStats && hasWriteSettings && hasAccessibility
+        binding.startButton.alpha = if (binding.startButton.isEnabled) 1.0f else 0.5f
+    }
+
+    private fun setupWindowInsets(rootView: android.view.View, contentLayout: android.view.View) {
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, windowInsets ->
             val insets = windowInsets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or
                         WindowInsetsCompat.Type.displayCutout()
             )
 
             val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
-            layout.setPadding(
+            contentLayout.setPadding(
                 mainPadding + insets.left,
                 mainPadding + insets.top,
                 mainPadding + insets.right,
                 mainPadding + insets.bottom
             )
             WindowInsetsCompat.CONSUMED
-        }
-
-        val titleText = TextView(this).apply {
-            text = getString(R.string.app_name)
-            textSize = resources.getDimension(R.dimen.text_size_title) / resources.displayMetrics.scaledDensity
-            val spacingXL = resources.getDimensionPixelSize(R.dimen.spacing_xl)
-            setPadding(0, 0, 0, spacingXL)
-        }
-
-        val statusText = TextView(this).apply {
-            text = getString(R.string.data_usage_monitoring_running)
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-        }
-
-        // Battery Optimization Section
-        val batteryOptCard = createBatteryOptimizationCard()
-
-        // Update Interval Section
-        val updateIntervalCard = createUpdateIntervalCard()
-
-        // AutoSync Section
-        val autoSyncCard = createAutoSyncCard()
-
-        val settingsButton = Button(this).apply {
-            text = getString(R.string.display_settings)
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener {
-                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
-            }
-        }
-
-        val qsTileSettingsButton = Button(this).apply {
-            text = getString(R.string.qs_tile_settings)
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener {
-                startActivity(Intent(this@MainActivity, QSTileSettingsActivity::class.java))
-            }
-        }
-
-        val stopServiceButton = Button(this).apply {
-            text = getString(R.string.stop_monitoring)
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener {
-                stopService(Intent(this@MainActivity, DataUsageService::class.java))
-                stopService(Intent(this@MainActivity, BatteryService::class.java))
-                showToast(getString(R.string.monitoring_stopped))
-                statusText.text = getString(R.string.monitoring_stopped_restart_note)
-                this.text = getString(R.string.start_monitoring)
-                this.setOnClickListener {
-                    startServicesAndShowSuccess()
-                    this.text = getString(R.string.stop_monitoring)
-                    statusText.text = getString(R.string.data_usage_monitoring_running)
-                    this.setOnClickListener {
-                        stopService(Intent(this@MainActivity, DataUsageService::class.java))
-                        stopService(Intent(this@MainActivity, BatteryService::class.java))
-                        showToast(getString(R.string.monitoring_stopped))
-                        statusText.text = getString(R.string.monitoring_stopped_restart_note)
-                        this.text = getString(R.string.start_monitoring)
-                        setupStopServiceButton(this, statusText)
-                    }
-                }
-            }
-        }
-
-        layout.addView(titleText)
-        layout.addView(statusText)
-        addSpacing(layout, R.dimen.spacing_md)
-        layout.addView(batteryOptCard)
-        addSpacing(layout, R.dimen.spacing_md)
-        layout.addView(updateIntervalCard)
-        addSpacing(layout, R.dimen.spacing_md)
-        layout.addView(autoSyncCard)
-        addSpacing(layout, R.dimen.spacing_md)
-        layout.addView(settingsButton)
-        layout.addView(qsTileSettingsButton)
-        layout.addView(stopServiceButton)
-
-        scrollView.addView(layout)
-        setContentView(scrollView)
-
-        ensureServicesRunning()
-    }
-
-    private fun createBatteryOptimizationCard(): LinearLayout {
-        val card = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = resources.getDrawable(R.drawable.card_background, theme)
-        }
-
-        val cardTitle = TextView(this).apply {
-            text = getString(R.string.battery_optimization_title)
-            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-        }
-
-        batteryOptimizationDescription = TextView(this).apply {
-            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-            alpha = 0.8f
-        }
-
-        batteryOptimizationButton = Button(this).apply {
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener { requestBatteryOptimizationExemption() }
-        }
-
-        card.addView(cardTitle)
-        card.addView(batteryOptimizationDescription)
-        card.addView(batteryOptimizationButton)
-
-        updateBatteryOptimizationUI()
-        return card
-    }
-
-    private fun createUpdateIntervalCard(): LinearLayout {
-        val card = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = resources.getDrawable(R.drawable.card_background, theme)
-        }
-
-        val cardTitle = TextView(this).apply {
-            text = getString(R.string.update_frequency_title)
-            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
-            setPadding(0, 0, 0, spacingSm)
-        }
-
-        val description = TextView(this).apply {
-            text = getString(R.string.update_frequency_desc)
-            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-            alpha = 0.8f
-        }
-
-        val spinnerLabel = TextView(this).apply {
-            text = getString(R.string.update_every_label)
-            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
-            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
-            setPadding(0, 0, 0, spacingSm)
-        }
-
-        updateIntervalSpinner = Spinner(this).apply {
-            adapter = ArrayAdapter(
-                this@MainActivity,
-                android.R.layout.simple_spinner_item,
-                settingsManager.getUpdateIntervalOptions()
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-
-            // Load current setting
-            val currentInterval = settingsManager.getUpdateInterval()
-            val currentIndex = settingsManager.getUpdateIntervalValues().indexOf(currentInterval)
-            if (currentIndex >= 0) {
-                setSelection(currentIndex)
-            }
-
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                    val selectedInterval = settingsManager.getUpdateIntervalValues()[position]
-                    settingsManager.setUpdateInterval(selectedInterval)
-
-                    // Restart services with new interval
-                    restartServicesWithNewInterval()
-
-                    showToast(getString(R.string.update_frequency_changed))
-                }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
-        }
-
-        card.addView(cardTitle)
-        card.addView(description)
-        card.addView(spinnerLabel)
-        card.addView(updateIntervalSpinner)
-
-        return card
-    }
-
-    private fun createAutoSyncCard(): LinearLayout {
-        val card = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = resources.getDrawable(R.drawable.card_background, theme)
-        }
-
-        val cardTitle = TextView(this).apply {
-            text = getString(R.string.autosync_settings_title)
-            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
-            setPadding(0, 0, 0, spacingSm)
-        }
-
-        val autoSyncLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
-            setPadding(0, 0, 0, spacingSm)
-        }
-
-        val autoSyncSwitchLabel = TextView(this).apply {
-            text = getString(R.string.enable_autosync_management)
-            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-
-        autoSyncEnabledSwitch = Switch(this).apply {
-            isChecked = autoSyncManager.isAutoSyncEnabled()
-            setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked && !permissionHelper.hasAccessibilityPermission()) {
-                    this.isChecked = false
-                    showPermissionRequiredDialog("AutoSync Management", getString(R.string.permission_accessibility)) {
-                        requestAccessibilityPermission()
-                    }
-                    return@setOnCheckedChangeListener
-                }
-                autoSyncManager.setAutoSyncEnabled(isChecked)
-                autoSyncDelaySpinner.isEnabled = isChecked && permissionHelper.hasAccessibilityPermission()
-            }
-        }
-
-        autoSyncLayout.addView(autoSyncSwitchLabel)
-        autoSyncLayout.addView(autoSyncEnabledSwitch)
-
-        val autoSyncDescription = TextView(this).apply {
-            text = getString(R.string.autosync_description)
-            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-            alpha = 0.7f
-        }
-
-        // AutoSync Delay Selection
-        val delayLabel = TextView(this).apply {
-            text = getString(R.string.autosync_delay_label)
-            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
-            setPadding(0, spacingSm, 0, resources.getDimensionPixelSize(R.dimen.spacing_xs))
-        }
-
-        autoSyncDelaySpinner = Spinner(this).apply {
-            adapter = ArrayAdapter(
-                this@MainActivity,
-                android.R.layout.simple_spinner_item,
-                autoSyncManager.getDelayOptions()
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-
-            // Load current setting
-            val delayMinutes = autoSyncManager.getAutoSyncDelay()
-            val delayIndex = autoSyncManager.getAllowedDelays().indexOf(delayMinutes)
-            if (delayIndex >= 0) {
-                setSelection(delayIndex)
-            }
-
-            setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                    val delayMinutes = autoSyncManager.getAllowedDelays()[position]
-                    autoSyncManager.setAutoSyncDelay(delayMinutes)
-                }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            })
-
-            isEnabled = autoSyncEnabledSwitch.isChecked && permissionHelper.hasAccessibilityPermission()
-        }
-
-        val delayDescription = TextView(this).apply {
-            text = getString(R.string.autosync_delay_description)
-            textSize = resources.getDimension(R.dimen.text_size_caption) / resources.displayMetrics.scaledDensity
-            val spacingXs = resources.getDimensionPixelSize(R.dimen.spacing_xs)
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, spacingXs, 0, spacingMd)
-            alpha = 0.6f
-        }
-
-        // Accessibility Status (moved to bottom)
-        accessibilityStatusText = TextView(this).apply {
-            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, spacingMd, 0, spacingMd)
-        }
-
-        val accessibilityButton = Button(this).apply {
-            text = getString(R.string.open_accessibility_settings)
-            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_small_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_small_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener {
-                requestAccessibilityPermission()
-            }
-        }
-
-        card.addView(cardTitle)
-        card.addView(autoSyncLayout)
-        card.addView(autoSyncDescription)
-        card.addView(delayLabel)
-        card.addView(autoSyncDelaySpinner)
-        card.addView(delayDescription)
-        card.addView(accessibilityStatusText)
-        card.addView(accessibilityButton)
-
-        updateAccessibilityStatus()
-        return card
-    }
-
-    private fun updateBatteryOptimizationUI() {
-        if (::batteryOptimizationButton.isInitialized) {
-            if (permissionHelper.isBatteryOptimizationDisabled()) {
-                batteryOptimizationButton.text = getString(R.string.battery_optimization_disabled_check)
-                batteryOptimizationButton.alpha = 0.7f
-                batteryOptimizationButton.isEnabled = false
-                batteryOptimizationDescription.text = getString(R.string.battery_optimization_disabled_desc)
-            } else {
-                batteryOptimizationButton.text = getString(R.string.disable_battery_optimization)
-                batteryOptimizationButton.alpha = 1.0f
-                batteryOptimizationButton.isEnabled = true
-                batteryOptimizationDescription.text = getString(R.string.disable_optimization_desc)
-            }
-        }
-    }
-
-    private fun updateAccessibilityStatus() {
-        if (::accessibilityStatusText.isInitialized) {
-            val isAccessibilityEnabled = AutoSyncAccessibilityService.isAccessibilityServiceEnabled(this)
-            accessibilityStatusText.text = if (isAccessibilityEnabled) {
-                getString(R.string.accessibility_service_enabled)
-            } else {
-                getString(R.string.accessibility_service_disabled)
-            }
-            accessibilityStatusText.setTextColor(
-                if (isAccessibilityEnabled) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-            )
         }
     }
 
@@ -545,13 +434,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun restartServicesWithNewInterval() {
         try {
-            // Stop current services
             stopService(Intent(this, DataUsageService::class.java))
             stopService(Intent(this, BatteryService::class.java))
 
-            // Start services with new interval
             lifecycleScope.launch {
-                delay(1000) // Brief delay to ensure services are stopped
+                delay(1000)
                 startServicesAndShowSuccess()
             }
         } catch (e: Exception) {
@@ -559,186 +446,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showPermissionSetupUI() {
-        val scrollView = ScrollView(this)
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
-            setPadding(mainPadding, mainPadding, mainPadding, mainPadding)
-        }
-
-        // Handle window insets for notch and system bars
-        ViewCompat.setOnApplyWindowInsetsListener(scrollView) { view, windowInsets ->
-            val insets = windowInsets.getInsets(
-                WindowInsetsCompat.Type.systemBars() or
-                        WindowInsetsCompat.Type.displayCutout()
-            )
-
-            val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
-            layout.setPadding(
-                mainPadding + insets.left,
-                mainPadding + insets.top,
-                mainPadding + insets.right,
-                mainPadding + insets.bottom
-            )
-            WindowInsetsCompat.CONSUMED
-        }
-
-        val titleText = TextView(this).apply {
-            text = getString(R.string.setup_title)
-            textSize = resources.getDimension(R.dimen.text_size_title) / resources.displayMetrics.scaledDensity
-            val spacingXL = resources.getDimensionPixelSize(R.dimen.spacing_xl)
-            setPadding(0, 0, 0, spacingXL)
-        }
-
-        val descriptionText = TextView(this).apply {
-            text = getString(R.string.setup_description_autosync)
-            val spacingXL = resources.getDimensionPixelSize(R.dimen.spacing_xl)
-            setPadding(0, 0, 0, spacingXL)
-        }
-
-        val notificationButton = Button(this).apply {
-            text = getString(R.string.grant_permission_button, getString(R.string.permission_notification))
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener { requestNotificationPermission() }
-        }
-
-        val usageStatsButton = Button(this).apply {
-            text = getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener { requestUsageStatsPermission() }
-        }
-
-        val writeSettingsButton = Button(this).apply {
-            text = getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener { requestWriteSettingsPermission() }
-        }
-
-        val accessibilityButton = Button(this).apply {
-            text = getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener { requestAccessibilityPermission() }
-        }
-
-        val batteryOptButton = Button(this).apply {
-            text = getString(R.string.disable_battery_optimization)
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener { requestBatteryOptimizationExemption() }
-        }
-
-        val startButton = Button(this).apply {
-            text = getString(R.string.start_monitoring)
-            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
-            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
-            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
-            setOnClickListener { completeSetup() }
-        }
-
-        layout.addView(titleText)
-        layout.addView(descriptionText)
-        layout.addView(notificationButton)
-        layout.addView(usageStatsButton)
-        layout.addView(writeSettingsButton)
-        layout.addView(accessibilityButton)
-        layout.addView(batteryOptButton)
-        layout.addView(startButton)
-
-        scrollView.addView(layout)
-        setContentView(scrollView)
-
-        lifecycleScope.launch {
-            while (true) {
-                val hasNotification = permissionHelper.hasNotificationPermission()
-                val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-                val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
-                val hasAccessibility = permissionHelper.hasAccessibilityPermission()
-                val hasBatteryOpt = permissionHelper.isBatteryOptimizationDisabled()
-
-                notificationButton.text = if (hasNotification) {
-                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_notification))
-                } else {
-                    getString(R.string.grant_permission_button, getString(R.string.permission_notification))
-                }
-                notificationButton.alpha = if (hasNotification) 0.7f else 1.0f
-
-                usageStatsButton.text = if (hasUsageStats) {
-                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
-                } else {
-                    getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
-                }
-                usageStatsButton.alpha = if (hasUsageStats) 0.7f else 1.0f
-
-                writeSettingsButton.text = if (hasWriteSettings) {
-                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
-                } else {
-                    getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
-                }
-                writeSettingsButton.alpha = if (hasWriteSettings) 0.7f else 1.0f
-
-                accessibilityButton.text = if (hasAccessibility) {
-                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
-                } else {
-                    getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
-                }
-                accessibilityButton.alpha = if (hasAccessibility) 0.7f else 1.0f
-
-                batteryOptButton.text = if (hasBatteryOpt) {
-                    getString(R.string.battery_optimization_disabled_check_full)
-                } else {
-                    getString(R.string.disable_battery_optimization)
-                }
-                batteryOptButton.alpha = if (hasBatteryOpt) 0.7f else 1.0f
-
-                startButton.isEnabled = hasNotification && hasUsageStats && hasWriteSettings && hasAccessibility
-                startButton.alpha = if (startButton.isEnabled) 1.0f else 0.5f
-
-                delay(1000)
-            }
-        }
-    }
-
-    private fun addSpacing(parent: LinearLayout, dimenRes: Int) {
-        val spacer = android.view.View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                resources.getDimensionPixelSize(dimenRes)
-            )
-        }
-        parent.addView(spacer)
-    }
-
-    private fun setupStopServiceButton(button: Button, statusText: TextView) {
-        button.setOnClickListener {
-            if (button.text == getString(R.string.stop_monitoring)) {
-                stopService(Intent(this@MainActivity, DataUsageService::class.java))
-                stopService(Intent(this@MainActivity, BatteryService::class.java))
-                showToast(getString(R.string.monitoring_stopped))
-                statusText.text = getString(R.string.monitoring_stopped_restart_note)
-                button.text = getString(R.string.start_monitoring)
-            } else {
-                startServicesAndShowSuccess()
-                statusText.text = getString(R.string.data_usage_monitoring_running)
-                button.text = getString(R.string.stop_monitoring)
-            }
-        }
-    }
-
     private fun ensureServicesRunning() {
         try {
             val dataServiceIntent = Intent(this, DataUsageService::class.java)
 
-            // Only start as foreground service if notifications are enabled
             if (settingsManager.isNotificationEnabled()) {
                 startForegroundService(dataServiceIntent)
             } else {
@@ -746,7 +457,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             val batteryServiceIntent = Intent(this, BatteryService::class.java)
-            startService(batteryServiceIntent) // BatteryService is always background
+            startService(batteryServiceIntent)
         } catch (e: Exception) {
             android.util.Log.e("MainActivity", "Error ensuring services are running", e)
         }
@@ -793,7 +504,6 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
         startActivity(intent)
     }
-
 
     private fun completeSetup() {
         if (permissionHelper.hasAllPermissions()) {

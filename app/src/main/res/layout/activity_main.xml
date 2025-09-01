@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".core.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/main_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_main">
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textSize="@dimen/text_size_title"
+            android:textStyle="bold"
+            android:paddingBottom="@dimen/spacing_xl" />
+
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/data_usage_monitoring_running"
+            android:paddingBottom="@dimen/spacing_md" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/spacing_md" />
+
+        <!-- Battery Optimization Card -->
+        <LinearLayout
+            android:id="@+id/battery_opt_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/battery_opt_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/battery_optimization_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <TextView
+                android:id="@+id/battery_opt_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_body"
+                android:alpha="0.8"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <Button
+                android:id="@+id/battery_opt_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/button_padding_horizontal"
+                android:paddingVertical="@dimen/button_padding_vertical" />
+
+        </LinearLayout>
+
+        <!-- Update Interval Card -->
+        <LinearLayout
+            android:id="@+id/update_interval_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/update_interval_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/update_frequency_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/update_interval_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/update_frequency_desc"
+                android:textSize="@dimen/text_size_body"
+                android:alpha="0.8"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <TextView
+                android:id="@+id/spinner_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/update_every_label"
+                android:textSize="@dimen/text_size_subheading"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <Spinner
+                android:id="@+id/update_interval_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <!-- AutoSync Card -->
+        <LinearLayout
+            android:id="@+id/autosync_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/autosync_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/autosync_settings_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <LinearLayout
+                android:id="@+id/autosync_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/autosync_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/enable_autosync_management"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <Switch
+                    android:id="@+id/autosync_enabled_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/autosync_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/autosync_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <TextView
+                android:id="@+id/delay_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/autosync_delay_label"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_sm"
+                android:paddingBottom="@dimen/spacing_xs" />
+
+            <Spinner
+                android:id="@+id/autosync_delay_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/delay_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/autosync_delay_description"
+                android:textSize="@dimen/text_size_caption"
+                android:alpha="0.6"
+                android:paddingTop="@dimen/spacing_xs"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <TextView
+                android:id="@+id/accessibility_status_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_small"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <Button
+                android:id="@+id/accessibility_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/open_accessibility_settings"
+                android:textSize="@dimen/text_size_body"
+                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
+                android:paddingVertical="@dimen/button_padding_small_vertical" />
+
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <Button
+            android:id="@+id/settings_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/display_settings"
+            android:paddingHorizontal="@dimen/button_padding_horizontal"
+            android:paddingVertical="@dimen/button_padding_vertical"
+            android:layout_marginBottom="@dimen/spacing_sm" />
+
+        <Button
+            android:id="@+id/qs_tile_settings_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/qs_tile_settings"
+            android:paddingHorizontal="@dimen/button_padding_horizontal"
+            android:paddingVertical="@dimen/button_padding_vertical"
+            android:layout_marginBottom="@dimen/spacing_sm" />
+
+        <Button
+            android:id="@+id/stop_service_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/stop_monitoring"
+            android:paddingHorizontal="@dimen/button_padding_horizontal"
+            android:paddingVertical="@dimen/button_padding_vertical" />
+
+    </LinearLayout>
+
+</ScrollView>

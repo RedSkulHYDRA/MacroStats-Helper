@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".settings.SettingsActivity">
+
+    <LinearLayout
+        android:id="@+id/settings_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_settings">
+
+        <TextView
+            android:id="@+id/settings_title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_title"
+            android:textSize="@dimen/text_size_large_title"
+            android:textStyle="bold"
+            android:paddingBottom="@dimen/spacing_xl" />
+
+        <TextView
+            android:id="@+id/settings_instruction_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_instruction"
+            android:textSize="@dimen/text_size_body"
+            android:alpha="0.8"
+            android:paddingBottom="@dimen/spacing_lg" />
+
+        <!-- Data Usage Settings Card -->
+        <LinearLayout
+            android:id="@+id/data_usage_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/data_usage_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/data_usage_display_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <!-- WiFi Section -->
+            <TextView
+                android:id="@+id/wifi_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wifi_usage_label"
+                android:textSize="@dimen/text_size_subheading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <CheckBox
+                android:id="@+id/wifi_daily_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/daily" />
+
+            <CheckBox
+                android:id="@+id/wifi_weekly_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/weekly" />
+
+            <CheckBox
+                android:id="@+id/wifi_monthly_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/monthly" />
+
+            <!-- Mobile Section -->
+            <TextView
+                android:id="@+id/mobile_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mobile_data_usage_label"
+                android:textSize="@dimen/text_size_subheading"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <CheckBox
+                android:id="@+id/mobile_daily_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/daily" />
+
+            <CheckBox
+                android:id="@+id/mobile_weekly_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/weekly" />
+
+            <CheckBox
+                android:id="@+id/mobile_monthly_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/monthly" />
+
+        </LinearLayout>
+
+        <!-- Notification Settings Card -->
+        <LinearLayout
+            android:id="@+id/notification_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_lg">
+
+            <TextView
+                android:id="@+id/notification_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/notification_settings_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <LinearLayout
+                android:id="@+id/notification_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/notification_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/show_data_usage_notification"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <Switch
+                    android:id="@+id/notification_enabled_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/notification_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/notification_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/notification_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/notification_disabled_note"
+                android:textSize="@dimen/text_size_caption"
+                android:alpha="0.6"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <!-- Permission Status -->
+            <TextView
+                android:id="@+id/notification_permission_status_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_small"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <Button
+                android:id="@+id/usage_access_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/open_usage_access_settings"
+                android:textSize="@dimen/text_size_body"
+                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
+                android:paddingVertical="@dimen/button_padding_small_vertical" />
+
+        </LinearLayout>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/save_settings"
+            android:textSize="@dimen/text_size_subheading"
+            android:paddingHorizontal="@dimen/button_padding_horizontal"
+            android:paddingVertical="@dimen/button_padding_vertical"
+            android:background="@android:drawable/btn_default" />
+
+    </LinearLayout>
+
+</ScrollView>
