@@ -3,7 +3,7 @@ package com.redskul.macrostatshelper.core
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.datausage.DataUsageService
 import com.redskul.macrostatshelper.battery.BatteryService
 
 class BootReceiver : BroadcastReceiver() {

@@ -3,7 +3,7 @@ package com.redskul.macrostatshelper.settings
 import android.content.Context
 import android.content.SharedPreferences
 import com.redskul.macrostatshelper.R
-import com.redskul.macrostatshelper.data.UsageData
+import com.redskul.macrostatshelper.datausage.UsageData
 import com.redskul.macrostatshelper.utils.PermissionHelper
 
 class SettingsManager(private val context: Context) {

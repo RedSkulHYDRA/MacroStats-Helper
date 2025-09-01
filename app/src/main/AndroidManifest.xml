@@ -61,7 +61,7 @@
 
         <!-- Foreground service for continuous data monitoring -->
         <service
-            android:name=".data.DataUsageService"
+            android:name=".datausage.DataUsageService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
@@ -110,7 +110,7 @@
 
         <!-- QS Tile Services -->
         <service
-            android:name=".data.WiFiDataUsageQSTileService"
+            android:name=".datausage.WiFiDataUsageQSTileService"
             android:exported="true"
             android:icon="@drawable/ic_wifi"
             android:label="@string/wifi_usage"
@@ -121,7 +121,7 @@
         </service>
 
         <service
-            android:name=".data.MobileDataUsageQSTileService"
+            android:name=".datausage.MobileDataUsageQSTileService"
             android:exported="true"
             android:icon="@drawable/ic_mobile"
             android:label="@string/mobile_data"

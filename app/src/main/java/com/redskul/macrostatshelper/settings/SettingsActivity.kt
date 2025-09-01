@@ -12,7 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
-import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.datausage.DataUsageService
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivitySettingsBinding
 import kotlinx.coroutines.delay

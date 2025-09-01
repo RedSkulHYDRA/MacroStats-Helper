@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper.data
+package com.redskul.macrostatshelper.datausage
 
 import android.annotation.SuppressLint
 import android.app.usage.NetworkStats

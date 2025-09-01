@@ -20,7 +20,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
-import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.datausage.DataUsageService
 import com.redskul.macrostatshelper.battery.BatteryService
 import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
 import com.redskul.macrostatshelper.autosync.AutoSyncManager

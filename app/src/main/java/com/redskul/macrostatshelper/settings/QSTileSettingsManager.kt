@@ -3,7 +3,7 @@ package com.redskul.macrostatshelper.settings
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.redskul.macrostatshelper.data.UsageData
+import com.redskul.macrostatshelper.datausage.UsageData
 
 class QSTileSettingsManager(context: Context) {
 

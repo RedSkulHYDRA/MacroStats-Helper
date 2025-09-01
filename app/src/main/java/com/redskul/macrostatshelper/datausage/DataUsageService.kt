@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper.data
+package com.redskul.macrostatshelper.datausage
 
 import android.app.Service
 import android.content.Intent
@@ -80,7 +80,7 @@ class DataUsageService : Service() {
         } else if (!notificationEnabled && isForegroundService) {
             // Demote from foreground
             try {
-                stopForeground(true)
+                stopForeground(STOP_FOREGROUND_REMOVE)
                 isForegroundService = false
                 android.util.Log.d("DataUsageService", "Running in background")
             } catch (e: Exception) {
@@ -113,7 +113,7 @@ class DataUsageService : Service() {
         } else if (!notificationEnabled && isForegroundService) {
             // Remove from foreground but keep service running
             try {
-                stopForeground(true) // true = remove notification
+                stopForeground(STOP_FOREGROUND_REMOVE) // Updated to use new API
                 isForegroundService = false
                 android.util.Log.d("DataUsageService", "Demoted from foreground, service continues in background")
             } catch (e: Exception) {
@@ -172,31 +172,33 @@ class DataUsageService : Service() {
         val isDeviceInactive = isDeviceInactive(timeSinceLastUpdate)
 
         // Calculate multiplier based on device state
-        var intervalMultiplier = 1
-
-        if (isDeviceInactive) {
+        val intervalMultiplier = if (isDeviceInactive) {
             consecutiveInactiveUpdates++
             // Gradually increase interval for inactive device (1x -> 2x -> 3x -> 4x max)
-            intervalMultiplier = minOf(
+            val multiplier = minOf(
                 1 + (consecutiveInactiveUpdates / 3),
                 MAX_INACTIVE_MULTIPLIER
             )
-            android.util.Log.d("DataUsageService", "Device inactive for ${timeSinceLastUpdate / 60000}min, multiplier: ${intervalMultiplier}x")
+            android.util.Log.d("DataUsageService", "Device inactive for ${timeSinceLastUpdate / 60000}min, multiplier: ${multiplier}x")
+            multiplier
         } else {
             consecutiveInactiveUpdates = 0
-            intervalMultiplier = 1
+            1
         }
 
         // Additional multiplier for power save mode
-        if (isInPowerSaveMode) {
-            intervalMultiplier *= POWER_SAVE_MULTIPLIER
+        val finalMultiplier = if (isInPowerSaveMode) {
+            val powerSaveMultiplier = intervalMultiplier * POWER_SAVE_MULTIPLIER
             android.util.Log.d("DataUsageService", "Power save mode active, applying ${POWER_SAVE_MULTIPLIER}x multiplier")
+            powerSaveMultiplier
+        } else {
+            intervalMultiplier
         }
 
-        val adaptiveInterval = baseInterval * intervalMultiplier
+        val adaptiveInterval = baseInterval * finalMultiplier
         lastUpdateTime = currentTime
 
-        android.util.Log.d("DataUsageService", "Adaptive interval: ${adaptiveInterval / 60000}min (base: ${baseInterval / 60000}min, multiplier: ${intervalMultiplier}x)")
+        android.util.Log.d("DataUsageService", "Adaptive interval: ${adaptiveInterval / 60000}min (base: ${baseInterval / 60000}min, multiplier: ${finalMultiplier}x)")
 
         return adaptiveInterval
     }
@@ -254,7 +256,7 @@ class DataUsageService : Service() {
 
         if (isForegroundService) {
             try {
-                stopForeground(true)
+                stopForeground(STOP_FOREGROUND_REMOVE)
             } catch (e: Exception) {
                 android.util.Log.e("DataUsageService", "Error stopping foreground in onDestroy", e)
             }
