@@ -2,6 +2,7 @@ package com.redskul.macrostatshelper.tiles
 
 import android.os.Bundle
 import android.text.InputType
+import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
@@ -114,7 +115,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     private fun setupSwitches(binding: ActivityQsTileSettingsBinding) {
         // Setup permission-required switches
-        binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { _, isChecked ->
+        binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
                 binding.showPeriodInTitleSwitch.isChecked = false
                 showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
@@ -122,7 +124,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
             }
         }
 
-        binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { _, isChecked ->
+        binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             if (isChecked && !permissionHelper.hasWriteSettingsPermission()) {
                 binding.showScreenTimeoutInTitleSwitch.isChecked = false
                 showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
@@ -130,9 +133,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
             }
         }
 
-        // These switches don't require special permission handling
-        // binding.showChargeInTitleSwitch - no listener needed
-        // binding.showBatteryHealthInTitleSwitch - no listener needed
+        // Add haptic feedback to other switches
+        binding.showChargeInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
+        binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
     }
 
     private fun setupButtons(binding: ActivityQsTileSettingsBinding) {

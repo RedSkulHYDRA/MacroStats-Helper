@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -239,7 +240,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupAutoSyncCard(binding: ActivityMainBinding) {
         binding.autosyncEnabledSwitch.isChecked = autoSyncManager.isAutoSyncEnabled()
 
-        binding.autosyncEnabledSwitch.setOnCheckedChangeListener { _, isChecked ->
+        binding.autosyncEnabledSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            // Add haptic feedback
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+
             if (isChecked && !permissionHelper.hasAccessibilityPermission()) {
                 binding.autosyncEnabledSwitch.isChecked = false
                 showPermissionRequiredDialog("AutoSync Management", getString(R.string.permission_accessibility)) {
