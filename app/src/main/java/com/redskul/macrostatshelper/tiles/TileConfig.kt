@@ -15,7 +15,9 @@ data class TileConfiguration(
 object TileConfigHelper {
 
     // Length threshold above which divider is hidden to prevent animation issues
-    private const val HIDE_DIVIDER_LENGTH_THRESHOLD = 12
+    private fun getHideDividerThreshold(context: Context): Int {
+        return context.resources.getDimensionPixelSize(R.dimen.tile_hide_divider_length_threshold)
+    }
 
     fun getWiFiTileConfig(context: Context): TileConfiguration {
         return TileConfiguration(
@@ -89,7 +91,8 @@ object TileConfigHelper {
             tile.subtitle = value
         } else {
             // Show divider only if text is short enough to not animate
-            val showDivider = value.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val threshold = context?.let { getHideDividerThreshold(it) } ?: 12
+            val showDivider = value.length < threshold
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
 
             tile.label = if (prefix.isNotEmpty()) "$prefix $value" else value
@@ -118,7 +121,8 @@ object TileConfigHelper {
             } else {
                 "$value Charging Cycles"
             }
-            val showDivider = fullText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val threshold = context?.let { getHideDividerThreshold(it) } ?: 12
+            val showDivider = fullText.length < threshold
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
 
             tile.label = if (prefix.isNotEmpty()) "$prefix $fullText" else fullText
@@ -147,7 +151,8 @@ object TileConfigHelper {
             tile.subtitle = valueText
         } else {
             // Show detailed stats directly in title (no separator for long text)
-            val showDivider = valueText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val threshold = context?.let { getHideDividerThreshold(it) } ?: 12
+            val showDivider = valueText.length < threshold
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
 
             tile.label = if (prefix.isNotEmpty()) "$prefix $valueText" else valueText
@@ -180,7 +185,8 @@ object TileConfigHelper {
             tile.subtitle = timeoutValue
         } else {
             // Show value directly in title with prefix if short enough
-            val showDivider = timeoutValue.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val threshold = context?.let { getHideDividerThreshold(it) } ?: 12
+            val showDivider = timeoutValue.length < threshold
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
 
             tile.label = if (prefix.isNotEmpty()) "$prefix $timeoutValue" else timeoutValue

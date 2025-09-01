@@ -106,11 +106,12 @@ class QSTileSettingsActivity : AppCompatActivity() {
                         WindowInsetsCompat.Type.displayCutout()
             )
 
+            val settingsPadding = resources.getDimensionPixelSize(R.dimen.padding_settings)
             mainLayout.setPadding(
-                24 + insets.left,
-                24 + insets.top,
-                24 + insets.right,
-                24 + insets.bottom
+                settingsPadding + insets.left,
+                settingsPadding + insets.top,
+                settingsPadding + insets.right,
+                settingsPadding + insets.bottom
             )
             WindowInsetsCompat.CONSUMED
         }
@@ -118,15 +119,19 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Title
         val titleText = TextView(this).apply {
             text = getString(R.string.qs_tile_settings_title)
-            textSize = 26f
+            textSize = resources.getDimension(R.dimen.text_size_large_title) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(8, 0, 8, 32)
+            val paddingSm = resources.getDimensionPixelSize(R.dimen.padding_text_sm)
+            val spacingXL = resources.getDimensionPixelSize(R.dimen.spacing_xl)
+            setPadding(paddingSm, 0, paddingSm, spacingXL)
         }
 
         val instructionText = TextView(this).apply {
             text = getString(R.string.qs_tile_instruction)
-            textSize = 14f
-            setPadding(8, 0, 8, 24)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val paddingSm = resources.getDimensionPixelSize(R.dimen.padding_text_sm)
+            val spacingLg = resources.getDimensionPixelSize(R.dimen.spacing_lg)
+            setPadding(paddingSm, 0, paddingSm, spacingLg)
             alpha = 0.8f
         }
 
@@ -145,16 +150,20 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Save Button
         saveButton = Button(this).apply {
             text = getString(R.string.save_settings)
-            textSize = 16f
-            setPadding(32, 16, 32, 16)
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setBackgroundResource(android.R.drawable.btn_default)
             setOnClickListener { saveSettings() }
         }
 
         val instructionText2 = TextView(this).apply {
             text = getString(R.string.qs_tile_instruction_2)
-            textSize = 12f
-            setPadding(8, 16, 8, 0)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val paddingSm = resources.getDimensionPixelSize(R.dimen.padding_text_sm)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(paddingSm, spacingMd, paddingSm, 0)
             alpha = 0.7f
         }
 
@@ -162,13 +171,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
         mainLayout.addView(titleText)
         mainLayout.addView(instructionText)
         mainLayout.addView(dataUsageCard)
-        addSpacing(mainLayout, 16)
+        addSpacing(mainLayout, R.dimen.spacing_md)
         mainLayout.addView(batteryCard)
-        addSpacing(mainLayout, 16)
+        addSpacing(mainLayout, R.dimen.spacing_md)
         mainLayout.addView(screenTimeoutCard)
-        addSpacing(mainLayout, 16)
+        addSpacing(mainLayout, R.dimen.spacing_md)
         mainLayout.addView(previewCard)
-        addSpacing(mainLayout, 24)
+        addSpacing(mainLayout, R.dimen.spacing_lg)
         mainLayout.addView(saveButton)
         mainLayout.addView(instructionText2)
 
@@ -184,19 +193,21 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val cardTitle = TextView(this).apply {
             text = "Data Usage Tiles"
-            textSize = 18f
+            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 16)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         val switchLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val switchLabelText = TextView(this).apply {
             text = getString(R.string.show_period_in_title)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
@@ -216,23 +227,26 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val switchDescription = TextView(this).apply {
             text = getString(R.string.tile_display_mode_description)
-            textSize = 12f
-            setPadding(0, 0, 0, 16)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
             alpha = 0.7f
         }
 
         // WiFi Tile Section
         val wifiLabel = TextView(this).apply {
             text = getString(R.string.wifi_tile_label)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val wifiDescription = TextView(this).apply {
             text = getString(R.string.wifi_tile_description)
-            textSize = 14f
-            setPadding(0, 0, 0, 8)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
             alpha = 0.8f
         }
 
@@ -249,15 +263,18 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Mobile Tile Section
         val mobileLabel = TextView(this).apply {
             text = getString(R.string.mobile_tile_label)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 16, 0, 8)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, spacingMd, 0, spacingSm)
         }
 
         val mobileDescription = TextView(this).apply {
             text = getString(R.string.mobile_tile_description)
-            textSize = 14f
-            setPadding(0, 0, 0, 8)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
             alpha = 0.8f
         }
 
@@ -292,27 +309,30 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val cardTitle = TextView(this).apply {
             text = "Battery Tiles"
-            textSize = 18f
+            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 16)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         // Charge Cycles Section
         val chargeLabel = TextView(this).apply {
             text = getString(R.string.charge_tile_label)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val chargeSwitchLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val chargeSwitchLabelText = TextView(this).apply {
             text = getString(R.string.show_charge_cycles_in_title)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
@@ -325,27 +345,30 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val chargeDescription = TextView(this).apply {
             text = getString(R.string.charge_tile_description)
-            textSize = 12f
-            setPadding(0, 0, 0, 16)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
             alpha = 0.7f
         }
 
         // Battery Health Section
         val healthLabel = TextView(this).apply {
             text = getString(R.string.battery_health_tile_label)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val healthSwitchLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val healthSwitchLabelText = TextView(this).apply {
             text = getString(R.string.show_battery_health_in_title)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
@@ -358,29 +381,34 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val healthDescription = TextView(this).apply {
             text = getString(R.string.battery_health_tile_description)
-            textSize = 12f
-            setPadding(0, 0, 0, 8)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
             alpha = 0.7f
         }
 
         // Design Capacity Input
         val capacityLabel = TextView(this).apply {
             text = getString(R.string.design_capacity_label)
-            textSize = 14f
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 8, 0, 4)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, spacingSm, 0, resources.getDimensionPixelSize(R.dimen.spacing_xs))
         }
 
         designCapacityEditText = EditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
             hint = getString(R.string.design_capacity_hint)
-            setPadding(16, 12, 16, 12)
+            val inputPaddingH = resources.getDimensionPixelSize(R.dimen.input_padding_horizontal)
+            val inputPaddingV = resources.getDimensionPixelSize(R.dimen.input_padding_vertical)
+            setPadding(inputPaddingH, inputPaddingV, inputPaddingH, inputPaddingV)
         }
 
         val capacityDescription = TextView(this).apply {
             text = getString(R.string.design_capacity_description)
-            textSize = 12f
-            setPadding(0, 4, 0, 0)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingXs = resources.getDimensionPixelSize(R.dimen.spacing_xs)
+            setPadding(0, spacingXs, 0, 0)
             alpha = 0.7f
         }
 
@@ -406,19 +434,21 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val cardTitle = TextView(this).apply {
             text = "Screen Timeout Tile"
-            textSize = 18f
+            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 16)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         val screenTimeoutSwitchLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val screenTimeoutSwitchLabelText = TextView(this).apply {
             text = getString(R.string.show_screen_timeout_in_title)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
@@ -438,7 +468,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val screenTimeoutDescription = TextView(this).apply {
             text = getString(R.string.screen_timeout_tile_description)
-            textSize = 12f
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
             setPadding(0, 0, 0, 0)
             alpha = 0.7f
         }
@@ -458,15 +488,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         val previewLabel = TextView(this).apply {
             text = getString(R.string.preview_label)
-            textSize = 18f
+            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 16)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         previewText = TextView(this).apply {
             text = getString(R.string.preview_default)
-            textSize = 12f
-            setPadding(12, 12, 12, 12)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val previewPadding = resources.getDimensionPixelSize(R.dimen.preview_padding)
+            setPadding(previewPadding, previewPadding, previewPadding, previewPadding)
             setBackgroundColor(0xFFF5F5F5.toInt())
             setTypeface(android.graphics.Typeface.MONOSPACE)
         }
@@ -477,11 +509,11 @@ class QSTileSettingsActivity : AppCompatActivity() {
         return card
     }
 
-    private fun addSpacing(parent: LinearLayout, dpSize: Int) {
+    private fun addSpacing(parent: LinearLayout, dimenRes: Int) {
         val spacer = View(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                (dpSize * resources.displayMetrics.density).toInt()
+                resources.getDimensionPixelSize(dimenRes)
             )
         }
         parent.addView(spacer)

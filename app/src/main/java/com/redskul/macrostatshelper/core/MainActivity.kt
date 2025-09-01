@@ -160,7 +160,8 @@ class MainActivity : AppCompatActivity() {
         val scrollView = ScrollView(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(64, 64, 64, 64)
+            val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
+            setPadding(mainPadding, mainPadding, mainPadding, mainPadding)
         }
 
         // Handle window insets for notch and system bars
@@ -170,24 +171,27 @@ class MainActivity : AppCompatActivity() {
                         WindowInsetsCompat.Type.displayCutout()
             )
 
+            val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
             layout.setPadding(
-                64 + insets.left,
-                64 + insets.top,
-                64 + insets.right,
-                64 + insets.bottom
+                mainPadding + insets.left,
+                mainPadding + insets.top,
+                mainPadding + insets.right,
+                mainPadding + insets.bottom
             )
             WindowInsetsCompat.CONSUMED
         }
 
         val titleText = TextView(this).apply {
             text = getString(R.string.app_name)
-            textSize = 24f
-            setPadding(0, 0, 0, 32)
+            textSize = resources.getDimension(R.dimen.text_size_title) / resources.displayMetrics.scaledDensity
+            val spacingXL = resources.getDimensionPixelSize(R.dimen.spacing_xl)
+            setPadding(0, 0, 0, spacingXL)
         }
 
         val statusText = TextView(this).apply {
             text = getString(R.string.data_usage_monitoring_running)
-            setPadding(0, 0, 0, 16)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         // Battery Optimization Section
@@ -201,7 +205,9 @@ class MainActivity : AppCompatActivity() {
 
         val settingsButton = Button(this).apply {
             text = getString(R.string.display_settings)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener {
                 startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
             }
@@ -209,7 +215,9 @@ class MainActivity : AppCompatActivity() {
 
         val qsTileSettingsButton = Button(this).apply {
             text = getString(R.string.qs_tile_settings)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener {
                 startActivity(Intent(this@MainActivity, QSTileSettingsActivity::class.java))
             }
@@ -217,7 +225,9 @@ class MainActivity : AppCompatActivity() {
 
         val stopServiceButton = Button(this).apply {
             text = getString(R.string.stop_monitoring)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
                 stopService(Intent(this@MainActivity, BatteryService::class.java))
@@ -243,13 +253,13 @@ class MainActivity : AppCompatActivity() {
 
         layout.addView(titleText)
         layout.addView(statusText)
-        addSpacing(layout, 16)
+        addSpacing(layout, R.dimen.spacing_md)
         layout.addView(batteryOptCard)
-        addSpacing(layout, 16)
+        addSpacing(layout, R.dimen.spacing_md)
         layout.addView(updateIntervalCard)
-        addSpacing(layout, 16)
+        addSpacing(layout, R.dimen.spacing_md)
         layout.addView(autoSyncCard)
-        addSpacing(layout, 16)
+        addSpacing(layout, R.dimen.spacing_md)
         layout.addView(settingsButton)
         layout.addView(qsTileSettingsButton)
         layout.addView(stopServiceButton)
@@ -268,19 +278,23 @@ class MainActivity : AppCompatActivity() {
 
         val cardTitle = TextView(this).apply {
             text = "Battery Optimization"
-            textSize = 18f
+            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 16)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         batteryOptimizationDescription = TextView(this).apply {
-            textSize = 14f
-            setPadding(0, 0, 0, 16)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
             alpha = 0.8f
         }
 
         batteryOptimizationButton = Button(this).apply {
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener { requestBatteryOptimizationExemption() }
         }
 
@@ -300,22 +314,25 @@ class MainActivity : AppCompatActivity() {
 
         val cardTitle = TextView(this).apply {
             text = "Update Frequency"
-            textSize = 18f
+            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val description = TextView(this).apply {
             text = "How often to update data usage statistics and notifications"
-            textSize = 14f
-            setPadding(0, 0, 0, 16)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
             alpha = 0.8f
         }
 
         val spinnerLabel = TextView(this).apply {
             text = "Update every:"
-            textSize = 16f
-            setPadding(0, 0, 0, 8)
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         updateIntervalSpinner = Spinner(this).apply {
@@ -364,25 +381,28 @@ class MainActivity : AppCompatActivity() {
 
         val cardTitle = TextView(this).apply {
             text = getString(R.string.autosync_settings_title)
-            textSize = 18f
+            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         // Accessibility Status
         accessibilityStatusText = TextView(this).apply {
-            textSize = 12f
-            setPadding(0, 0, 0, 16)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
         }
 
         val autoSyncLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 8)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, 0, 0, spacingSm)
         }
 
         val autoSyncSwitchLabel = TextView(this).apply {
             text = getString(R.string.enable_autosync_management)
-            textSize = 16f
+            textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
@@ -406,17 +426,19 @@ class MainActivity : AppCompatActivity() {
 
         val autoSyncDescription = TextView(this).apply {
             text = getString(R.string.autosync_description)
-            textSize = 12f
-            setPadding(0, 0, 0, 12)
+            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, 0, 0, spacingMd)
             alpha = 0.7f
         }
 
         // AutoSync Delay Selection
         val delayLabel = TextView(this).apply {
             text = getString(R.string.autosync_delay_label)
-            textSize = 14f
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 8, 0, 4)
+            val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+            setPadding(0, spacingSm, 0, resources.getDimensionPixelSize(R.dimen.spacing_xs))
         }
 
         autoSyncDelaySpinner = Spinner(this).apply {
@@ -448,15 +470,19 @@ class MainActivity : AppCompatActivity() {
 
         val delayDescription = TextView(this).apply {
             text = getString(R.string.autosync_delay_description)
-            textSize = 11f
-            setPadding(0, 4, 0, 12)
+            textSize = resources.getDimension(R.dimen.text_size_caption) / resources.displayMetrics.scaledDensity
+            val spacingXs = resources.getDimensionPixelSize(R.dimen.spacing_xs)
+            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            setPadding(0, spacingXs, 0, spacingMd)
             alpha = 0.6f
         }
 
         val accessibilityButton = Button(this).apply {
             text = getString(R.string.open_accessibility_settings)
-            textSize = 14f
-            setPadding(16, 8, 16, 8)
+            textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_small_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_small_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener {
                 requestAccessibilityPermission()
             }
@@ -537,7 +563,8 @@ class MainActivity : AppCompatActivity() {
         val scrollView = ScrollView(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(64, 64, 64, 64)
+            val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
+            setPadding(mainPadding, mainPadding, mainPadding, mainPadding)
         }
 
         // Handle window insets for notch and system bars
@@ -547,59 +574,74 @@ class MainActivity : AppCompatActivity() {
                         WindowInsetsCompat.Type.displayCutout()
             )
 
+            val mainPadding = resources.getDimensionPixelSize(R.dimen.padding_main)
             layout.setPadding(
-                64 + insets.left,
-                64 + insets.top,
-                64 + insets.right,
-                64 + insets.bottom
+                mainPadding + insets.left,
+                mainPadding + insets.top,
+                mainPadding + insets.right,
+                mainPadding + insets.bottom
             )
             WindowInsetsCompat.CONSUMED
         }
 
         val titleText = TextView(this).apply {
             text = getString(R.string.setup_title)
-            textSize = 24f
-            setPadding(0, 0, 0, 32)
+            textSize = resources.getDimension(R.dimen.text_size_title) / resources.displayMetrics.scaledDensity
+            val spacingXL = resources.getDimensionPixelSize(R.dimen.spacing_xl)
+            setPadding(0, 0, 0, spacingXL)
         }
 
         val descriptionText = TextView(this).apply {
             text = getString(R.string.setup_description_autosync)
-            setPadding(0, 0, 0, 32)
+            val spacingXL = resources.getDimensionPixelSize(R.dimen.spacing_xl)
+            setPadding(0, 0, 0, spacingXL)
         }
 
         val notificationButton = Button(this).apply {
             text = getString(R.string.grant_notification_permission)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener { requestNotificationPermission() }
         }
 
         val usageStatsButton = Button(this).apply {
             text = getString(R.string.grant_usage_stats_permission)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener { requestUsageStatsPermission() }
         }
 
         val writeSettingsButton = Button(this).apply {
             text = getString(R.string.grant_write_settings_permission)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener { requestWriteSettingsPermission() }
         }
 
         val accessibilityButton = Button(this).apply {
             text = getString(R.string.grant_accessibility_permission)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener { requestAccessibilityPermission() }
         }
 
         val batteryOptButton = Button(this).apply {
             text = "Disable Battery Optimization"
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener { requestBatteryOptimizationExemption() }
         }
 
         val startButton = Button(this).apply {
             text = getString(R.string.start_monitoring)
-            setPadding(0, 16, 0, 16)
+            val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
+            val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
+            setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
             setOnClickListener { completeSetup() }
         }
 
@@ -666,11 +708,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun addSpacing(parent: LinearLayout, dpSize: Int) {
+    private fun addSpacing(parent: LinearLayout, dimenRes: Int) {
         val spacer = android.view.View(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                (dpSize * resources.displayMetrics.density).toInt()
+                resources.getDimensionPixelSize(dimenRes)
             )
         }
         parent.addView(spacer)

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Dimensions - Standard Size Scale -->
+    <dimen name="size_xs">4dp</dimen>
+    <dimen name="size_sm">8dp</dimen>
+    <dimen name="size_md">16dp</dimen>
+    <dimen name="size_lg">24dp</dimen>
+    <dimen name="size_xl">32dp</dimen>
+    <dimen name="size_xxl">64dp</dimen>
+
+    <!-- Base Text Sizes -->
+    <dimen name="text_xs">11sp</dimen>
+    <dimen name="text_sm">12sp</dimen>
+    <dimen name="text_md">14sp</dimen>
+    <dimen name="text_lg">16sp</dimen>
+    <dimen name="text_xl">18sp</dimen>
+    <dimen name="text_xxl">24sp</dimen>
+    <dimen name="text_xxxl">26sp</dimen>
+
+    <!-- Layout Padding & Margins -->
+    <dimen name="padding_main">@dimen/size_lg</dimen>           <!-- 24dp -->
+    <dimen name="padding_settings">@dimen/size_lg</dimen>       <!-- 24dp -->
+    <dimen name="padding_card">@dimen/size_md</dimen>           <!-- 16dp -->
+    <dimen name="padding_text_sm">@dimen/size_sm</dimen>        <!-- 8dp -->
+    <dimen name="padding_text_md">@dimen/size_md</dimen>        <!-- 16dp -->
+    <dimen name="padding_text_lg">@dimen/size_lg</dimen>        <!-- 24dp -->
+    <dimen name="padding_text_xl">@dimen/size_xl</dimen>        <!-- 32dp -->
+
+    <!-- Spacing -->
+    <dimen name="spacing_xs">@dimen/size_xs</dimen>             <!-- 4dp -->
+    <dimen name="spacing_sm">@dimen/size_sm</dimen>             <!-- 8dp -->
+    <dimen name="spacing_md">@dimen/size_md</dimen>             <!-- 16dp -->
+    <dimen name="spacing_lg">@dimen/size_lg</dimen>             <!-- 24dp -->
+    <dimen name="spacing_xl">@dimen/size_xl</dimen>             <!-- 32dp -->
+
+    <!-- Button Dimensions -->
+    <dimen name="button_padding_horizontal">@dimen/size_xl</dimen>     <!-- 32dp -->
+    <dimen name="button_padding_vertical">@dimen/size_md</dimen>       <!-- 16dp -->
+    <dimen name="button_padding_small_horizontal">@dimen/size_md</dimen>  <!-- 16dp -->
+    <dimen name="button_padding_small_vertical">@dimen/size_sm</dimen>    <!-- 8dp -->
+
+    <!-- Text Sizes (Semantic) -->
+    <dimen name="text_size_caption">@dimen/text_xs</dimen>      <!-- 11sp -->
+    <dimen name="text_size_small">@dimen/text_sm</dimen>        <!-- 12sp -->
+    <dimen name="text_size_body">@dimen/text_md</dimen>         <!-- 14sp -->
+    <dimen name="text_size_subheading">@dimen/text_lg</dimen>   <!-- 16sp -->
+    <dimen name="text_size_heading">@dimen/text_xl</dimen>      <!-- 18sp -->
+    <dimen name="text_size_title">@dimen/text_xxl</dimen>       <!-- 24sp -->
+    <dimen name="text_size_large_title">@dimen/text_xxxl</dimen> <!-- 26sp -->
+
+    <!-- Input Field Dimensions -->
+    <dimen name="input_padding_horizontal">@dimen/size_md</dimen>  <!-- 16dp -->
+    <dimen name="input_padding_vertical">@dimen/size_md</dimen>    <!-- 16dp -->
+
+    <!-- Card Properties -->
+    <dimen name="card_radius">@dimen/size_md</dimen>              <!-- 16dp -->
+    <dimen name="card_margin">@dimen/size_md</dimen>              <!-- 16dp -->
+    <dimen name="card_elevation">2dp</dimen>
+
+    <!-- Preview Background -->
+    <dimen name="preview_padding">@dimen/size_md</dimen>          <!-- 16dp -->
+
+    <!-- Quick Settings Tile Constants -->
+    <dimen name="tile_hide_divider_length_threshold">@dimen/size_md</dimen> <!-- 16dp -->
+
+    <!-- Touch Target -->
+    <dimen name="min_touch_target">48dp</dimen>
+</resources>
