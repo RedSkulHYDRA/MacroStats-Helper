@@ -11,11 +11,15 @@ import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.data.DataUsageService
 import com.redskul.macrostatshelper.data.BatteryService
@@ -79,6 +83,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         permissionHelper = PermissionHelper(this)
         settingsManager = SettingsManager(this)
@@ -127,9 +134,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMainUI() {
+        val scrollView = ScrollView(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(64, 64, 64, 64)
+        }
+
+        // Handle window insets for notch and system bars
+        ViewCompat.setOnApplyWindowInsetsListener(scrollView) { view, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                        WindowInsetsCompat.Type.displayCutout()
+            )
+
+            layout.setPadding(
+                64 + insets.left,
+                64 + insets.top,
+                64 + insets.right,
+                64 + insets.bottom
+            )
+            WindowInsetsCompat.CONSUMED
         }
 
         val titleText = TextView(this).apply {
@@ -204,7 +228,8 @@ class MainActivity : AppCompatActivity() {
         layout.addView(qsTileSettingsButton)
         layout.addView(stopServiceButton)
 
-        setContentView(layout)
+        scrollView.addView(layout)
+        setContentView(scrollView)
 
         ensureServicesRunning()
     }
@@ -226,9 +251,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPermissionSetupUI() {
+        val scrollView = ScrollView(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(64, 64, 64, 64)
+        }
+
+        // Handle window insets for notch and system bars
+        ViewCompat.setOnApplyWindowInsetsListener(scrollView) { view, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                        WindowInsetsCompat.Type.displayCutout()
+            )
+
+            layout.setPadding(
+                64 + insets.left,
+                64 + insets.top,
+                64 + insets.right,
+                64 + insets.bottom
+            )
+            WindowInsetsCompat.CONSUMED
         }
 
         val titleText = TextView(this).apply {
@@ -280,7 +322,8 @@ class MainActivity : AppCompatActivity() {
         layout.addView(accessibilityButton)
         layout.addView(startButton)
 
-        setContentView(layout)
+        scrollView.addView(layout)
+        setContentView(scrollView)
 
         lifecycleScope.launch {
             while (true) {

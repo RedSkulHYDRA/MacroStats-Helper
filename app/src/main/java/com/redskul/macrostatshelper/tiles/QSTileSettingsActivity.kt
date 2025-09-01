@@ -8,6 +8,9 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.TimePeriod
@@ -34,6 +37,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         qsTileSettingsManager = QSTileSettingsManager(this)
         batteryHealthMonitor = BatteryHealthMonitor(this)
@@ -88,9 +94,25 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun createUI() {
+        val scrollView = ScrollView(this)
         val mainLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 24, 24, 24)
+        }
+
+        // Handle window insets
+        ViewCompat.setOnApplyWindowInsetsListener(scrollView) { view, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                        WindowInsetsCompat.Type.displayCutout()
+            )
+
+            mainLayout.setPadding(
+                24 + insets.left,
+                24 + insets.top,
+                24 + insets.right,
+                24 + insets.bottom
+            )
+            WindowInsetsCompat.CONSUMED
         }
 
         // Title
@@ -150,7 +172,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         mainLayout.addView(saveButton)
         mainLayout.addView(instructionText2)
 
-        setContentView(ScrollView(this).apply { addView(mainLayout) })
+        scrollView.addView(mainLayout)
+        setContentView(scrollView)
     }
 
     private fun createDataUsageTilesCard(): LinearLayout {
