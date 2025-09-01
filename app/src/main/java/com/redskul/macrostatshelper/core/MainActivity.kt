@@ -189,6 +189,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUpdateIntervalCard(binding: ActivityMainBinding) {
+        // Setup adapter
         val adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
@@ -199,20 +200,38 @@ class MainActivity : AppCompatActivity() {
 
         binding.updateIntervalSpinner.adapter = adapter
 
-        // Load current setting
+        // Load current setting BEFORE setting up the listener
         val currentInterval = settingsManager.getUpdateInterval()
         val currentIndex = settingsManager.getUpdateIntervalValues().indexOf(currentInterval)
         if (currentIndex >= 0) {
             binding.updateIntervalSpinner.setSelection(currentIndex)
         }
 
+        // Set up listener AFTER initial selection is set
         binding.updateIntervalSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            private var isInitialSelection = true
+
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                // Skip the first trigger which happens during initial setup
+                if (isInitialSelection) {
+                    isInitialSelection = false
+                    return
+                }
+
                 val selectedInterval = settingsManager.getUpdateIntervalValues()[position]
-                settingsManager.setUpdateInterval(selectedInterval)
-                restartServicesWithNewInterval()
-                showToast(getString(R.string.update_frequency_changed))
+                val currentInterval = settingsManager.getUpdateInterval()
+
+                // Only proceed if the interval actually changed
+                if (selectedInterval != currentInterval) {
+                    settingsManager.setUpdateInterval(selectedInterval)
+
+                    // Restart services with new interval
+                    restartServicesWithNewInterval()
+
+                    showToast(getString(R.string.update_frequency_changed))
+                }
             }
+
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
@@ -243,17 +262,33 @@ class MainActivity : AppCompatActivity() {
 
         binding.autosyncDelaySpinner.adapter = delayAdapter
 
+        // Load current delay setting BEFORE setting up the listener
         val delayMinutes = autoSyncManager.getAutoSyncDelay()
         val delayIndex = autoSyncManager.getAllowedDelays().indexOf(delayMinutes)
         if (delayIndex >= 0) {
             binding.autosyncDelaySpinner.setSelection(delayIndex)
         }
 
+        // Set up delay spinner listener with initial selection flag
         binding.autosyncDelaySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            private var isInitialSelection = true
+
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                val delayMinutes = autoSyncManager.getAllowedDelays()[position]
-                autoSyncManager.setAutoSyncDelay(delayMinutes)
+                // Skip the first trigger which happens during initial setup
+                if (isInitialSelection) {
+                    isInitialSelection = false
+                    return
+                }
+
+                val selectedDelay = autoSyncManager.getAllowedDelays()[position]
+                val currentDelay = autoSyncManager.getAutoSyncDelay()
+
+                // Only proceed if the delay actually changed
+                if (selectedDelay != currentDelay) {
+                    autoSyncManager.setAutoSyncDelay(selectedDelay)
+                }
             }
+
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
@@ -458,6 +493,10 @@ class MainActivity : AppCompatActivity() {
 
             val batteryServiceIntent = Intent(this, BatteryService::class.java)
             startService(batteryServiceIntent)
+
+            // REMOVED: No toast here since this runs every time the app opens
+            // This ensures services are running without bothering the user with notifications
+
         } catch (e: Exception) {
             android.util.Log.e("MainActivity", "Error ensuring services are running", e)
         }
@@ -527,6 +566,7 @@ class MainActivity : AppCompatActivity() {
             val batteryResult = startService(batteryServiceIntent)
 
             if (dataResult != null && batteryResult != null) {
+                // Only show toast during actual setup completion
                 showToast(getString(R.string.monitoring_started))
 
                 lifecycleScope.launch {
@@ -555,6 +595,7 @@ class MainActivity : AppCompatActivity() {
             val batteryServiceIntent = Intent(this, BatteryService::class.java)
             startService(batteryServiceIntent)
 
+            // Only show toast when user manually starts services
             showToast(getString(R.string.monitoring_started))
         } catch (e: Exception) {
             showToast(getString(R.string.service_error, e.message ?: "Unknown"))
