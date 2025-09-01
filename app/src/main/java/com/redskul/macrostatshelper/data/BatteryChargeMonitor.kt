@@ -9,7 +9,6 @@ import com.redskul.macrostatshelper.R
 
 data class ChargeData(
     val chargeCycles: String,
-    val batteryHealth: String,
     val batteryCapacity: String
 )
 
@@ -27,14 +26,12 @@ class BatteryChargeMonitor(private val context: Context) {
         android.util.Log.d("BatteryChargeMonitor", "Starting battery charge data collection")
 
         val chargeCycles = getChargeCycles()
-        val batteryHealth = getBatteryHealth()
         val batteryCapacity = getBatteryCapacity()
 
-        android.util.Log.d("BatteryChargeMonitor", "Charge cycles: $chargeCycles, Health: $batteryHealth, Capacity: $batteryCapacity")
+        android.util.Log.d("BatteryChargeMonitor", "Charge cycles: $chargeCycles, Capacity: $batteryCapacity")
 
         return ChargeData(
             chargeCycles = chargeCycles,
-            batteryHealth = batteryHealth,
             batteryCapacity = batteryCapacity
         )
     }
@@ -160,26 +157,6 @@ class BatteryChargeMonitor(private val context: Context) {
         }
     }
 
-    private fun getBatteryHealth(): String {
-        return try {
-            val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            val health = intent?.getIntExtra(BatteryManager.EXTRA_HEALTH, BatteryManager.BATTERY_HEALTH_UNKNOWN) ?: BatteryManager.BATTERY_HEALTH_UNKNOWN
-
-            when (health) {
-                BatteryManager.BATTERY_HEALTH_GOOD -> context.getString(R.string.battery_health_good)
-                BatteryManager.BATTERY_HEALTH_OVERHEAT -> context.getString(R.string.battery_health_overheat)
-                BatteryManager.BATTERY_HEALTH_DEAD -> context.getString(R.string.battery_health_dead)
-                BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> context.getString(R.string.battery_health_over_voltage)
-                BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> context.getString(R.string.battery_health_unspecified_failure)
-                BatteryManager.BATTERY_HEALTH_COLD -> context.getString(R.string.battery_health_cold)
-                else -> context.getString(R.string.battery_health_unknown)
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("BatteryChargeMonitor", "Error getting battery health", e)
-            context.getString(R.string.battery_health_error)
-        }
-    }
-
     private fun getBatteryCapacity(): String {
         return try {
             val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -187,11 +164,11 @@ class BatteryChargeMonitor(private val context: Context) {
             if (capacity >= 0) {
                 "$capacity%"
             } else {
-                context.getString(R.string.battery_health_unknown)
+                context.getString(R.string.not_available)
             }
         } catch (e: Exception) {
             android.util.Log.e("BatteryChargeMonitor", "Error getting battery capacity", e)
-            context.getString(R.string.battery_health_error)
+            context.getString(R.string.error_message, e.message ?: "Unknown error")
         }
     }
 }

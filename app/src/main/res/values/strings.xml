@@ -65,7 +65,6 @@
     <!-- QSTileSettingsActivity strings -->
     <string name="qs_tile_settings_title">QS Tile Settings</string>
     <string name="qs_tile_instruction">Configure what time period each Quick Settings tile shows. These settings are independent from your notification settings.</string>
-
     <string name="tile_display_mode_label">Data Usage Tile Display Mode:</string>
     <string name="show_period_in_title">Show time period in tile title</string>
     <string name="tile_display_mode_description">When enabled, tiles will show "WiFi Usage (Daily)" as title with data usage below. When disabled, data usage becomes the title.</string>
@@ -128,14 +127,6 @@
     <string name="not_supported_by_device">Not supported by device</string>
     <string name="not_available">Not available</string>
     <string name="error_message">Error: %1$s</string>
-    <string name="battery_health_good">Good</string>
-    <string name="battery_health_overheat">Overheat</string>
-    <string name="battery_health_dead">Dead</string>
-    <string name="battery_health_over_voltage">Over Voltage</string>
-    <string name="battery_health_unspecified_failure">Unspecified Failure</string>
-    <string name="battery_health_cold">Cold</string>
-    <string name="battery_health_unknown">Unknown</string>
-    <string name="battery_health_error">Error</string>
 
     <!-- Tile Label formats -->
     <string name="wifi_usage_daily">WiFi Usage (Daily)</string>
