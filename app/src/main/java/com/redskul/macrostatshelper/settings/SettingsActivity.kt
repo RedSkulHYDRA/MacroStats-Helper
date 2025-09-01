@@ -63,7 +63,7 @@ class SettingsActivity : AppCompatActivity() {
                     updatePermissionBasedUI()
                     if (lastUsageStats && !currentUsageStats) {
                         notificationEnabledSwitch.isChecked = false
-                        showToast("Data usage features disabled due to missing permission")
+                        showToast("Data features disabled")
                     }
                 }
 
@@ -255,7 +255,7 @@ class SettingsActivity : AppCompatActivity() {
             setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
                     this.isChecked = false
-                    showPermissionRequiredDialog("Data Usage Notification", "Usage Stats") {
+                    showPermissionRequiredDialog("Data Usage Notification", getString(R.string.permission_usage_stats)) {
                         requestUsageStatsPermission()
                     }
                     return@setOnCheckedChangeListener
@@ -325,7 +325,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {
         AlertDialog.Builder(this)
             .setTitle("Permission Required")
-            .setMessage("$featureName requires $permissionName permission to work. Would you like to grant it now?")
+            .setMessage("$featureName requires $permissionName permission. Grant now?")
             .setPositiveButton("Grant") { _, _ -> onPositive() }
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .show()
@@ -334,7 +334,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun requestUsageStatsPermission() {
         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
         startActivity(intent)
-        showToast("Please enable usage access for MacroStats Helper")
+        showToast("Enable usage access for MacroStats Helper")
     }
 
     private fun saveSettings() {
@@ -365,6 +365,6 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

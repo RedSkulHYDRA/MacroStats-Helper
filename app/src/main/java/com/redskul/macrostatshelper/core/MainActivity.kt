@@ -55,9 +55,9 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            showToast("Notification permission granted")
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
         } else {
-            showToast(getString(R.string.notification_permission_required))
+            showToast(getString(R.string.permission_denied, getString(R.string.permission_notification)))
         }
     }
 
@@ -65,9 +65,9 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (permissionHelper.hasUsageStatsPermission()) {
-            showToast("Usage stats permission granted")
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_usage_stats)))
         } else {
-            showToast(getString(R.string.usage_stats_permission_required))
+            showToast(getString(R.string.permission_required, getString(R.string.permission_usage_stats)))
         }
     }
 
@@ -75,9 +75,9 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (permissionHelper.hasWriteSettingsPermission()) {
-            showToast("Write settings permission granted")
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_write_settings)))
         } else {
-            showToast(getString(R.string.write_settings_permission_info))
+            showToast(getString(R.string.permission_denied, getString(R.string.permission_write_settings)))
         }
     }
 
@@ -85,9 +85,9 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (permissionHelper.hasAccessibilityPermission()) {
-            showToast("Accessibility service enabled")
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_accessibility)))
         } else {
-            showToast(getString(R.string.accessibility_permission_info))
+            showToast(getString(R.string.permission_guide_short))
         }
     }
 
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         updateBatteryOptimizationUI()
         if (permissionHelper.isBatteryOptimizationDisabled()) {
-            showToast("Battery optimization disabled successfully")
+            showToast("Battery optimization disabled")
         }
     }
 
@@ -134,13 +134,13 @@ class MainActivity : AppCompatActivity() {
                 if (lastUsageStats && !currentUsageStats) {
                     android.util.Log.i("MainActivity", "Usage stats permission was revoked")
                     settingsManager.enforcePermissionRestrictions()
-                    showToast("Data usage features disabled due to missing permission")
+                    showToast("Data features disabled")
                 }
 
                 if (lastAccessibility && !currentAccessibility) {
                     android.util.Log.i("MainActivity", "Accessibility permission was revoked")
                     autoSyncManager.enforcePermissionRestrictions()
-                    showToast("AutoSync features disabled due to missing permission")
+                    showToast("AutoSync disabled")
                 }
 
                 // Update battery optimization UI
@@ -232,7 +232,7 @@ class MainActivity : AppCompatActivity() {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
                 stopService(Intent(this@MainActivity, BatteryService::class.java))
                 showToast(getString(R.string.monitoring_stopped))
-                statusText.text = "Monitoring has been stopped. You can restart it using the Start Monitoring button below."
+                statusText.text = "Monitoring stopped. Use Start button to restart."
 
                 this.text = getString(R.string.start_monitoring)
                 this.setOnClickListener {
@@ -243,7 +243,7 @@ class MainActivity : AppCompatActivity() {
                         stopService(Intent(this@MainActivity, DataUsageService::class.java))
                         stopService(Intent(this@MainActivity, BatteryService::class.java))
                         showToast(getString(R.string.monitoring_stopped))
-                        statusText.text = "Monitoring has been stopped. You can restart it using the Start Monitoring button below."
+                        statusText.text = "Monitoring stopped. Use Start button to restart."
                         this.text = getString(R.string.start_monitoring)
                         setupStopServiceButton(this, statusText)
                     }
@@ -321,7 +321,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val description = TextView(this).apply {
-            text = "How often to update data usage statistics and notifications"
+            text = "Update frequency for data statistics"
             textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
             val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
             setPadding(0, 0, 0, spacingMd)
@@ -359,7 +359,7 @@ class MainActivity : AppCompatActivity() {
                     // Restart services with new interval
                     restartServicesWithNewInterval()
 
-                    showToast("Update frequency changed to ${settingsManager.getUpdateIntervalOptions()[position]}")
+                    showToast("Update frequency changed")
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
@@ -411,7 +411,7 @@ class MainActivity : AppCompatActivity() {
             setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked && !permissionHelper.hasAccessibilityPermission()) {
                     this.isChecked = false
-                    showPermissionRequiredDialog("AutoSync Management", "Accessibility Service") {
+                    showPermissionRequiredDialog("AutoSync Management", getString(R.string.permission_accessibility)) {
                         requestAccessibilityPermission()
                     }
                     return@setOnCheckedChangeListener
@@ -507,12 +507,12 @@ class MainActivity : AppCompatActivity() {
                 batteryOptimizationButton.text = "✓ Battery Optimization Disabled"
                 batteryOptimizationButton.alpha = 0.7f
                 batteryOptimizationButton.isEnabled = false
-                batteryOptimizationDescription.text = "Battery optimization is disabled. Your app will run reliably in the background."
+                batteryOptimizationDescription.text = "Battery optimization disabled. App runs reliably."
             } else {
                 batteryOptimizationButton.text = "Disable Battery Optimization"
                 batteryOptimizationButton.alpha = 1.0f
                 batteryOptimizationButton.isEnabled = true
-                batteryOptimizationDescription.text = "Battery optimization can prevent the app from working properly in the background. Disabling it ensures reliable monitoring and notifications."
+                batteryOptimizationDescription.text = "Disable optimization for reliable monitoring."
             }
         }
     }
@@ -539,7 +539,7 @@ class MainActivity : AppCompatActivity() {
             batteryOptimizationLauncher.launch(intent)
         } catch (e: Exception) {
             android.util.Log.e("MainActivity", "Error requesting battery optimization exemption", e)
-            showToast("Unable to open battery optimization settings")
+            showToast("Unable to open battery settings")
         }
     }
 
@@ -598,7 +598,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val notificationButton = Button(this).apply {
-            text = getString(R.string.grant_notification_permission)
+            text = getString(R.string.grant_permission_button, getString(R.string.permission_notification))
             val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
             val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
             setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
@@ -606,7 +606,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val usageStatsButton = Button(this).apply {
-            text = getString(R.string.grant_usage_stats_permission)
+            text = getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
             val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
             val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
             setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
@@ -614,7 +614,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val writeSettingsButton = Button(this).apply {
-            text = getString(R.string.grant_write_settings_permission)
+            text = getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
             val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
             val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
             setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
@@ -622,7 +622,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val accessibilityButton = Button(this).apply {
-            text = getString(R.string.grant_accessibility_permission)
+            text = getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
             val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
             val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
             setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
@@ -666,30 +666,30 @@ class MainActivity : AppCompatActivity() {
                 val hasBatteryOpt = permissionHelper.isBatteryOptimizationDisabled()
 
                 notificationButton.text = if (hasNotification) {
-                    "✓ " + getString(R.string.grant_notification_permission)
+                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_notification))
                 } else {
-                    getString(R.string.grant_notification_permission)
+                    getString(R.string.grant_permission_button, getString(R.string.permission_notification))
                 }
                 notificationButton.alpha = if (hasNotification) 0.7f else 1.0f
 
                 usageStatsButton.text = if (hasUsageStats) {
-                    "✓ " + getString(R.string.grant_usage_stats_permission)
+                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
                 } else {
-                    getString(R.string.grant_usage_stats_permission)
+                    getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
                 }
                 usageStatsButton.alpha = if (hasUsageStats) 0.7f else 1.0f
 
                 writeSettingsButton.text = if (hasWriteSettings) {
-                    "✓ " + getString(R.string.grant_write_settings_permission)
+                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
                 } else {
-                    getString(R.string.grant_write_settings_permission)
+                    getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
                 }
                 writeSettingsButton.alpha = if (hasWriteSettings) 0.7f else 1.0f
 
                 accessibilityButton.text = if (hasAccessibility) {
-                    "✓ " + getString(R.string.grant_accessibility_permission)
+                    "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
                 } else {
-                    getString(R.string.grant_accessibility_permission)
+                    getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
                 }
                 accessibilityButton.alpha = if (hasAccessibility) 0.7f else 1.0f
 
@@ -724,7 +724,7 @@ class MainActivity : AppCompatActivity() {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
                 stopService(Intent(this@MainActivity, BatteryService::class.java))
                 showToast(getString(R.string.monitoring_stopped))
-                statusText.text = "Monitoring has been stopped. You can restart it using the Start Monitoring button below."
+                statusText.text = "Monitoring stopped. Use Start button to restart."
                 button.text = getString(R.string.start_monitoring)
             } else {
                 startServicesAndShowSuccess()
@@ -758,10 +758,10 @@ class MainActivity : AppCompatActivity() {
                 != PackageManager.PERMISSION_GRANTED) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
-                showToast("Notification permission already granted")
+                showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
             }
         } else {
-            showToast("Notification permission not required on this Android version")
+            showToast("Permission not required on this Android version")
         }
     }
 
@@ -770,7 +770,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
             usageStatsPermissionLauncher.launch(intent)
         } else {
-            showToast("Usage stats permission already granted")
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_usage_stats)))
         }
     }
 
@@ -782,10 +782,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 writeSettingsPermissionLauncher.launch(intent)
             } else {
-                showToast("Write settings permission already granted")
+                showToast(getString(R.string.permission_granted, getString(R.string.permission_write_settings)))
             }
         } else {
-            showToast("Write settings permission not required on this Android version")
+            showToast("Permission not required on this Android version")
         }
     }
 
@@ -793,9 +793,9 @@ class MainActivity : AppCompatActivity() {
         if (!permissionHelper.hasAccessibilityPermission()) {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             accessibilityPermissionLauncher.launch(intent)
-            showToast(getString(R.string.accessibility_permission_guide))
+            showToast(getString(R.string.permission_guide_short))
         } else {
-            showToast("Accessibility service already enabled")
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_accessibility)))
         }
     }
 
@@ -804,7 +804,7 @@ class MainActivity : AppCompatActivity() {
             sharedPreferences.edit().putBoolean("setup_complete", true).apply()
             startServicesAndTransitionToMain()
         } else {
-            showToast(getString(R.string.grant_required_permissions_autosync))
+            showToast(getString(R.string.setup_description))
         }
     }
 
@@ -821,7 +821,7 @@ class MainActivity : AppCompatActivity() {
             val batteryResult = startService(batteryServiceIntent)
 
             if (dataResult != null && batteryResult != null) {
-                showToast(getString(R.string.monitoring_started_success))
+                showToast(getString(R.string.monitoring_started))
 
                 lifecycleScope.launch {
                     delay(1500)
@@ -832,7 +832,7 @@ class MainActivity : AppCompatActivity() {
                 showToast(getString(R.string.service_start_failed))
             }
         } catch (e: Exception) {
-            showToast(getString(R.string.service_error, e.message))
+            showToast(getString(R.string.service_error, e.message ?: "Unknown"))
             e.printStackTrace()
         }
     }
@@ -849,9 +849,9 @@ class MainActivity : AppCompatActivity() {
             val batteryServiceIntent = Intent(this, BatteryService::class.java)
             startService(batteryServiceIntent)
 
-            showToast("Monitoring started successfully")
+            showToast(getString(R.string.monitoring_started))
         } catch (e: Exception) {
-            showToast("Error starting monitoring: ${e.message}")
+            showToast(getString(R.string.service_error, e.message ?: "Unknown"))
             e.printStackTrace()
         }
     }
@@ -859,13 +859,13 @@ class MainActivity : AppCompatActivity() {
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Permission Required")
-            .setMessage("$featureName requires $permissionName permission to work. Would you like to grant it now?")
+            .setMessage("$featureName requires $permissionName permission. Grant now?")
             .setPositiveButton("Grant") { _, _ -> onPositive() }
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

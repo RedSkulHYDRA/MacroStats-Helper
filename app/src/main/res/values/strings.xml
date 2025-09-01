@@ -6,77 +6,81 @@
     <string name="charge_cycles">Charge Cycles</string>
 
     <!-- MainActivity strings -->
-    <string name="data_usage_monitoring_running">Data usage monitoring is running in the background.\n\nTap notification to access settings or use the button below.</string>
+    <string name="data_usage_monitoring_running">Data monitoring active. Tap to configure.</string>
     <string name="display_settings">Display Settings</string>
     <string name="qs_tile_settings">QS Tile Settings</string>
     <string name="accessibility_settings">Accessibility Settings</string>
     <string name="stop_monitoring">Stop Monitoring</string>
+    <string name="start_monitoring">Start Monitoring</string>
     <string name="monitoring_stopped">Monitoring stopped</string>
     <string name="setup_title">MacroStats Helper Setup</string>
-    <string name="setup_description">This app needs permissions to monitor your data usage and show notifications. Please grant the required permissions.</string>
-    <string name="setup_description_autosync">This app needs permissions to monitor your data usage, show notifications, and manage AutoSync. Please grant all required permissions.</string>
-    <string name="grant_notification_permission">Grant Notification Permission</string>
-    <string name="grant_usage_stats_permission">Grant Usage Stats Permission</string>
-    <string name="grant_accessibility_permission">Grant Accessibility Permission</string>
-    <string name="start_monitoring">Start Monitoring</string>
-    <string name="notification_permission_required">Notification permission is required for the app to work properly</string>
-    <string name="usage_stats_permission_required">Usage stats permission is required to monitor data usage</string>
-    <string name="accessibility_permission_info">Accessibility permission is required for AutoSync management</string>
-    <string name="grant_all_permissions">Please grant all required permissions</string>
-    <string name="grant_required_permissions">Please grant all required permissions</string>
-    <string name="grant_required_permissions_autosync">Please grant all required permissions including accessibility access</string>
-    <string name="monitoring_started_success">Data usage monitoring started successfully</string>
-    <string name="service_start_failed">Failed to start monitoring service</string>
-    <string name="service_error">Error starting service: %1$s</string>
-    <string name="autosync_service_running">AutoSync service is running</string>
-    <string name="autosync_service_disabled">AutoSync service is disabled (enable in accessibility settings)</string>
+    <string name="setup_description">Grant required permissions to continue.</string>
+    <string name="setup_description_autosync">Grant all permissions for full functionality.</string>
+
+    <!-- Consolidated Permission Templates -->
+    <string name="permission_required">%1$s permission required</string>
+    <string name="grant_permission_button">Grant %1$s Permission</string>
+    <string name="permission_granted">%1$s permission granted</string>
+    <string name="permission_denied">%1$s permission needed for functionality</string>
+
+    <!-- Permission Types -->
+    <string name="permission_notification">Notification</string>
+    <string name="permission_usage_stats">Usage Stats</string>
+    <string name="permission_write_settings">Write Settings</string>
+    <string name="permission_accessibility">Accessibility</string>
+
+    <!-- Short Toast Messages -->
+    <string name="monitoring_started">Monitoring started</string>
+    <string name="service_start_failed">Failed to start service</string>
+    <string name="service_error">Service error: %1$s</string>
+    <string name="settings_saved">Settings saved</string>
+    <string name="qs_settings_saved">QS settings saved</string>
+    <string name="permission_guide_short">Find the app in the list and enable</string>
 
     <!-- SettingsActivity strings -->
     <string name="settings_title">Display Settings</string>
-    <string name="settings_instruction">Select which time periods to display for each data type:</string>
+    <string name="settings_instruction">Select display preferences:</string>
     <string name="wifi_usage_label">WiFi Usage:</string>
     <string name="mobile_data_usage_label">Mobile Data Usage:</string>
     <string name="daily">Daily</string>
     <string name="weekly">Weekly</string>
     <string name="monthly">Monthly</string>
     <string name="save_settings">Save Settings</string>
-    <string name="settings_saved">Settings saved successfully!</string>
 
     <!-- Notification Settings -->
     <string name="notification_settings_title">Notification Settings</string>
     <string name="show_data_usage_notification">Show Data Usage Notification</string>
-    <string name="notification_description">Display persistent notification with current data usage</string>
-    <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background for QS tiles.</string>
+    <string name="notification_description">Show persistent notification with usage data</string>
+    <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background</string>
 
     <!-- AutoSync Settings -->
     <string name="autosync_settings_title">AutoSync Management</string>
     <string name="enable_autosync_management">Enable AutoSync Management</string>
-    <string name="autosync_description">Automatically turn on sync when unlocked and turn off sync after delay when locked</string>
+    <string name="autosync_description">Auto-manage sync based on lock state</string>
     <string name="autosync_delay_label">Turn off sync after:</string>
-    <string name="autosync_delay_description">Time delay before turning off sync when device is locked</string>
+    <string name="autosync_delay_description">Delay before turning off sync when locked</string>
     <string name="accessibility_service_enabled">✓ Accessibility service is enabled</string>
     <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
     <string name="open_accessibility_settings">Open Accessibility Settings</string>
-    <string name="accessibility_permission_guide">Find "MacroStats Helper" in the list and enable it for AutoSync to work</string>
 
     <!-- Accessibility Service -->
-    <string name="accessibility_service_description">Manages AutoSync based on device lock state to optimize battery usage</string>
+    <string name="accessibility_service_description">Manages AutoSync based on device lock state</string>
 
     <!-- QSTileSettingsActivity strings -->
     <string name="qs_tile_settings_title">QS Tile Settings</string>
-    <string name="qs_tile_instruction">Configure what time period each Quick Settings tile shows. These settings are independent from your notification settings.</string>
-    <string name="tile_display_mode_label">Data Usage Tile Display Mode:</string>
-    <string name="show_period_in_title">Show time period in tile title</string>
-    <string name="tile_display_mode_description">When enabled, tiles will show "WiFi Usage (Daily)" as title with data usage below. When disabled, data usage becomes the title.</string>
+    <string name="qs_tile_instruction">Configure Quick Settings tile display options.</string>
+    <string name="show_period_in_title">Enable Tile Heading</string>
     <string name="wifi_tile_label">WiFi Usage Tile:</string>
-    <string name="wifi_tile_description">Select time period for WiFi tile:</string>
+    <string name="wifi_tile_description">Select time period for WiFi tile</string>
     <string name="mobile_tile_label">Mobile Data Usage Tile:</string>
-    <string name="mobile_tile_description">Select time period for Mobile tile:</string>
+    <string name="mobile_tile_description">Select time period for Mobile tile</string>
     <string name="charge_tile_label">Charge Cycles Tile:</string>
-    <string name="show_charge_cycles_in_title">Show "Charge Cycles" in tile title</string>
-    <string name="charge_tile_description">When enabled, tile shows "Charge Cycles" as title with count below. When disabled, count becomes the title.</string>
-    <string name="qs_tile_instruction_2">\nAfter saving, add the tiles to your Quick Settings:\n1. Pull down notification panel\n2. Tap Edit (pencil icon)\n3. Drag \'WiFi Usage\', \'Mobile Usage\', and \'Charge Cycles\' tiles to active area</string>
-    <string name="qs_settings_saved">QS Tile settings saved successfully!\nTiles will update automatically when visible.</string>
+    <string name="show_charge_cycles_in_title">Enable Tile Heading</string>
+    <string name="battery_health_tile_label">Battery Health Tile:</string>
+    <string name="show_battery_health_in_title">Enable Tile Heading</string>
+    <string name="screen_timeout_tile_label">Screen Timeout Tile:</string>
+    <string name="show_screen_timeout_in_title">Enable Tile Heading</string>
+    <string name="qs_tile_instruction_2">Add tiles to Quick Settings after saving</string>
 
     <!-- QS Tile strings -->
     <string name="qs_tile_prefix">│ </string>
@@ -93,38 +97,31 @@
     <string name="data_usage_monitor_service">Data Usage Monitor</string>
     <string name="monitoring_data_usage">Monitoring data usage…</string>
 
-    <!-- Boot Receiver strings -->
-    <string name="service_auto_started">MacroStats monitoring started automatically</string>
-    <string name="boot_receiver_enabled">Auto-start after reboot enabled</string>
-
     <!-- Common strings -->
     <string name="no_data_selected">No data selected</string>
-    <string name="configure_display_settings">Please configure your display settings</string>
-    <string name="no_data_periods_selected">No data periods selected</string>
+    <string name="configure_display_settings">Please configure display settings</string>
+    <string name="no_data_periods_selected">No periods selected</string>
 
     <!-- Battery Health Tile strings -->
     <string name="battery_health">Battery Health</string>
-    <string name="battery_health_tile_label">Battery Health Tile:</string>
-    <string name="show_battery_health_in_title">Show "Battery Health" in tile title</string>
-    <string name="battery_health_tile_description">When enabled, tile shows "Battery Health" as title with percentage below. When disabled, percentage becomes the title.</string>
     <string name="design_capacity_label">Battery Design Capacity (mAh):</string>
     <string name="design_capacity_hint">e.g., 4000</string>
-    <string name="design_capacity_description">Enter your battery\'s design capacity to calculate health percentage. Check your device specifications or battery label.</string>
+    <string name="design_capacity_description">Enter design capacity for health calculation</string>
 
     <!-- Battery Health Status strings -->
     <string name="set_design_capacity">Set design capacity</string>
     <string name="calculating_health">Calculating…</string>
     <string name="estimating_fcc">Estimating…</string>
     <string name="not_set">Not set</string>
-    <string name="health_enter_design_capacity">Enter battery design capacity in QS Tile Settings to calculate health percentage</string>
-    <string name="health_calculated_successfully">Health calculated successfully</string>
-    <string name="charge_battery_to_100">Charge battery to 100%% to calculate health (currently %1$d%%)</string>
-    <string name="wait_for_charging_complete">Wait for charging to complete (current: %1$dmA, need: &lt;%2$dmA)</string>
+    <string name="health_enter_design_capacity">Enter design capacity in QS settings</string>
+    <string name="health_calculated_successfully">Health calculated</string>
+    <string name="charge_battery_to_100">Charge to 100% (currently %1$d%%)</string>
+    <string name="wait_for_charging_complete">Wait for charging to complete (%1$dmA)</string>
     <string name="calculating_ensure_conditions">Calculating… Ensure battery is at 100% and charging current is low</string>
 
     <!-- Battery Charge Monitor strings -->
     <string name="android_14_required">Android 14+ required</string>
-    <string name="not_supported_by_device">Not supported by device</string>
+    <string name="not_supported_by_device">Not supported</string>
     <string name="not_available">Not available</string>
     <string name="error_message">Error: %1$s</string>
 
@@ -139,13 +136,6 @@
 
     <!-- Screen Timeout Tile strings -->
     <string name="screen_timeout">Screen Timeout</string>
-    <string name="screen_timeout_tile_label">Screen Timeout Tile:</string>
-    <string name="show_screen_timeout_in_title">Show "Screen Timeout" in tile title</string>
-    <string name="screen_timeout_tile_description">When enabled, tile shows "Screen Timeout" as title with current timeout below. When disabled, timeout becomes the title.</string>
     <string name="screen_timeout_permission_required">Permission Required</string>
     <string name="tap_to_grant">Tap to grant</string>
-
-    <!-- Permission strings -->
-    <string name="grant_write_settings_permission">Grant Write Settings Permission</string>
-    <string name="write_settings_permission_info">Write Settings permission is optional but required for Screen Timeout tile functionality</string>
 </resources>
