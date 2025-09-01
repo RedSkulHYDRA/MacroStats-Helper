@@ -5,6 +5,7 @@ import android.app.AppOpsManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.content.ContextCompat
 import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
@@ -39,6 +40,15 @@ class PermissionHelper(private val context: Context) {
 
     fun hasAccessibilityPermission(): Boolean {
         return AutoSyncAccessibilityService.isAccessibilityServiceEnabled(context)
+    }
+
+    fun isBatteryOptimizationDisabled(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            powerManager.isIgnoringBatteryOptimizations(context.packageName)
+        } else {
+            true // Battery optimization doesn't exist on older versions
+        }
     }
 
     fun hasAllPermissions(): Boolean {

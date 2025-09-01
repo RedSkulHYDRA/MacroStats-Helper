@@ -1,8 +1,8 @@
 package com.redskul.macrostatshelper.settings
 
 import android.content.Intent
-import android.os.Bundle
 import android.provider.Settings
+import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -14,8 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.data.DataUsageService
 import com.redskul.macrostatshelper.data.UsageData
-import com.redskul.macrostatshelper.autosync.AutoSyncManager
-import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -23,7 +21,6 @@ import kotlinx.coroutines.launch
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var settingsManager: SettingsManager
-    private lateinit var autoSyncManager: AutoSyncManager
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var wifiDailyCheckbox: CheckBox
     private lateinit var wifiWeeklyCheckbox: CheckBox
@@ -32,11 +29,8 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var mobileWeeklyCheckbox: CheckBox
     private lateinit var mobileMonthlyCheckbox: CheckBox
     private lateinit var notificationEnabledSwitch: Switch
-    private lateinit var autoSyncEnabledSwitch: Switch
-    private lateinit var autoSyncDelaySpinner: Spinner
     private lateinit var saveButton: Button
     private lateinit var previewText: TextView
-    private lateinit var accessibilityStatusText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +39,6 @@ class SettingsActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         settingsManager = SettingsManager(this)
-        autoSyncManager = AutoSyncManager(this)
         permissionHelper = PermissionHelper(this)
         createUI()
         loadCurrentSettings()
@@ -56,55 +49,38 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateAccessibilityStatus()
         updatePermissionBasedUI()
     }
 
     private fun startPermissionMonitoring() {
         lifecycleScope.launch {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
-            var lastAccessibility = permissionHelper.hasAccessibilityPermission()
 
             while (true) {
                 delay(1000)
 
                 val currentUsageStats = permissionHelper.hasUsageStatsPermission()
-                val currentAccessibility = permissionHelper.hasAccessibilityPermission()
 
-                if (lastUsageStats != currentUsageStats || lastAccessibility != currentAccessibility) {
+                if (lastUsageStats != currentUsageStats) {
                     updatePermissionBasedUI()
                     if (lastUsageStats && !currentUsageStats) {
                         notificationEnabledSwitch.isChecked = false
                         showToast("Data usage features disabled due to missing permission")
                     }
-                    if (lastAccessibility && !currentAccessibility) {
-                        autoSyncEnabledSwitch.isChecked = false
-                        showToast("AutoSync features disabled due to missing permission")
-                    }
                 }
 
                 lastUsageStats = currentUsageStats
-                lastAccessibility = currentAccessibility
             }
         }
     }
 
     private fun updatePermissionBasedUI() {
         val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-        val hasAccessibility = permissionHelper.hasAccessibilityPermission()
 
         // Update notification switch
         notificationEnabledSwitch.isEnabled = hasUsageStats
         if (!hasUsageStats && notificationEnabledSwitch.isChecked) {
             notificationEnabledSwitch.isChecked = false
-        }
-
-        // Update AutoSync switch
-        autoSyncEnabledSwitch.isEnabled = hasAccessibility
-        autoSyncDelaySpinner.isEnabled = hasAccessibility && autoSyncEnabledSwitch.isChecked
-
-        if (!hasAccessibility && autoSyncEnabledSwitch.isChecked) {
-            autoSyncEnabledSwitch.isChecked = false
         }
     }
 
@@ -152,9 +128,6 @@ class SettingsActivity : AppCompatActivity() {
         // Notification Settings Card
         val notificationCard = createNotificationCard()
 
-        // AutoSync Settings Card
-        val autoSyncCard = createAutoSyncCard()
-
         // Preview Card
         val previewCard = createPreviewCard()
 
@@ -173,8 +146,6 @@ class SettingsActivity : AppCompatActivity() {
         mainLayout.addView(dataUsageCard)
         addSpacing(mainLayout, 16)
         mainLayout.addView(notificationCard)
-        addSpacing(mainLayout, 16)
-        mainLayout.addView(autoSyncCard)
         addSpacing(mainLayout, 16)
         mainLayout.addView(previewCard)
         addSpacing(mainLayout, 24)
@@ -318,112 +289,6 @@ class SettingsActivity : AppCompatActivity() {
         return card
     }
 
-    private fun createAutoSyncCard(): LinearLayout {
-        val card = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = resources.getDrawable(R.drawable.card_background, theme)
-        }
-
-        val cardTitle = TextView(this).apply {
-            text = getString(R.string.autosync_settings_title)
-            textSize = 18f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, 8)
-        }
-
-        // Accessibility Status
-        accessibilityStatusText = TextView(this).apply {
-            textSize = 12f
-            setPadding(0, 0, 0, 16)
-        }
-
-        val autoSyncLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 8)
-        }
-
-        val autoSyncSwitchLabel = TextView(this).apply {
-            text = getString(R.string.enable_autosync_management)
-            textSize = 16f
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-
-        autoSyncEnabledSwitch = Switch(this).apply {
-            setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked && !permissionHelper.hasAccessibilityPermission()) {
-                    this.isChecked = false
-                    showPermissionRequiredDialog("AutoSync Management", "Accessibility Service") {
-                        requestAccessibilityPermission()
-                    }
-                    return@setOnCheckedChangeListener
-                }
-                autoSyncDelaySpinner.isEnabled = isChecked && permissionHelper.hasAccessibilityPermission()
-                updatePreview()
-            }
-        }
-
-        autoSyncLayout.addView(autoSyncSwitchLabel)
-        autoSyncLayout.addView(autoSyncEnabledSwitch)
-
-        val autoSyncDescription = TextView(this).apply {
-            text = getString(R.string.autosync_description)
-            textSize = 12f
-            setPadding(0, 0, 0, 12)
-            alpha = 0.7f
-        }
-
-        // AutoSync Delay Selection
-        val delayLabel = TextView(this).apply {
-            text = getString(R.string.autosync_delay_label)
-            textSize = 14f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            setPadding(0, 8, 0, 4)
-        }
-
-        autoSyncDelaySpinner = Spinner(this).apply {
-            adapter = ArrayAdapter(
-                this@SettingsActivity,
-                android.R.layout.simple_spinner_item,
-                autoSyncManager.getDelayOptions()
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-            setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                    updatePreview()
-                }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            })
-        }
-
-        val delayDescription = TextView(this).apply {
-            text = getString(R.string.autosync_delay_description)
-            textSize = 11f
-            setPadding(0, 4, 0, 12)
-            alpha = 0.6f
-        }
-
-        val accessibilityButton = Button(this).apply {
-            text = getString(R.string.open_accessibility_settings)
-            textSize = 14f
-            setPadding(16, 8, 16, 8)
-            setOnClickListener {
-                requestAccessibilityPermission()
-            }
-        }
-
-        card.addView(cardTitle)
-        card.addView(accessibilityStatusText)
-        card.addView(autoSyncLayout)
-        card.addView(autoSyncDescription)
-        card.addView(delayLabel)
-        card.addView(autoSyncDelaySpinner)
-        card.addView(delayDescription)
-        card.addView(accessibilityButton)
-
-        return card
-    }
-
     private fun createPreviewCard(): LinearLayout {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -481,30 +346,7 @@ class SettingsActivity : AppCompatActivity() {
         // Set notification switch
         notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
 
-        // Set AutoSync settings
-        autoSyncEnabledSwitch.isChecked = autoSyncManager.isAutoSyncEnabled()
-
-        // Set delay spinner selection based on saved value
-        val delayMinutes = autoSyncManager.getAutoSyncDelay()
-        val delayIndex = autoSyncManager.getAllowedDelays().indexOf(delayMinutes)
-        if (delayIndex >= 0) {
-            autoSyncDelaySpinner.setSelection(delayIndex)
-        }
-
-        updateAccessibilityStatus()
         updatePermissionBasedUI()
-    }
-
-    private fun updateAccessibilityStatus() {
-        val isAccessibilityEnabled = AutoSyncAccessibilityService.isAccessibilityServiceEnabled(this)
-        accessibilityStatusText.text = if (isAccessibilityEnabled) {
-            getString(R.string.accessibility_service_enabled)
-        } else {
-            getString(R.string.accessibility_service_disabled)
-        }
-        accessibilityStatusText.setTextColor(
-            if (isAccessibilityEnabled) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-        )
     }
 
     private fun updatePreview() {
@@ -529,14 +371,6 @@ class SettingsActivity : AppCompatActivity() {
         val (shortText, _) = settingsManager.getFormattedUsageText(sampleData)
         settingsManager.saveDisplaySettings(originalSettings) // Restore original settings
 
-        val autoSyncEnabled = autoSyncEnabledSwitch.isChecked
-        val delayMinutes = if (autoSyncDelaySpinner.selectedItemPosition >= 0) {
-            autoSyncManager.getAllowedDelays()[autoSyncDelaySpinner.selectedItemPosition]
-        } else {
-            autoSyncManager.getAutoSyncDelay()
-        }
-
-        val isAccessibilityEnabled = AutoSyncAccessibilityService.isAccessibilityServiceEnabled(this)
         val hasUsageStats = permissionHelper.hasUsageStatsPermission()
 
         previewText.text = buildString {
@@ -546,14 +380,6 @@ class SettingsActivity : AppCompatActivity() {
                 appendLine("📱 Notification disabled - Usage stats permission required")
             } else {
                 appendLine("📱 Notification disabled - data will still be monitored for QS tiles")
-            }
-            appendLine()
-            if (autoSyncEnabled && isAccessibilityEnabled) {
-                appendLine("🔄 ${getString(R.string.autosync_preview, delayMinutes)}")
-            } else if (autoSyncEnabled && !isAccessibilityEnabled) {
-                appendLine("🔄 AutoSync enabled but requires accessibility service permission")
-            } else {
-                appendLine("🔄 AutoSync management disabled")
             }
         }
     }
@@ -573,12 +399,6 @@ class SettingsActivity : AppCompatActivity() {
         showToast("Please enable usage access for MacroStats Helper")
     }
 
-    private fun requestAccessibilityPermission() {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        startActivity(intent)
-        showToast("Please enable accessibility service for MacroStats Helper")
-    }
-
     private fun saveSettings() {
         val wifiPeriods = mutableListOf<TimePeriod>()
         if (wifiDailyCheckbox.isChecked) wifiPeriods.add(TimePeriod.DAILY)
@@ -595,16 +415,6 @@ class SettingsActivity : AppCompatActivity() {
 
         // Save notification preference (will be validated by SettingsManager)
         settingsManager.saveNotificationEnabled(notificationEnabledSwitch.isChecked)
-
-        // Save AutoSync settings (will be validated by AutoSyncManager)
-        autoSyncManager.setAutoSyncEnabled(autoSyncEnabledSwitch.isChecked)
-
-        // Map spinner selection to minutes
-        val selectedIndex = autoSyncDelaySpinner.selectedItemPosition
-        if (selectedIndex >= 0) {
-            val delayMinutes = autoSyncManager.getAllowedDelays()[selectedIndex]
-            autoSyncManager.setAutoSyncDelay(delayMinutes)
-        }
 
         // Notify data service about notification changes
         val dataServiceIntent = Intent(this, DataUsageService::class.java).apply {

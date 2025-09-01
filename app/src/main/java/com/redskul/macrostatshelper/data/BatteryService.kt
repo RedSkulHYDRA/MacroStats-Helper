@@ -6,17 +6,18 @@ import android.os.IBinder
 import com.redskul.macrostatshelper.notification.NotificationHelper
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.core.MainActivity
+import com.redskul.macrostatshelper.settings.SettingsManager
 import kotlinx.coroutines.*
 
 class BatteryService : Service() {
 
     private lateinit var batteryChargeMonitor: BatteryChargeMonitor
+    private lateinit var settingsManager: SettingsManager
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var updateJob: Job? = null
 
     companion object {
-        const val UPDATE_INTERVAL = 900000L // 15 minutes
         const val ACTION_UPDATE_NOW = "BATTERY_UPDATE_NOW"
         const val ACTION_BATTERY_UPDATED = "com.redskul.macrostatshelper.BATTERY_UPDATED"
     }
@@ -24,6 +25,7 @@ class BatteryService : Service() {
     override fun onCreate() {
         super.onCreate()
         batteryChargeMonitor = BatteryChargeMonitor(this)
+        settingsManager = SettingsManager(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -54,7 +56,11 @@ class BatteryService : Service() {
             updateBatteryData()
 
             while (isActive) {
-                delay(UPDATE_INTERVAL)
+                // Use user-configured update interval
+                val updateInterval = settingsManager.getUpdateIntervalMillis()
+                android.util.Log.d("BatteryService", "Next battery update in ${updateInterval / 60000} minutes")
+
+                delay(updateInterval)
                 if (isActive) {
                     updateBatteryData()
                 }

@@ -20,7 +20,6 @@ class DataUsageService : Service() {
     private var isForegroundService = false
 
     companion object {
-        const val UPDATE_INTERVAL = 900000L // 15 minutes
         const val ACTION_UPDATE_NOW = "UPDATE_NOW"
         const val ACTION_DATA_UPDATED = "com.redskul.macrostatshelper.DATA_UPDATED"
         const val ACTION_NOTIFICATION_TOGGLE_CHANGED = "NOTIFICATION_TOGGLE_CHANGED"
@@ -50,8 +49,28 @@ class DataUsageService : Service() {
             }
         }
 
-        // Check if notification is enabled and start/stop foreground accordingly
-        updateForegroundStatus()
+        // Immediately determine if we should be foreground and act accordingly
+        val notificationEnabled = settingsManager.isNotificationEnabled()
+
+        if (notificationEnabled && !isForegroundService) {
+            // Promote to foreground immediately
+            try {
+                startForeground(NotificationHelper.NOTIFICATION_ID, createServiceNotification())
+                isForegroundService = true
+                android.util.Log.d("DataUsageService", "Started as foreground service")
+            } catch (e: Exception) {
+                android.util.Log.e("DataUsageService", "Failed to start as foreground service", e)
+            }
+        } else if (!notificationEnabled && isForegroundService) {
+            // Demote from foreground
+            try {
+                stopForeground(true)
+                isForegroundService = false
+                android.util.Log.d("DataUsageService", "Running in background")
+            } catch (e: Exception) {
+                android.util.Log.e("DataUsageService", "Failed to stop foreground", e)
+            }
+        }
 
         serviceScope.launch {
             delay(2000)
@@ -68,14 +87,22 @@ class DataUsageService : Service() {
 
         if (notificationEnabled && !isForegroundService) {
             // Start as foreground service
-            startForeground(NotificationHelper.NOTIFICATION_ID, createServiceNotification())
-            isForegroundService = true
-            android.util.Log.d("DataUsageService", "Started as foreground service")
+            try {
+                startForeground(NotificationHelper.NOTIFICATION_ID, createServiceNotification())
+                isForegroundService = true
+                android.util.Log.d("DataUsageService", "Promoted to foreground service")
+            } catch (e: Exception) {
+                android.util.Log.e("DataUsageService", "Failed to promote to foreground", e)
+            }
         } else if (!notificationEnabled && isForegroundService) {
             // Remove from foreground but keep service running
-            stopForeground(true) // true = remove notification
-            isForegroundService = false
-            android.util.Log.d("DataUsageService", "Removed from foreground, service continues in background")
+            try {
+                stopForeground(true) // true = remove notification
+                isForegroundService = false
+                android.util.Log.d("DataUsageService", "Demoted from foreground, service continues in background")
+            } catch (e: Exception) {
+                android.util.Log.e("DataUsageService", "Failed to demote from foreground", e)
+            }
         }
     }
 
@@ -102,7 +129,11 @@ class DataUsageService : Service() {
             updateUsageData()
 
             while (isActive) {
-                delay(UPDATE_INTERVAL)
+                // Use user-configured update interval
+                val updateInterval = settingsManager.getUpdateIntervalMillis()
+                android.util.Log.d("DataUsageService", "Next update in ${updateInterval / 60000} minutes")
+
+                delay(updateInterval)
                 if (isActive) {
                     updateUsageData()
                 }
@@ -140,5 +171,13 @@ class DataUsageService : Service() {
         updateJob?.cancel()
         serviceScope.cancel()
         notificationHelper.cancelNotification()
+
+        if (isForegroundService) {
+            try {
+                stopForeground(true)
+            } catch (e: Exception) {
+                android.util.Log.e("DataUsageService", "Error stopping foreground in onDestroy", e)
+            }
+        }
     }
 }

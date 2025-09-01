@@ -18,6 +18,8 @@ class SettingsManager(private val context: Context) {
         private const val KEY_MOBILE_PERIODS = "mobile_periods"
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_SHOW_NOTIFICATION = "show_notification"
+        private const val KEY_UPDATE_INTERVAL = "update_interval_minutes"
+        private const val DEFAULT_UPDATE_INTERVAL = 15 // 15 minutes
     }
 
     // Extension function to get display string from TimePeriod
@@ -116,6 +118,39 @@ class SettingsManager(private val context: Context) {
 
     private fun isNotificationEnabledRaw(): Boolean {
         return sharedPreferences.getBoolean(KEY_SHOW_NOTIFICATION, true)
+    }
+
+    // Update interval methods
+    fun setUpdateInterval(intervalMinutes: Int) {
+        if (getUpdateIntervalValues().contains(intervalMinutes)) {
+            sharedPreferences.edit().putInt(KEY_UPDATE_INTERVAL, intervalMinutes).apply()
+            android.util.Log.d("SettingsManager", "Update interval set to: $intervalMinutes minutes")
+        } else {
+            android.util.Log.w("SettingsManager", "Invalid update interval: $intervalMinutes")
+        }
+    }
+
+    fun getUpdateInterval(): Int {
+        return sharedPreferences.getInt(KEY_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+    }
+
+    fun getUpdateIntervalValues(): List<Int> {
+        return listOf(1, 5, 10, 20, 30, 60)
+    }
+
+    fun getUpdateIntervalOptions(): List<String> {
+        return getUpdateIntervalValues().map { minutes ->
+            when (minutes) {
+                1 -> "1 minute"
+                in 2..59 -> "$minutes minutes"
+                60 -> "1 hour"
+                else -> "$minutes minutes"
+            }
+        }
+    }
+
+    fun getUpdateIntervalMillis(): Long {
+        return getUpdateInterval() * 60 * 1000L
     }
 
     fun getFormattedUsageText(usageData: UsageData): Pair<String, String> {
