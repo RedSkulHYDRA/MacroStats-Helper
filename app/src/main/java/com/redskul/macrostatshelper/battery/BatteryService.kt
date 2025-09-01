@@ -66,7 +66,7 @@ class BatteryService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    private suspend fun startPeriodicUpdates() {
+    private fun startPeriodicUpdates() { // Removed redundant suspend modifier
         updateJob?.cancel()
 
         updateJob = serviceScope.launch {
@@ -99,32 +99,33 @@ class BatteryService : Service() {
         val timeSinceLastUpdate = currentTime - lastUpdateTime
         val isDeviceInactive = isDeviceInactive(timeSinceLastUpdate)
 
-        // Calculate multiplier based on device state
-        var intervalMultiplier = 1
-
-        if (isDeviceInactive) {
+        // Calculate multiplier based on device state (removed redundant initializer)
+        val intervalMultiplier = if (isDeviceInactive) {
             consecutiveInactiveUpdates++
             // Gradually increase interval for inactive device (1x -> 2x -> 3x -> 4x max)
-            intervalMultiplier = minOf(
+            val baseMultiplier = minOf(
                 1 + (consecutiveInactiveUpdates / 3),
                 MAX_INACTIVE_MULTIPLIER
             )
-            android.util.Log.d("BatteryService", "Device inactive for ${timeSinceLastUpdate / 60000}min, multiplier: ${intervalMultiplier}x")
+            android.util.Log.d("BatteryService", "Device inactive for ${timeSinceLastUpdate / 60000}min, multiplier: ${baseMultiplier}x")
+            baseMultiplier
         } else {
             consecutiveInactiveUpdates = 0
-            intervalMultiplier = 1
+            1
         }
 
         // Additional multiplier for power save mode
-        if (isInPowerSaveMode) {
-            intervalMultiplier *= POWER_SAVE_MULTIPLIER
+        val finalMultiplier = if (isInPowerSaveMode) {
             android.util.Log.d("BatteryService", "Power save mode active, applying ${POWER_SAVE_MULTIPLIER}x multiplier")
+            intervalMultiplier * POWER_SAVE_MULTIPLIER
+        } else {
+            intervalMultiplier
         }
 
-        val adaptiveInterval = baseInterval * intervalMultiplier
+        val adaptiveInterval = baseInterval * finalMultiplier
         lastUpdateTime = currentTime
 
-        android.util.Log.d("BatteryService", "Adaptive battery interval: ${adaptiveInterval / 60000}min (base: ${baseInterval / 60000}min, multiplier: ${intervalMultiplier}x)")
+        android.util.Log.d("BatteryService", "Adaptive battery interval: ${adaptiveInterval / 60000}min (base: ${baseInterval / 60000}min, multiplier: ${finalMultiplier}x)")
 
         return adaptiveInterval
     }
@@ -149,6 +150,14 @@ class BatteryService : Service() {
         try {
             android.util.Log.d("BatteryService", "Updating battery data")
             val chargeData = batteryChargeMonitor.getChargeData()
+
+            // Use the chargeData for logging and validation
+            android.util.Log.d("BatteryService", "Battery data updated - Cycles: ${chargeData.chargeCycles}, Capacity: ${chargeData.batteryCapacity}")
+
+            // Store or validate the battery data if needed
+            if (chargeData.chargeCycles != "Not available" && chargeData.chargeCycles != "Error") {
+                android.util.Log.i("BatteryService", "Valid battery charge data obtained: ${chargeData.chargeCycles} cycles")
+            }
 
             withContext(Dispatchers.Main) {
                 // Send broadcast to charge cycle QS tile

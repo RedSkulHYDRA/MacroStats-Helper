@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.core.net.toUri
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.battery.BatteryHealthMonitor
 import com.redskul.macrostatshelper.utils.PermissionHelper
@@ -319,15 +320,11 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun requestWriteSettingsPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                data = android.net.Uri.parse("package:$packageName")
-            }
-            startActivity(intent)
-            showToast(getString(R.string.enable_write_settings_helper))
-        } else {
-            showToast(getString(R.string.permission_not_required_version))
+        val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
+            data = "package:$packageName".toUri()
         }
+        startActivity(intent)
+        showToast(getString(R.string.enable_write_settings_helper))
     }
 
     private fun showToast(message: String) {

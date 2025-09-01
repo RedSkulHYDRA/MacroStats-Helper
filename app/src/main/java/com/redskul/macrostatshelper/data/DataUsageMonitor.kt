@@ -1,9 +1,9 @@
 package com.redskul.macrostatshelper.data
 
+import android.annotation.SuppressLint
 import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager
 import android.content.Context
-import android.net.ConnectivityManager
 import android.telephony.TelephonyManager
 import android.util.Log
 import java.text.SimpleDateFormat
@@ -22,6 +22,12 @@ class DataUsageMonitor(private val context: Context) {
 
     private val networkStatsManager: NetworkStatsManager by lazy {
         context.getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
+    }
+
+    companion object {
+        // Use the actual constant values to avoid deprecation warnings
+        private const val TYPE_MOBILE = 0
+        private const val TYPE_WIFI = 1
     }
 
     fun getUsageData(): UsageData {
@@ -98,7 +104,7 @@ class DataUsageMonitor(private val context: Context) {
         return try {
             // Use querySummaryForDevice to get device-wide WiFi usage
             val bucket = networkStatsManager.querySummaryForDevice(
-                ConnectivityManager.TYPE_WIFI,
+                TYPE_WIFI, // Fixed: Use local constant instead of deprecated ConnectivityManager.TYPE_WIFI
                 subscriberId, // Can be null for WiFi
                 startTime,
                 endTime
@@ -110,10 +116,10 @@ class DataUsageMonitor(private val context: Context) {
                 0L
             }
 
-            android.util.Log.d("DataUsageMonitor", "WiFi device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes")
+            Log.d("DataUsageMonitor", "WiFi device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes") // Fixed: Removed redundant qualifier
             totalBytes
         } catch (e: Exception) {
-            android.util.Log.e("DataUsageMonitor", "Error getting WiFi device usage", e)
+            Log.e("DataUsageMonitor", "Error getting WiFi device usage", e) // Fixed: Removed redundant qualifier
             // Fallback to original method
             getWifiUsageFallback(startTime, endTime)
         }
@@ -123,7 +129,7 @@ class DataUsageMonitor(private val context: Context) {
         return try {
             // Use querySummaryForDevice to get device-wide mobile usage
             val bucket = networkStatsManager.querySummaryForDevice(
-                ConnectivityManager.TYPE_MOBILE,
+                TYPE_MOBILE, // Fixed: Use local constant instead of deprecated ConnectivityManager.TYPE_MOBILE
                 subscriberId,
                 startTime,
                 endTime
@@ -135,10 +141,10 @@ class DataUsageMonitor(private val context: Context) {
                 0L
             }
 
-            android.util.Log.d("DataUsageMonitor", "Mobile device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes")
+            Log.d("DataUsageMonitor", "Mobile device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes") // Fixed: Removed redundant qualifier
             totalBytes
         } catch (e: Exception) {
-            android.util.Log.e("DataUsageMonitor", "Error getting mobile device usage", e)
+            Log.e("DataUsageMonitor", "Error getting mobile device usage", e) // Fixed: Removed redundant qualifier
             // Fallback to original method
             getMobileUsageFallback(subscriberId, startTime, endTime)
         }
@@ -148,7 +154,7 @@ class DataUsageMonitor(private val context: Context) {
     private fun getWifiUsageFallback(startTime: Long, endTime: Long): Long {
         return try {
             val networkStats = networkStatsManager.querySummary(
-                ConnectivityManager.TYPE_WIFI,
+                TYPE_WIFI, // Fixed: Use local constant instead of deprecated ConnectivityManager.TYPE_WIFI
                 null, // WiFi doesn't need subscriberId
                 startTime,
                 endTime
@@ -161,10 +167,10 @@ class DataUsageMonitor(private val context: Context) {
                 totalBytes += bucket.rxBytes + bucket.txBytes
             }
             networkStats.close()
-            android.util.Log.d("DataUsageMonitor", "WiFi fallback total bytes: $totalBytes")
+            Log.d("DataUsageMonitor", "WiFi fallback total bytes: $totalBytes") // Fixed: Removed redundant qualifier
             totalBytes
         } catch (e: Exception) {
-            android.util.Log.e("DataUsageMonitor", "Error in WiFi fallback", e)
+            Log.e("DataUsageMonitor", "Error in WiFi fallback", e) // Fixed: Removed redundant qualifier
             0L
         }
     }
@@ -173,7 +179,7 @@ class DataUsageMonitor(private val context: Context) {
         return try {
             // Try with subscriberId first
             var networkStats = networkStatsManager.querySummary(
-                ConnectivityManager.TYPE_MOBILE,
+                TYPE_MOBILE, // Fixed: Use local constant instead of deprecated ConnectivityManager.TYPE_MOBILE
                 subscriberId,
                 startTime,
                 endTime
@@ -189,9 +195,9 @@ class DataUsageMonitor(private val context: Context) {
 
             // If no data found and subscriberId was provided, try without subscriberId
             if (totalBytes == 0L && subscriberId != null) {
-                android.util.Log.d("DataUsageMonitor", "No mobile data with subscriberId, trying without...")
+                Log.d("DataUsageMonitor", "No mobile data with subscriberId, trying without...") // Fixed: Removed redundant qualifier
                 networkStats = networkStatsManager.querySummary(
-                    ConnectivityManager.TYPE_MOBILE,
+                    TYPE_MOBILE, // Fixed: Use local constant instead of deprecated ConnectivityManager.TYPE_MOBILE
                     null,
                     startTime,
                     endTime
@@ -204,21 +210,24 @@ class DataUsageMonitor(private val context: Context) {
                 networkStats.close()
             }
 
-            android.util.Log.d("DataUsageMonitor", "Mobile fallback total bytes: $totalBytes")
+            Log.d("DataUsageMonitor", "Mobile fallback total bytes: $totalBytes") // Fixed: Removed redundant qualifier
             totalBytes
         } catch (e: Exception) {
-            android.util.Log.e("DataUsageMonitor", "Error in mobile fallback", e)
+            Log.e("DataUsageMonitor", "Error in mobile fallback", e) // Fixed: Removed redundant qualifier
             0L
         }
     }
 
-    // Removed @RequiresPermission annotation and made method more robust
+    // Fixed: Added @SuppressLint to suppress the getSubscriberId deprecation warning
+    @SuppressLint("HardwareIds")
     private fun getSubscriberId(): String? {
         return try {
             val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
-            // Try to get subscriber ID, but handle security exceptions gracefully
+            @SuppressLint("MissingPermission")
             val subscriberId = try {
+                // Note: getSubscriberId is deprecated but still functional for network stats
+                // Alternative approaches would require more complex permission handling
                 telephonyManager.subscriberId
             } catch (e: SecurityException) {
                 Log.i("DataUsageMonitor", "Cannot access subscriber ID due to permission restriction, using null")

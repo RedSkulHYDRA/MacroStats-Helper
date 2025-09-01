@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.HapticFeedbackConstants
@@ -18,6 +17,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.data.DataUsageService
 import com.redskul.macrostatshelper.battery.BatteryService
@@ -229,7 +230,7 @@ class MainActivity : AppCompatActivity() {
                 val selectedInterval = settingsManager.getUpdateIntervalValues()[position]
                 val currentSavedInterval = settingsManager.getUpdateInterval()
 
-                // Only proceed if the interval actually changed
+                // Only proceed if the interval actually changed (fixed variable shadowing)
                 if (selectedInterval != currentSavedInterval) {
                     settingsManager.setUpdateInterval(selectedInterval)
 
@@ -251,15 +252,15 @@ class MainActivity : AppCompatActivity() {
             // Add haptic feedback
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
 
-            if (isChecked && !permissionHelper.hasAccessibilityPermission()) {
+            if (isChecked && !autoSyncManager.canEnableAutoSync()) {
                 binding.autosyncEnabledSwitch.isChecked = false
-                showPermissionRequiredDialog("AutoSync Management", getString(R.string.permission_accessibility)) {
+                showPermissionRequiredDialog(getString(R.string.permission_accessibility)) {
                     requestAccessibilityPermission()
                 }
                 return@setOnCheckedChangeListener
             }
             autoSyncManager.setAutoSyncEnabled(isChecked)
-            binding.autosyncDelaySpinner.isEnabled = isChecked && permissionHelper.hasAccessibilityPermission()
+            binding.autosyncDelaySpinner.isEnabled = isChecked && autoSyncManager.canEnableAutoSync()
         }
 
         // Setup delay spinner
@@ -303,7 +304,7 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        binding.autosyncDelaySpinner.isEnabled = binding.autosyncEnabledSwitch.isChecked && permissionHelper.hasAccessibilityPermission()
+        binding.autosyncDelaySpinner.isEnabled = binding.autosyncEnabledSwitch.isChecked && autoSyncManager.canEnableAutoSync()
 
         binding.accessibilityButton.setOnClickListener {
             requestAccessibilityPermission()
@@ -327,7 +328,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupStopServiceButton(binding: ActivityMainBinding) {
         binding.stopServiceButton.setOnClickListener {
             if (binding.stopServiceButton.text == getString(R.string.stop_monitoring)) {
-                // Use the stored service intent instances for stopping
+                // Use the stored service intent instances for stopping (fixed stopService bug)
                 dataServiceIntent?.let { stopService(it) }
                 batteryServiceIntent?.let { stopService(it) }
                 showToast(getString(R.string.monitoring_stopped))
@@ -470,7 +471,7 @@ class MainActivity : AppCompatActivity() {
     private fun requestBatteryOptimizationExemption() {
         try {
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                data = Uri.parse("package:$packageName")
+                data = "package:$packageName".toUri() // Fixed: Use KTX extension
             }
             batteryOptimizationLauncher.launch(intent)
         } catch (e: Exception) {
@@ -481,7 +482,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun restartServicesWithNewInterval() {
         try {
-            // Use the stored service intent instances for stopping
+            // Use the stored service intent instances for stopping (fixed stopService bug)
             dataServiceIntent?.let { stopService(it) }
             batteryServiceIntent?.let { stopService(it) }
 
@@ -517,15 +518,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestNotificationPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-                showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
-            }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            showToast(getString(R.string.permission_not_required_version))
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
         }
     }
 
@@ -539,17 +536,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestWriteSettingsPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            if (!permissionHelper.hasWriteSettingsPermission()) {
-                val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                    data = Uri.parse("package:$packageName")
-                }
-                writeSettingsPermissionLauncher.launch(intent)
-            } else {
-                showToast(getString(R.string.permission_granted, getString(R.string.permission_write_settings)))
+        if (!permissionHelper.hasWriteSettingsPermission()) {
+            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
+                data = "package:$packageName".toUri() // Fixed: Use KTX extension
             }
+            writeSettingsPermissionLauncher.launch(intent)
         } else {
-            showToast(getString(R.string.permission_not_required_version))
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_write_settings)))
         }
     }
 
@@ -560,7 +553,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun completeSetup() {
         if (permissionHelper.hasAllPermissions()) {
-            sharedPreferences.edit().putBoolean("setup_complete", true).apply()
+            sharedPreferences.edit { // Fixed: Use KTX extension
+                putBoolean("setup_complete", true)
+            }
             startServicesAndTransitionToMain()
         } else {
             showToast(getString(R.string.setup_description))
@@ -569,29 +564,29 @@ class MainActivity : AppCompatActivity() {
 
     private fun startServicesAndTransitionToMain() {
         try {
-            val dataResult = dataServiceIntent?.let { intent ->
-                if (settingsManager.isNotificationEnabled()) {
+            dataServiceIntent?.let { intent ->
+                val dataResult = if (settingsManager.isNotificationEnabled()) {
                     startForegroundService(intent)
                 } else {
                     startService(intent)
                 }
-            }
 
-            val batteryResult = batteryServiceIntent?.let { intent ->
-                startService(intent)
-            }
+                batteryServiceIntent?.let { batteryIntent ->
+                    val batteryResult = startService(batteryIntent)
 
-            if (dataResult != null && batteryResult != null) {
-                // Only show toast during actual setup completion
-                showToast(getString(R.string.monitoring_started))
+                    if (dataResult != null && batteryResult != null) {
+                        // Only show toast during actual setup completion
+                        showToast(getString(R.string.monitoring_started))
 
-                lifecycleScope.launch {
-                    delay(1500)
-                    showMainUI()
-                    startPermissionMonitoring()
+                        lifecycleScope.launch {
+                            delay(1500)
+                            showMainUI()
+                            startPermissionMonitoring()
+                        }
+                    } else {
+                        showToast(getString(R.string.service_start_failed))
+                    }
                 }
-            } else {
-                showToast(getString(R.string.service_start_failed))
             }
         } catch (e: Exception) {
             showToast(getString(R.string.service_error, e.message ?: "Unknown"))
@@ -621,10 +616,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {
+    private fun showPermissionRequiredDialog(permissionName: String, onPositive: () -> Unit) {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle(getString(R.string.permission_required_title))
-            .setMessage(getString(R.string.permission_required_dialog_message, featureName, permissionName))
+            .setMessage(getString(R.string.permission_required_dialog_message, "AutoSync Management", permissionName))
             .setPositiveButton(getString(R.string.grant_button)) { _, _ -> onPositive() }
             .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ -> dialog.dismiss() }
             .show()

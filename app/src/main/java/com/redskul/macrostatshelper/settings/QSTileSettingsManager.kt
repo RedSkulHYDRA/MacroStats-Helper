@@ -2,6 +2,7 @@ package com.redskul.macrostatshelper.settings
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.redskul.macrostatshelper.data.UsageData
 
 class QSTileSettingsManager(context: Context) {
@@ -20,31 +21,45 @@ class QSTileSettingsManager(context: Context) {
     }
 
     fun saveWiFiTilePeriod(timePeriod: TimePeriod) {
-        sharedPreferences.edit().putString(KEY_WIFI_TILE_PERIOD, timePeriod.name).apply()
+        sharedPreferences.edit {
+            putString(KEY_WIFI_TILE_PERIOD, timePeriod.name)
+        }
     }
 
     fun saveMobileTilePeriod(timePeriod: TimePeriod) {
-        sharedPreferences.edit().putString(KEY_MOBILE_TILE_PERIOD, timePeriod.name).apply()
+        sharedPreferences.edit {
+            putString(KEY_MOBILE_TILE_PERIOD, timePeriod.name)
+        }
     }
 
     fun saveShowPeriodInTitle(showPeriod: Boolean) {
-        sharedPreferences.edit().putBoolean(KEY_SHOW_PERIOD_IN_TITLE, showPeriod).apply()
+        sharedPreferences.edit {
+            putBoolean(KEY_SHOW_PERIOD_IN_TITLE, showPeriod)
+        }
     }
 
     fun saveShowChargeInTitle(showCharge: Boolean) {
-        sharedPreferences.edit().putBoolean(KEY_SHOW_CHARGE_IN_TITLE, showCharge).apply()
+        sharedPreferences.edit {
+            putBoolean(KEY_SHOW_CHARGE_IN_TITLE, showCharge)
+        }
     }
 
     fun saveShowBatteryHealthInTitle(showHealth: Boolean) {
-        sharedPreferences.edit().putBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, showHealth).apply()
+        sharedPreferences.edit {
+            putBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, showHealth)
+        }
     }
 
     fun saveShowScreenTimeoutInTitle(showTimeout: Boolean) {
-        sharedPreferences.edit().putBoolean(KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE, showTimeout).apply()
+        sharedPreferences.edit {
+            putBoolean(KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE, showTimeout)
+        }
     }
 
     fun saveBatteryDesignCapacity(capacity: Int) {
-        sharedPreferences.edit().putInt(KEY_BATTERY_DESIGN_CAPACITY, capacity).apply()
+        sharedPreferences.edit {
+            putInt(KEY_BATTERY_DESIGN_CAPACITY, capacity)
+        }
     }
 
     fun getWiFiTilePeriod(): TimePeriod {
@@ -87,21 +102,19 @@ class QSTileSettingsManager(context: Context) {
 
     fun getWiFiTileText(usageData: UsageData): String {
         val period = getWiFiTilePeriod()
-        val value = when (period) {
+        return when (period) {
             TimePeriod.DAILY -> usageData.wifiDaily
             TimePeriod.WEEKLY -> usageData.wifiWeekly
             TimePeriod.MONTHLY -> usageData.wifiMonthly
         }
-        return value
     }
 
     fun getMobileTileText(usageData: UsageData): String {
         val period = getMobileTilePeriod()
-        val value = when (period) {
+        return when (period) {
             TimePeriod.DAILY -> usageData.mobileDaily
             TimePeriod.WEEKLY -> usageData.mobileWeekly
             TimePeriod.MONTHLY -> usageData.mobileMonthly
         }
-        return value
     }
 }

@@ -64,7 +64,7 @@
                     android:text="@string/show_period_in_title"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/show_period_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -184,7 +184,7 @@
                     android:text="@string/show_charge_cycles_in_title"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/show_charge_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -217,7 +217,7 @@
                     android:text="@string/show_battery_health_in_title"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/show_battery_health_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -241,6 +241,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:hint="@string/design_capacity_hint"
+                android:autofillHints="none"
                 android:paddingHorizontal="@dimen/input_padding_horizontal"
                 android:paddingVertical="@dimen/input_padding_vertical" />
 
@@ -288,7 +289,7 @@
                     android:text="@string/show_screen_timeout_in_title"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/show_screen_timeout_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />

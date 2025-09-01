@@ -7,6 +7,7 @@ import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import kotlinx.coroutines.*
 
@@ -91,11 +92,11 @@ class ScreenTimeoutQSTileService : TileService() {
         try {
             // Create intent for write settings permission
             val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                data = android.net.Uri.parse("package:$packageName")
+                data = "package:$packageName".toUri()
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
 
-            // Create PendingIntent with the new non-deprecated method
+            // Create PendingIntent
             val pendingIntent = PendingIntent.getActivity(
                 this,
                 0,
@@ -112,7 +113,7 @@ class ScreenTimeoutQSTileService : TileService() {
             // Fallback: just open general app settings
             try {
                 val fallbackIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = android.net.Uri.parse("package:$packageName")
+                    data = "package:$packageName".toUri()
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
 
@@ -197,11 +198,7 @@ class ScreenTimeoutQSTileService : TileService() {
     }
 
     private fun hasWriteSettingsPermission(): Boolean {
-        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Settings.System.canWrite(this)
-        } else {
-            true // Permission not required on older versions
-        }
+        return Settings.System.canWrite(this)
     }
 
     override fun onDestroy() {

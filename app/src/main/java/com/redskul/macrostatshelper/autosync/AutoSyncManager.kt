@@ -3,6 +3,7 @@ package com.redskul.macrostatshelper.autosync
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import com.redskul.macrostatshelper.utils.PermissionHelper
 
 /**
@@ -45,7 +46,9 @@ class AutoSyncManager(private val context: Context) {
             Log.w("AutoSyncManager", "Cannot enable AutoSync without accessibility permission")
             return
         }
-        sharedPreferences.edit().putBoolean(KEY_AUTOSYNC_ENABLED, enabled).apply()
+        sharedPreferences.edit {
+            putBoolean(KEY_AUTOSYNC_ENABLED, enabled)
+        }
         Log.d("AutoSyncManager", "AutoSync enabled set to: $enabled")
     }
 
@@ -63,7 +66,9 @@ class AutoSyncManager(private val context: Context) {
     fun enforcePermissionRestrictions() {
         // If accessibility permission is revoked, disable AutoSync
         if (!canEnableAutoSync() && isAutoSyncEnabledRaw()) {
-            sharedPreferences.edit().putBoolean(KEY_AUTOSYNC_ENABLED, false).apply()
+            sharedPreferences.edit {
+                putBoolean(KEY_AUTOSYNC_ENABLED, false)
+            }
             Log.i("AutoSyncManager", "Disabled AutoSync due to missing accessibility permission")
         }
     }
@@ -86,7 +91,9 @@ class AutoSyncManager(private val context: Context) {
      */
     fun setAutoSyncDelay(minutes: Int) {
         if (ALLOWED_DELAYS.contains(minutes)) {
-            sharedPreferences.edit().putInt(KEY_AUTOSYNC_DELAY, minutes).apply()
+            sharedPreferences.edit {
+                putInt(KEY_AUTOSYNC_DELAY, minutes)
+            }
             Log.d("AutoSyncManager", "AutoSync delay set to: $minutes minutes")
         } else {
             Log.w("AutoSyncManager", "Invalid delay: $minutes. Must be one of $ALLOWED_DELAYS")

@@ -51,14 +51,11 @@ class BatteryChargeMonitor(private val context: Context) {
                 return intentCycles.toString()
             }
 
-            // Method 2: Try official API for Android 14+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                val cycles = batteryManager.getIntProperty(BATTERY_PROPERTY_CYCLE_COUNT)
-                android.util.Log.d("BatteryChargeMonitor", "Official API returned: $cycles")
-                // Fix: Check for Int.MAX_VALUE instead of Int.MIN_VALUE, and handle invalid values properly
-                if (cycles > 0 && cycles != Int.MAX_VALUE) {
-                    return cycles.toString()
-                }
+            // Method 2: Try official API for Android 14+ (removed unnecessary SDK check since we're already in @RequiresApi)
+            val cycles = batteryManager.getIntProperty(BATTERY_PROPERTY_CYCLE_COUNT)
+            android.util.Log.d("BatteryChargeMonitor", "Official API returned: $cycles")
+            if (cycles > 0 && cycles != Int.MAX_VALUE) {
+                return cycles.toString()
             }
 
             // Method 3: Try reading from kernel files
@@ -77,7 +74,6 @@ class BatteryChargeMonitor(private val context: Context) {
 
             // If all methods fail, return appropriate message
             return when {
-                Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> context.getString(R.string.android_14_required)
                 isKnownUnsupportedDevice() -> context.getString(R.string.not_supported_by_device)
                 else -> context.getString(R.string.not_available)
             }
