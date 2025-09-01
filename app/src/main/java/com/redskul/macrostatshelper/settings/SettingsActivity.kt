@@ -30,7 +30,6 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var mobileMonthlyCheckbox: CheckBox
     private lateinit var notificationEnabledSwitch: Switch
     private lateinit var saveButton: Button
-    private lateinit var previewText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +42,6 @@ class SettingsActivity : AppCompatActivity() {
         createUI()
         loadCurrentSettings()
         setupListeners()
-        updatePreview()
         startPermissionMonitoring()
     }
 
@@ -133,9 +131,6 @@ class SettingsActivity : AppCompatActivity() {
         // Notification Settings Card
         val notificationCard = createNotificationCard()
 
-        // Preview Card
-        val previewCard = createPreviewCard()
-
         // Save Button
         saveButton = Button(this).apply {
             text = getString(R.string.save_settings)
@@ -153,8 +148,6 @@ class SettingsActivity : AppCompatActivity() {
         mainLayout.addView(dataUsageCard)
         addSpacing(mainLayout, R.dimen.spacing_md)
         mainLayout.addView(notificationCard)
-        addSpacing(mainLayout, R.dimen.spacing_md)
-        mainLayout.addView(previewCard)
         addSpacing(mainLayout, R.dimen.spacing_lg)
         mainLayout.addView(saveButton)
 
@@ -187,17 +180,14 @@ class SettingsActivity : AppCompatActivity() {
 
         wifiDailyCheckbox = CheckBox(this).apply {
             text = getString(R.string.daily)
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         wifiWeeklyCheckbox = CheckBox(this).apply {
             text = getString(R.string.weekly)
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         wifiMonthlyCheckbox = CheckBox(this).apply {
             text = getString(R.string.monthly)
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         // Mobile Section
@@ -212,17 +202,14 @@ class SettingsActivity : AppCompatActivity() {
 
         mobileDailyCheckbox = CheckBox(this).apply {
             text = getString(R.string.daily)
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         mobileWeeklyCheckbox = CheckBox(this).apply {
             text = getString(R.string.weekly)
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         mobileMonthlyCheckbox = CheckBox(this).apply {
             text = getString(R.string.monthly)
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
         }
 
         card.addView(cardTitle)
@@ -273,7 +260,6 @@ class SettingsActivity : AppCompatActivity() {
                     }
                     return@setOnCheckedChangeListener
                 }
-                updatePreview()
             }
         }
 
@@ -303,35 +289,6 @@ class SettingsActivity : AppCompatActivity() {
         return card
     }
 
-    private fun createPreviewCard(): LinearLayout {
-        val card = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = resources.getDrawable(R.drawable.card_background, theme)
-        }
-
-        val previewLabel = TextView(this).apply {
-            text = getString(R.string.preview_label)
-            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-        }
-
-        previewText = TextView(this).apply {
-            text = getString(R.string.preview_default)
-            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
-            val previewPadding = resources.getDimensionPixelSize(R.dimen.preview_padding)
-            setPadding(previewPadding, previewPadding, previewPadding, previewPadding)
-            setBackgroundColor(0xFFF5F5F5.toInt())
-            setTypeface(android.graphics.Typeface.MONOSPACE)
-        }
-
-        card.addView(previewLabel)
-        card.addView(previewText)
-
-        return card
-    }
-
     private fun addSpacing(parent: LinearLayout, dimenRes: Int) {
         val spacer = View(this).apply {
             layoutParams = LinearLayout.LayoutParams(
@@ -343,7 +300,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        // Listeners are already set in createUI()
+        // No listeners needed since preview is removed
     }
 
     private fun loadCurrentSettings() {
@@ -363,41 +320,6 @@ class SettingsActivity : AppCompatActivity() {
         notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
 
         updatePermissionBasedUI()
-    }
-
-    private fun updatePreview() {
-        val sampleData = UsageData("125 MB", "850 MB", "3.2 GB", "45 MB", "320 MB", "1.8 GB")
-
-        // Create temporary settings based on current checkbox states
-        val wifiPeriods = mutableListOf<TimePeriod>()
-        if (wifiDailyCheckbox.isChecked) wifiPeriods.add(TimePeriod.DAILY)
-        if (wifiWeeklyCheckbox.isChecked) wifiPeriods.add(TimePeriod.WEEKLY)
-        if (wifiMonthlyCheckbox.isChecked) wifiPeriods.add(TimePeriod.MONTHLY)
-
-        val mobilePeriods = mutableListOf<TimePeriod>()
-        if (mobileDailyCheckbox.isChecked) mobilePeriods.add(TimePeriod.DAILY)
-        if (mobileWeeklyCheckbox.isChecked) mobilePeriods.add(TimePeriod.WEEKLY)
-        if (mobileMonthlyCheckbox.isChecked) mobilePeriods.add(TimePeriod.MONTHLY)
-
-        val tempSettings = DisplaySettings(wifiPeriods, mobilePeriods)
-
-        // Save temporarily to get formatted text
-        val originalSettings = settingsManager.getDisplaySettings()
-        settingsManager.saveDisplaySettings(tempSettings)
-        val (shortText, _) = settingsManager.getFormattedUsageText(sampleData)
-        settingsManager.saveDisplaySettings(originalSettings) // Restore original settings
-
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-
-        previewText.text = buildString {
-            if (notificationEnabledSwitch.isChecked && hasUsageStats) {
-                appendLine("📱 ${getString(R.string.notification_preview, shortText)}")
-            } else if (notificationEnabledSwitch.isChecked && !hasUsageStats) {
-                appendLine("📱 Notification disabled - Usage stats permission required")
-            } else {
-                appendLine("📱 Notification disabled - data will still be monitored for QS tiles")
-            }
-        }
     }
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {

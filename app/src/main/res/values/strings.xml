@@ -39,10 +39,7 @@
     <string name="daily">Daily</string>
     <string name="weekly">Weekly</string>
     <string name="monthly">Monthly</string>
-    <string name="preview_label">Preview:</string>
-    <string name="preview_default">Preview will appear here</string>
     <string name="save_settings">Save Settings</string>
-    <string name="notification_preview">Notification will show:\n%1$s</string>
     <string name="settings_saved">Settings saved successfully!</string>
 
     <!-- Notification Settings -->
@@ -57,7 +54,6 @@
     <string name="autosync_description">Automatically turn on sync when unlocked and turn off sync after delay when locked</string>
     <string name="autosync_delay_label">Turn off sync after:</string>
     <string name="autosync_delay_description">Time delay before turning off sync when device is locked</string>
-    <string name="autosync_preview">AutoSync: Turn off after %1$d minutes when locked</string>
     <string name="accessibility_service_enabled">✓ Accessibility service is enabled</string>
     <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
     <string name="open_accessibility_settings">Open Accessibility Settings</string>
@@ -161,8 +157,4 @@
     <!-- Permission strings -->
     <string name="grant_write_settings_permission">Grant Write Settings Permission</string>
     <string name="write_settings_permission_info">Write Settings permission is optional but required for Screen Timeout tile functionality</string>
-
-    <!-- Preview samples -->
-    <string name="wifi_tile_preview">WiFi Tile will show:\nWiFi (%1$s)\n%2$s</string>
-    <string name="mobile_tile_preview">Mobile Tile will show:\nMobile (%1$s)\n%2$s</string>
 </resources>

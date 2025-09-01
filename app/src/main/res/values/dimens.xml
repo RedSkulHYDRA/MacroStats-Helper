@@ -57,11 +57,6 @@
     <dimen name="card_margin">@dimen/size_md</dimen>              <!-- 16dp -->
     <dimen name="card_elevation">2dp</dimen>
 
-    <!-- Preview Background -->
-    <dimen name="preview_padding">@dimen/size_md</dimen>          <!-- 16dp -->
-
-    <!-- Quick Settings Tile Constants -->
-    <dimen name="tile_hide_divider_length_threshold">@dimen/size_md</dimen> <!-- 16dp -->
 
     <!-- Touch Target -->
     <dimen name="min_touch_target">48dp</dimen>

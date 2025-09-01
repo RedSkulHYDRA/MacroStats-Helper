@@ -33,7 +33,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var showScreenTimeoutInTitleSwitch: Switch
     private lateinit var designCapacityEditText: EditText
     private lateinit var saveButton: Button
-    private lateinit var previewText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +46,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         createUI()
         loadCurrentSettings()
         setupListeners()
-        updatePreview()
         startPermissionMonitoring()
     }
 
@@ -89,8 +87,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Enable/disable screen timeout controls
         showScreenTimeoutInTitleSwitch.isEnabled = hasWriteSettings
-
-        updatePreview()
     }
 
     private fun createUI() {
@@ -144,9 +140,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Screen Timeout Card
         val screenTimeoutCard = createScreenTimeoutCard()
 
-        // Preview Card
-        val previewCard = createPreviewCard()
-
         // Save Button
         saveButton = Button(this).apply {
             text = getString(R.string.save_settings)
@@ -175,8 +168,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         mainLayout.addView(batteryCard)
         addSpacing(mainLayout, R.dimen.spacing_md)
         mainLayout.addView(screenTimeoutCard)
-        addSpacing(mainLayout, R.dimen.spacing_md)
-        mainLayout.addView(previewCard)
         addSpacing(mainLayout, R.dimen.spacing_lg)
         mainLayout.addView(saveButton)
         mainLayout.addView(instructionText2)
@@ -218,7 +209,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
                     showPermissionRequiredDialog("Data Usage Tiles", "Usage Stats Permission")
                     return@setOnCheckedChangeListener
                 }
-                updatePreview()
             }
         }
 
@@ -336,9 +326,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
-        showChargeInTitleSwitch = Switch(this).apply {
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
-        }
+        showChargeInTitleSwitch = Switch(this)
 
         chargeSwitchLayout.addView(chargeSwitchLabelText)
         chargeSwitchLayout.addView(showChargeInTitleSwitch)
@@ -372,9 +360,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
-        showBatteryHealthInTitleSwitch = Switch(this).apply {
-            setOnCheckedChangeListener { _, _ -> updatePreview() }
-        }
+        showBatteryHealthInTitleSwitch = Switch(this)
 
         healthSwitchLayout.addView(healthSwitchLabelText)
         healthSwitchLayout.addView(showBatteryHealthInTitleSwitch)
@@ -459,7 +445,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
                     showPermissionRequiredDialog("Screen Timeout Tile", "Write Settings Permission")
                     return@setOnCheckedChangeListener
                 }
-                updatePreview()
             }
         }
 
@@ -480,35 +465,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         return card
     }
 
-    private fun createPreviewCard(): LinearLayout {
-        val card = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = resources.getDrawable(R.drawable.card_background, theme)
-        }
-
-        val previewLabel = TextView(this).apply {
-            text = getString(R.string.preview_label)
-            textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
-            setPadding(0, 0, 0, spacingMd)
-        }
-
-        previewText = TextView(this).apply {
-            text = getString(R.string.preview_default)
-            textSize = resources.getDimension(R.dimen.text_size_small) / resources.displayMetrics.scaledDensity
-            val previewPadding = resources.getDimensionPixelSize(R.dimen.preview_padding)
-            setPadding(previewPadding, previewPadding, previewPadding, previewPadding)
-            setBackgroundColor(0xFFF5F5F5.toInt())
-            setTypeface(android.graphics.Typeface.MONOSPACE)
-        }
-
-        card.addView(previewLabel)
-        card.addView(previewText)
-
-        return card
-    }
-
     private fun addSpacing(parent: LinearLayout, dimenRes: Int) {
         val spacer = View(this).apply {
             layoutParams = LinearLayout.LayoutParams(
@@ -520,29 +476,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        wifiTileSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                updatePreview()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        mobileTileSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                updatePreview()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        designCapacityEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                updatePreview()
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        // Listeners removed since preview is not needed
     }
 
     private fun loadCurrentSettings() {
@@ -576,95 +510,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         updatePermissionBasedUI()
-    }
-
-    private fun updatePreview() {
-        val sampleData = UsageData("125 MB", "850 MB", "3.2 GB", "45 MB", "320 MB", "1.8 GB")
-        val sampleChargeCycles = "342"
-        val sampleBatteryHealth = "87%"
-        val sampleScreenTimeout = "30s"
-
-        val wifiPeriod = when (wifiTileSpinner.selectedItemPosition) {
-            0 -> TimePeriod.DAILY
-            1 -> TimePeriod.WEEKLY
-            2 -> TimePeriod.MONTHLY
-            else -> TimePeriod.DAILY
-        }
-
-        val mobilePeriod = when (mobileTileSpinner.selectedItemPosition) {
-            0 -> TimePeriod.DAILY
-            1 -> TimePeriod.WEEKLY
-            2 -> TimePeriod.MONTHLY
-            else -> TimePeriod.DAILY
-        }
-
-        val wifiValue = when (wifiPeriod) {
-            TimePeriod.DAILY -> sampleData.wifiDaily
-            TimePeriod.WEEKLY -> sampleData.wifiWeekly
-            TimePeriod.MONTHLY -> sampleData.wifiMonthly
-        }
-
-        val mobileValue = when (mobilePeriod) {
-            TimePeriod.DAILY -> sampleData.mobileDaily
-            TimePeriod.WEEKLY -> sampleData.mobileWeekly
-            TimePeriod.MONTHLY -> sampleData.mobileMonthly
-        }
-
-        val showPeriodInTitle = showPeriodInTitleSwitch.isChecked
-        val showChargeInTitle = showChargeInTitleSwitch.isChecked
-        val showHealthInTitle = showBatteryHealthInTitleSwitch.isChecked
-        val showScreenTimeoutInTitle = showScreenTimeoutInTitleSwitch.isChecked
-
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
-
-        previewText.text = buildString {
-            if (hasUsageStats) {
-                if (showPeriodInTitle) {
-                    appendLine("📶 WiFi Usage (${wifiPeriod.name.lowercase().replaceFirstChar { it.uppercase() }})")
-                    appendLine("   $wifiValue")
-                    appendLine()
-                    appendLine("📱 Mobile Data Usage (${mobilePeriod.name.lowercase().replaceFirstChar { it.uppercase() }})")
-                    appendLine("   $mobileValue")
-                } else {
-                    appendLine("📶 $wifiValue")
-                    appendLine()
-                    appendLine("📱 $mobileValue")
-                }
-                appendLine()
-            } else {
-                appendLine("📶📱 Data usage tiles disabled")
-                appendLine("     (Usage stats permission required)")
-                appendLine()
-            }
-
-            if (showChargeInTitle) {
-                appendLine("🔋 Charge Cycles")
-                appendLine("   $sampleChargeCycles")
-            } else {
-                appendLine("🔋 $sampleChargeCycles")
-            }
-            appendLine()
-            if (showHealthInTitle) {
-                appendLine("💚 Battery Health")
-                appendLine("   $sampleBatteryHealth")
-            } else {
-                appendLine("💚 $sampleBatteryHealth")
-            }
-            appendLine()
-
-            if (hasWriteSettings) {
-                if (showScreenTimeoutInTitle) {
-                    appendLine("⏰ Screen Timeout")
-                    appendLine("   $sampleScreenTimeout")
-                } else {
-                    appendLine("⏰ $sampleScreenTimeout")
-                }
-            } else {
-                appendLine("⏰ Screen timeout tile disabled")
-                appendLine("   (Write settings permission required)")
-            }
-        }
     }
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {
