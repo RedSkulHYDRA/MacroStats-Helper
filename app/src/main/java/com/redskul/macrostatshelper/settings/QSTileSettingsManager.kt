@@ -1,8 +1,7 @@
-package com.redskul.macrostatshelper.tiles
+package com.redskul.macrostatshelper.settings
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.redskul.macrostatshelper.settings.TimePeriod
 import com.redskul.macrostatshelper.data.UsageData
 
 class QSTileSettingsManager(context: Context) {

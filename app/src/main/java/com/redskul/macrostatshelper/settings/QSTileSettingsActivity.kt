@@ -1,11 +1,10 @@
-package com.redskul.macrostatshelper.tiles
+package com.redskul.macrostatshelper.settings
 
 import android.os.Bundle
 import android.text.InputType
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import android.widget.ArrayAdapter
-import android.widget.AdapterView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -13,8 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
-import com.redskul.macrostatshelper.settings.TimePeriod
-import com.redskul.macrostatshelper.data.BatteryHealthMonitor
+import com.redskul.macrostatshelper.battery.BatteryHealthMonitor
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent

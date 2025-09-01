@@ -7,7 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.redskul.macrostatshelper.R
-import com.redskul.macrostatshelper.core.UpdateStatsReceiver
+import com.redskul.macrostatshelper.utils.UpdateStatsReceiver
 import com.redskul.macrostatshelper.data.UsageData
 import com.redskul.macrostatshelper.settings.SettingsActivity
 import com.redskul.macrostatshelper.settings.SettingsManager

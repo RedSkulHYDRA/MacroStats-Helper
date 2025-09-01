@@ -1,5 +1,6 @@
-package com.redskul.macrostatshelper.data
+package com.redskul.macrostatshelper.battery
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.BatteryManager
 import com.redskul.macrostatshelper.R
@@ -77,6 +78,7 @@ class BatteryHealthMonitor(private val context: Context) {
         }
     }
 
+    @SuppressLint("StringFormatMatches")
     private fun getHealthCalculationStatus(currentFcc: Int, designCapacity: Int): String {
         val currentNow = try {
             batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)

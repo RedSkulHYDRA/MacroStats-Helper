@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper.core
+package com.redskul.macrostatshelper.utils
 
 import android.content.BroadcastReceiver
 import android.content.Context

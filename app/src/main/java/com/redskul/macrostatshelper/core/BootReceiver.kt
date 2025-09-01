@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.redskul.macrostatshelper.data.DataUsageService
-import com.redskul.macrostatshelper.data.BatteryService
+import com.redskul.macrostatshelper.battery.BatteryService
 
 class BootReceiver : BroadcastReceiver() {
 

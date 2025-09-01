@@ -1,13 +1,13 @@
 package com.redskul.macrostatshelper.tiles
 
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
+import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import kotlinx.coroutines.*
 
 class ScreenTimeoutQSTileService : TileService() {

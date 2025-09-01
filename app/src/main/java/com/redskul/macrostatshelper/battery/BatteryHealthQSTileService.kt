@@ -1,11 +1,12 @@
-package com.redskul.macrostatshelper.tiles
+package com.redskul.macrostatshelper.battery
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.service.quicksettings.TileService
-import com.redskul.macrostatshelper.data.BatteryHealthMonitor
+import com.redskul.macrostatshelper.settings.QSTileSettingsManager
+import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
 class BatteryHealthQSTileService : TileService() {
@@ -75,7 +76,8 @@ class BatteryHealthQSTileService : TileService() {
                 val healthPercentage = healthData.healthPercentage
                 val currentFcc = healthData.currentFcc
                 val designCapacity = healthData.designCapacity
-                val config = TileConfigHelper.getBatteryHealthTileConfig(this@BatteryHealthQSTileService)
+                val config =
+                    TileConfigHelper.getBatteryHealthTileConfig(this@BatteryHealthQSTileService)
                 val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
 
                 withContext(Dispatchers.Main) {

@@ -1,13 +1,12 @@
-package com.redskul.macrostatshelper.data
+package com.redskul.macrostatshelper.battery
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
 import android.content.Context
-import com.redskul.macrostatshelper.notification.NotificationHelper
-import com.redskul.macrostatshelper.R
-import com.redskul.macrostatshelper.core.MainActivity
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.settings.SettingsManager
 import kotlinx.coroutines.*
 
@@ -44,6 +43,7 @@ class BatteryService : Service() {
         lastUpdateTime = System.currentTimeMillis()
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_UPDATE_NOW -> {
@@ -65,6 +65,7 @@ class BatteryService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private suspend fun startPeriodicUpdates() {
         updateJob?.cancel()
 
@@ -143,6 +144,7 @@ class BatteryService : Service() {
         return isScreenOff && hasBeenInactiveForLong
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private suspend fun updateBatteryData() {
         try {
             android.util.Log.d("BatteryService", "Updating battery data")

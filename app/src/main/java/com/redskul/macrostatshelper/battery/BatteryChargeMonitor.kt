@@ -1,10 +1,11 @@
-package com.redskul.macrostatshelper.data
+package com.redskul.macrostatshelper.battery
 
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
+import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.R
 
 data class ChargeData(
@@ -22,6 +23,7 @@ class BatteryChargeMonitor(private val context: Context) {
         private const val BATTERY_PROPERTY_CYCLE_COUNT = 7
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     fun getChargeData(): ChargeData {
         android.util.Log.d("BatteryChargeMonitor", "Starting battery charge data collection")
 
@@ -36,6 +38,7 @@ class BatteryChargeMonitor(private val context: Context) {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun getChargeCycles(): String {
         try {
             android.util.Log.d("BatteryChargeMonitor", "Device: ${Build.MANUFACTURER} ${Build.MODEL}")
@@ -52,7 +55,8 @@ class BatteryChargeMonitor(private val context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 val cycles = batteryManager.getIntProperty(BATTERY_PROPERTY_CYCLE_COUNT)
                 android.util.Log.d("BatteryChargeMonitor", "Official API returned: $cycles")
-                if (cycles > 0 && cycles != Int.MAX_VALUE && cycles != Int.MIN_VALUE) {
+                // Fix: Check for Int.MAX_VALUE instead of Int.MIN_VALUE, and handle invalid values properly
+                if (cycles > 0 && cycles != Int.MAX_VALUE) {
                     return cycles.toString()
                 }
             }
@@ -84,6 +88,7 @@ class BatteryChargeMonitor(private val context: Context) {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun getCyclesFromIntent(): Int {
         return try {
             val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))

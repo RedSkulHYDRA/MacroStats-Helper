@@ -1,7 +1,6 @@
 package com.redskul.macrostatshelper.core
 
 import android.Manifest
-import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -21,10 +20,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.data.DataUsageService
-import com.redskul.macrostatshelper.data.BatteryService
+import com.redskul.macrostatshelper.battery.BatteryService
 import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
 import com.redskul.macrostatshelper.autosync.AutoSyncManager
-import com.redskul.macrostatshelper.tiles.QSTileSettingsActivity
+import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.SettingsActivity
 import com.redskul.macrostatshelper.settings.SettingsManager
@@ -43,6 +42,10 @@ class MainActivity : AppCompatActivity() {
 
     private var mainBinding: ActivityMainBinding? = null
     private var setupBinding: ActivitySetupBinding? = null
+
+    // Store service intents as class properties to ensure we use the same instances for stop calls
+    private var dataServiceIntent: Intent? = null
+    private var batteryServiceIntent: Intent? = null
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -103,6 +106,10 @@ class MainActivity : AppCompatActivity() {
         permissionHelper = PermissionHelper(this)
         settingsManager = SettingsManager(this)
         autoSyncManager = AutoSyncManager(this)
+
+        // Initialize service intents
+        dataServiceIntent = Intent(this, DataUsageService::class.java)
+        batteryServiceIntent = Intent(this, BatteryService::class.java)
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
@@ -202,8 +209,8 @@ class MainActivity : AppCompatActivity() {
         binding.updateIntervalSpinner.adapter = adapter
 
         // Load current setting BEFORE setting up the listener
-        val currentInterval = settingsManager.getUpdateInterval()
-        val currentIndex = settingsManager.getUpdateIntervalValues().indexOf(currentInterval)
+        val savedInterval = settingsManager.getUpdateInterval()
+        val currentIndex = settingsManager.getUpdateIntervalValues().indexOf(savedInterval)
         if (currentIndex >= 0) {
             binding.updateIntervalSpinner.setSelection(currentIndex)
         }
@@ -220,10 +227,10 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val selectedInterval = settingsManager.getUpdateIntervalValues()[position]
-                val currentInterval = settingsManager.getUpdateInterval()
+                val currentSavedInterval = settingsManager.getUpdateInterval()
 
                 // Only proceed if the interval actually changed
-                if (selectedInterval != currentInterval) {
+                if (selectedInterval != currentSavedInterval) {
                     settingsManager.setUpdateInterval(selectedInterval)
 
                     // Restart services with new interval
@@ -320,8 +327,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupStopServiceButton(binding: ActivityMainBinding) {
         binding.stopServiceButton.setOnClickListener {
             if (binding.stopServiceButton.text == getString(R.string.stop_monitoring)) {
-                stopService(Intent(this, DataUsageService::class.java))
-                stopService(Intent(this, BatteryService::class.java))
+                // Use the stored service intent instances for stopping
+                dataServiceIntent?.let { stopService(it) }
+                batteryServiceIntent?.let { stopService(it) }
                 showToast(getString(R.string.monitoring_stopped))
                 binding.statusText.text = getString(R.string.monitoring_stopped_restart_note)
                 binding.stopServiceButton.text = getString(R.string.start_monitoring)
@@ -473,8 +481,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun restartServicesWithNewInterval() {
         try {
-            stopService(Intent(this, DataUsageService::class.java))
-            stopService(Intent(this, BatteryService::class.java))
+            // Use the stored service intent instances for stopping
+            dataServiceIntent?.let { stopService(it) }
+            batteryServiceIntent?.let { stopService(it) }
 
             lifecycleScope.launch {
                 delay(1000)
@@ -487,16 +496,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun ensureServicesRunning() {
         try {
-            val dataServiceIntent = Intent(this, DataUsageService::class.java)
-
-            if (settingsManager.isNotificationEnabled()) {
-                startForegroundService(dataServiceIntent)
-            } else {
-                startService(dataServiceIntent)
+            dataServiceIntent?.let { intent ->
+                if (settingsManager.isNotificationEnabled()) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
             }
 
-            val batteryServiceIntent = Intent(this, BatteryService::class.java)
-            startService(batteryServiceIntent)
+            batteryServiceIntent?.let { intent ->
+                startService(intent)
+            }
 
             // REMOVED: No toast here since this runs every time the app opens
             // This ensures services are running without bothering the user with notifications
@@ -545,7 +555,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestAccessibilityPermission() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        startActivity(intent)
+        accessibilityPermissionLauncher.launch(intent)
     }
 
     private fun completeSetup() {
@@ -559,15 +569,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun startServicesAndTransitionToMain() {
         try {
-            val dataServiceIntent = Intent(this, DataUsageService::class.java)
-            val dataResult = if (settingsManager.isNotificationEnabled()) {
-                startForegroundService(dataServiceIntent)
-            } else {
-                startService(dataServiceIntent)
+            val dataResult = dataServiceIntent?.let { intent ->
+                if (settingsManager.isNotificationEnabled()) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
             }
 
-            val batteryServiceIntent = Intent(this, BatteryService::class.java)
-            val batteryResult = startService(batteryServiceIntent)
+            val batteryResult = batteryServiceIntent?.let { intent ->
+                startService(intent)
+            }
 
             if (dataResult != null && batteryResult != null) {
                 // Only show toast during actual setup completion
@@ -589,15 +601,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun startServicesAndShowSuccess() {
         try {
-            val dataServiceIntent = Intent(this, DataUsageService::class.java)
-            if (settingsManager.isNotificationEnabled()) {
-                startForegroundService(dataServiceIntent)
-            } else {
-                startService(dataServiceIntent)
+            dataServiceIntent?.let { intent ->
+                if (settingsManager.isNotificationEnabled()) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
             }
 
-            val batteryServiceIntent = Intent(this, BatteryService::class.java)
-            startService(batteryServiceIntent)
+            batteryServiceIntent?.let { intent ->
+                startService(intent)
+            }
 
             // Only show toast when user manually starts services
             showToast(getString(R.string.monitoring_started))

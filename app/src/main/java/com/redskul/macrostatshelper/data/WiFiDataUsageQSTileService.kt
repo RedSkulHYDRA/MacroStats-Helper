@@ -1,4 +1,4 @@
-package com.redskul.macrostatshelper.tiles
+package com.redskul.macrostatshelper.data
 
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -9,8 +9,8 @@ import android.os.Build
 import android.provider.Settings
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
-import com.redskul.macrostatshelper.data.DataUsageMonitor
-import com.redskul.macrostatshelper.data.DataUsageService
+import com.redskul.macrostatshelper.settings.QSTileSettingsManager
+import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import kotlinx.coroutines.*
 

@@ -54,7 +54,7 @@
 
         <!-- QS Tile Settings Activity -->
         <activity
-            android:name=".tiles.QSTileSettingsActivity"
+            android:name=".settings.QSTileSettingsActivity"
             android:exported="false"
             android:label="QS Tile Settings"
             android:theme="@style/Theme.MacroStatsHelper.NoActionBar" />
@@ -68,7 +68,7 @@
 
         <!-- Background service for battery monitoring -->
         <service
-            android:name=".data.BatteryService"
+            android:name=".battery.BatteryService"
             android:enabled="true"
             android:exported="false" />
 
@@ -100,7 +100,7 @@
 
         <!-- BroadcastReceiver for Update Stats button -->
         <receiver
-            android:name=".core.UpdateStatsReceiver"
+            android:name=".utils.UpdateStatsReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -110,7 +110,7 @@
 
         <!-- QS Tile Services -->
         <service
-            android:name=".tiles.WiFiDataUsageQSTileService"
+            android:name=".data.WiFiDataUsageQSTileService"
             android:exported="true"
             android:icon="@drawable/ic_wifi"
             android:label="@string/wifi_usage"
@@ -121,7 +121,7 @@
         </service>
 
         <service
-            android:name=".tiles.MobileDataUsageQSTileService"
+            android:name=".data.MobileDataUsageQSTileService"
             android:exported="true"
             android:icon="@drawable/ic_mobile"
             android:label="@string/mobile_data"
@@ -132,7 +132,7 @@
         </service>
 
         <service
-            android:name=".tiles.ChargeQSTileService"
+            android:name=".battery.BatteryChargeQSTileService"
             android:exported="true"
             android:icon="@drawable/ic_battery_cc"
             android:label="@string/charge_cycles"
@@ -143,7 +143,7 @@
         </service>
 
         <service
-            android:name=".tiles.BatteryHealthQSTileService"
+            android:name=".battery.BatteryHealthQSTileService"
             android:exported="true"
             android:icon="@drawable/ic__battery_health"
             android:label="@string/battery_health"

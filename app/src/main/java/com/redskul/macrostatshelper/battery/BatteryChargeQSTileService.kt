@@ -1,21 +1,24 @@
-package com.redskul.macrostatshelper.tiles
+package com.redskul.macrostatshelper.battery
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.service.quicksettings.TileService
-import com.redskul.macrostatshelper.data.BatteryChargeMonitor
-import com.redskul.macrostatshelper.data.BatteryService
+import androidx.annotation.RequiresApi
+import com.redskul.macrostatshelper.settings.QSTileSettingsManager
+import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
-class ChargeQSTileService : TileService() {
+class BatteryChargeQSTileService : TileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var batteryChargeMonitor: BatteryChargeMonitor
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val batteryUpdateReceiver = object : BroadcastReceiver() {
+        @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == BatteryService.ACTION_BATTERY_UPDATED) {
                 android.util.Log.d("ChargeQSTile", "Received battery update broadcast")
@@ -30,6 +33,7 @@ class ChargeQSTileService : TileService() {
         batteryChargeMonitor = BatteryChargeMonitor(this)
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onStartListening() {
         super.onStartListening()
         registerReceiver(
@@ -49,6 +53,7 @@ class ChargeQSTileService : TileService() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onClick() {
         super.onClick()
         android.util.Log.d("ChargeQSTile", "Tile clicked - triggering immediate update")
@@ -60,12 +65,13 @@ class ChargeQSTileService : TileService() {
         updateTile()
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun updateTile() {
         tileScope.launch {
             try {
                 val chargeData = batteryChargeMonitor.getChargeData()
                 val value = chargeData.chargeCycles
-                val config = TileConfigHelper.getChargeTileConfig(this@ChargeQSTileService)
+                val config = TileConfigHelper.getChargeTileConfig(this@BatteryChargeQSTileService)
                 val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
 
                 withContext(Dispatchers.Main) {
@@ -75,7 +81,7 @@ class ChargeQSTileService : TileService() {
                         config,
                         value,
                         showChargeInTitle,
-                        context = this@ChargeQSTileService
+                        context = this@BatteryChargeQSTileService
                     )
                     tile.updateTile()
                     android.util.Log.d("ChargeQSTile", "Tile updated with: $value")
