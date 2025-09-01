@@ -63,7 +63,7 @@ class SettingsActivity : AppCompatActivity() {
                     updatePermissionBasedUI()
                     if (lastUsageStats && !currentUsageStats) {
                         notificationEnabledSwitch.isChecked = false
-                        showToast("Data features disabled")
+                        showToast(getString(R.string.data_tiles_disabled))
                     }
                 }
 
@@ -162,7 +162,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val cardTitle = TextView(this).apply {
-            text = "Data Usage Display"
+            text = getString(R.string.data_usage_display_title)
             textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
             val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
@@ -255,7 +255,7 @@ class SettingsActivity : AppCompatActivity() {
             setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
                     this.isChecked = false
-                    showPermissionRequiredDialog("Data Usage Notification", getString(R.string.permission_usage_stats)) {
+                    showPermissionRequiredDialog(getString(R.string.show_data_usage_notification), getString(R.string.permission_usage_stats)) {
                         requestUsageStatsPermission()
                     }
                     return@setOnCheckedChangeListener
@@ -324,17 +324,17 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {
         AlertDialog.Builder(this)
-            .setTitle("Permission Required")
-            .setMessage("$featureName requires $permissionName permission. Grant now?")
-            .setPositiveButton("Grant") { _, _ -> onPositive() }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .setTitle(getString(R.string.permission_required_title))
+            .setMessage(getString(R.string.permission_required_dialog_message, featureName, permissionName))
+            .setPositiveButton(getString(R.string.grant_button)) { _, _ -> onPositive() }
+            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
     private fun requestUsageStatsPermission() {
         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
         startActivity(intent)
-        showToast("Enable usage access for MacroStats Helper")
+        showToast(getString(R.string.enable_usage_access_helper))
     }
 
     private fun saveSettings() {

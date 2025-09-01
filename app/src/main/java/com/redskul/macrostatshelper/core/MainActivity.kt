@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         updateBatteryOptimizationUI()
         if (permissionHelper.isBatteryOptimizationDisabled()) {
-            showToast("Battery optimization disabled")
+            showToast(getString(R.string.battery_optimization_disabled_toast))
         }
     }
 
@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity() {
                 if (lastUsageStats && !currentUsageStats) {
                     android.util.Log.i("MainActivity", "Usage stats permission was revoked")
                     settingsManager.enforcePermissionRestrictions()
-                    showToast("Data features disabled")
+                    showToast(getString(R.string.data_tiles_disabled))
                 }
 
                 if (lastAccessibility && !currentAccessibility) {
@@ -232,7 +232,7 @@ class MainActivity : AppCompatActivity() {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
                 stopService(Intent(this@MainActivity, BatteryService::class.java))
                 showToast(getString(R.string.monitoring_stopped))
-                statusText.text = "Monitoring stopped. Use Start button to restart."
+                statusText.text = getString(R.string.monitoring_stopped_restart_note)
 
                 this.text = getString(R.string.start_monitoring)
                 this.setOnClickListener {
@@ -243,7 +243,7 @@ class MainActivity : AppCompatActivity() {
                         stopService(Intent(this@MainActivity, DataUsageService::class.java))
                         stopService(Intent(this@MainActivity, BatteryService::class.java))
                         showToast(getString(R.string.monitoring_stopped))
-                        statusText.text = "Monitoring stopped. Use Start button to restart."
+                        statusText.text = getString(R.string.monitoring_stopped_restart_note)
                         this.text = getString(R.string.start_monitoring)
                         setupStopServiceButton(this, statusText)
                     }
@@ -277,7 +277,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val cardTitle = TextView(this).apply {
-            text = "Battery Optimization"
+            text = getString(R.string.battery_optimization_title)
             textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
             val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
@@ -313,7 +313,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val cardTitle = TextView(this).apply {
-            text = "Update Frequency"
+            text = getString(R.string.update_frequency_title)
             textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
             val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
@@ -321,7 +321,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val description = TextView(this).apply {
-            text = "Update frequency for data statistics"
+            text = getString(R.string.update_frequency_desc)
             textSize = resources.getDimension(R.dimen.text_size_body) / resources.displayMetrics.scaledDensity
             val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
             setPadding(0, 0, 0, spacingMd)
@@ -329,7 +329,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val spinnerLabel = TextView(this).apply {
-            text = "Update every:"
+            text = getString(R.string.update_every_label)
             textSize = resources.getDimension(R.dimen.text_size_subheading) / resources.displayMetrics.scaledDensity
             val spacingSm = resources.getDimensionPixelSize(R.dimen.spacing_sm)
             setPadding(0, 0, 0, spacingSm)
@@ -359,7 +359,7 @@ class MainActivity : AppCompatActivity() {
                     // Restart services with new interval
                     restartServicesWithNewInterval()
 
-                    showToast("Update frequency changed")
+                    showToast(getString(R.string.update_frequency_changed))
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
@@ -504,15 +504,15 @@ class MainActivity : AppCompatActivity() {
     private fun updateBatteryOptimizationUI() {
         if (::batteryOptimizationButton.isInitialized) {
             if (permissionHelper.isBatteryOptimizationDisabled()) {
-                batteryOptimizationButton.text = "✓ Battery Optimization Disabled"
+                batteryOptimizationButton.text = getString(R.string.battery_optimization_disabled_check)
                 batteryOptimizationButton.alpha = 0.7f
                 batteryOptimizationButton.isEnabled = false
-                batteryOptimizationDescription.text = "Battery optimization disabled. App runs reliably."
+                batteryOptimizationDescription.text = getString(R.string.battery_optimization_disabled_desc)
             } else {
-                batteryOptimizationButton.text = "Disable Battery Optimization"
+                batteryOptimizationButton.text = getString(R.string.disable_battery_optimization)
                 batteryOptimizationButton.alpha = 1.0f
                 batteryOptimizationButton.isEnabled = true
-                batteryOptimizationDescription.text = "Disable optimization for reliable monitoring."
+                batteryOptimizationDescription.text = getString(R.string.disable_optimization_desc)
             }
         }
     }
@@ -539,7 +539,7 @@ class MainActivity : AppCompatActivity() {
             batteryOptimizationLauncher.launch(intent)
         } catch (e: Exception) {
             android.util.Log.e("MainActivity", "Error requesting battery optimization exemption", e)
-            showToast("Unable to open battery settings")
+            showToast(getString(R.string.unable_open_battery_settings))
         }
     }
 
@@ -630,7 +630,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val batteryOptButton = Button(this).apply {
-            text = "Disable Battery Optimization"
+            text = getString(R.string.disable_battery_optimization)
             val buttonPaddingH = resources.getDimensionPixelSize(R.dimen.button_padding_horizontal)
             val buttonPaddingV = resources.getDimensionPixelSize(R.dimen.button_padding_vertical)
             setPadding(buttonPaddingH, buttonPaddingV, buttonPaddingH, buttonPaddingV)
@@ -694,9 +694,9 @@ class MainActivity : AppCompatActivity() {
                 accessibilityButton.alpha = if (hasAccessibility) 0.7f else 1.0f
 
                 batteryOptButton.text = if (hasBatteryOpt) {
-                    "✓ Disable Battery Optimization"
+                    getString(R.string.battery_optimization_disabled_check_full)
                 } else {
-                    "Disable Battery Optimization"
+                    getString(R.string.disable_battery_optimization)
                 }
                 batteryOptButton.alpha = if (hasBatteryOpt) 0.7f else 1.0f
 
@@ -724,7 +724,7 @@ class MainActivity : AppCompatActivity() {
                 stopService(Intent(this@MainActivity, DataUsageService::class.java))
                 stopService(Intent(this@MainActivity, BatteryService::class.java))
                 showToast(getString(R.string.monitoring_stopped))
-                statusText.text = "Monitoring stopped. Use Start button to restart."
+                statusText.text = getString(R.string.monitoring_stopped_restart_note)
                 button.text = getString(R.string.start_monitoring)
             } else {
                 startServicesAndShowSuccess()
@@ -761,7 +761,7 @@ class MainActivity : AppCompatActivity() {
                 showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
             }
         } else {
-            showToast("Permission not required on this Android version")
+            showToast(getString(R.string.permission_not_required_version))
         }
     }
 
@@ -785,7 +785,7 @@ class MainActivity : AppCompatActivity() {
                 showToast(getString(R.string.permission_granted, getString(R.string.permission_write_settings)))
             }
         } else {
-            showToast("Permission not required on this Android version")
+            showToast(getString(R.string.permission_not_required_version))
         }
     }
 
@@ -858,10 +858,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Permission Required")
-            .setMessage("$featureName requires $permissionName permission. Grant now?")
-            .setPositiveButton("Grant") { _, _ -> onPositive() }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .setTitle(getString(R.string.permission_required_title))
+            .setMessage(getString(R.string.permission_required_dialog_message, featureName, permissionName))
+            .setPositiveButton(getString(R.string.grant_button)) { _, _ -> onPositive() }
+            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 

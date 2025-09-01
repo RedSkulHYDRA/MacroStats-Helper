@@ -63,10 +63,10 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings) {
                     updatePermissionBasedUI()
                     if (lastUsageStats && !currentUsageStats) {
-                        showToast("Data tiles disabled")
+                        showToast(getString(R.string.data_tiles_disabled))
                     }
                     if (lastWriteSettings && !currentWriteSettings) {
-                        showToast("Screen timeout disabled")
+                        showToast(getString(R.string.screen_timeout_disabled))
                     }
                 }
 
@@ -183,7 +183,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         val cardTitle = TextView(this).apply {
-            text = "Data Usage Tiles"
+            text = getString(R.string.data_usage_tiles_title)
             textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
             val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
@@ -206,7 +206,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
                     this.isChecked = false
-                    showPermissionRequiredDialog("Data Usage Tiles", getString(R.string.permission_usage_stats))
+                    showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
                     return@setOnCheckedChangeListener
                 }
             }
@@ -290,7 +290,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         val cardTitle = TextView(this).apply {
-            text = "Battery Tiles"
+            text = getString(R.string.battery_tiles_title)
             textSize = resources.getDimension(R.dimen.text_size_heading) / resources.displayMetrics.scaledDensity
             setTypeface(null, android.graphics.Typeface.BOLD)
             val spacingMd = resources.getDimensionPixelSize(R.dimen.spacing_md)
@@ -418,7 +418,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked && !permissionHelper.hasWriteSettingsPermission()) {
                     this.isChecked = false
-                    showPermissionRequiredDialog("Screen Timeout Tile", getString(R.string.permission_write_settings))
+                    showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
                     return@setOnCheckedChangeListener
                 }
             }
@@ -482,9 +482,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {
         AlertDialog.Builder(this)
-            .setTitle("Permission Required")
-            .setMessage("$featureName requires $permissionName. Grant in settings?")
-            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .setTitle(getString(R.string.permission_required_title))
+            .setMessage(getString(R.string.permission_required_settings_dialog_message, featureName, permissionName))
+            .setPositiveButton(getString(R.string.ok_button)) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 

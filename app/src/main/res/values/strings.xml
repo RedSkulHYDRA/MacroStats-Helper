@@ -138,4 +138,34 @@
     <string name="screen_timeout">Screen Timeout</string>
     <string name="screen_timeout_permission_required">Permission Required</string>
     <string name="tap_to_grant">Tap to grant</string>
-</resources>
+
+    <!-- Additional strings for hardcoded text -->
+    <string name="monitoring_stopped_restart_note">Monitoring stopped. Use Start button to restart.</string>
+    <string name="battery_optimization_disabled_check">✓ Battery Optimization Disabled</string>
+    <string name="disable_battery_optimization">Disable Battery Optimization</string>
+    <string name="battery_optimization_disabled_desc">Battery optimization disabled. App runs reliably.</string>
+    <string name="disable_optimization_desc">Disable optimization for reliable monitoring.</string>
+    <string name="battery_optimization_title">Battery Optimization</string>
+    <string name="update_frequency_title">Update Frequency</string>
+    <string name="update_frequency_desc">Update frequency for data statistics</string>
+    <string name="update_every_label">Update every:</string>
+    <string name="update_frequency_changed">Update frequency changed</string>
+    <string name="unable_open_battery_settings">Unable to open battery settings</string>
+    <string name="permission_not_required_version">Permission not required on this Android version</string>
+    <string name="permission_required_title">Permission Required</string>
+    <string name="grant_button">Grant</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="enable_usage_access_helper">Enable usage access for MacroStats Helper</string>
+    <string name="battery_optimization_disabled_check_full">✓ Disable Battery Optimization</string>
+    <string name="data_usage_display_title">Data Usage Display</string>
+    <string name="data_usage_tiles_title">Data Usage Tiles</string>
+    <string name="battery_tiles_title">Battery Tiles</string>
+    <string name="permission_required_settings">Grant in settings?</string>
+    <string name="ok_button">OK</string>
+    <string name="data_tiles_disabled">Data tiles disabled due to missing permission</string>
+    <string name="screen_timeout_disabled">Screen timeout disabled due to missing permission</string>
+    <string name="battery_optimization_disabled_toast">Battery optimization disabled</string>
+    <string name="permission_required_dialog_message">%1$s requires %2$s permission. Grant now?</string>
+    <string name="permission_required_settings_dialog_message">%1$s requires %2$s. Grant in settings?</string>
+
+    </resources>
