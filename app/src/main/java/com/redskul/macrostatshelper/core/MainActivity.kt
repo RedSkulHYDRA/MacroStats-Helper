@@ -255,9 +255,9 @@ class MainActivity : AppCompatActivity() {
 
         // Update status text
         binding.aodPermissionStatusText.text = if (hasPermission) {
-            "✓ WRITE_SECURE_SETTINGS permission granted\n${aodManager.getCurrentAODStatusText()}"
+            getString(R.string.secure_settings_permission_enabled)
         } else {
-            "⚠ WRITE_SECURE_SETTINGS permission required for AOD management"
+            getString(R.string.aod_permission_message_full)
         }
 
         binding.aodPermissionStatusText.setTextColor(
@@ -289,19 +289,19 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
             .setNeutralButton(getString(R.string.learn_more)) { _, _ ->
-                // Open documentation or help
                 showADBInstructions()
             }
             .show()
     }
 
     private fun createCommandView(command: String): android.view.View {
+        val padding = resources.getDimensionPixelSize(R.dimen.spacing_md)
         val textView = android.widget.TextView(this).apply {
             text = command
             setTextIsSelectable(true)
             typeface = android.graphics.Typeface.MONOSPACE
             setBackgroundResource(android.R.drawable.editbox_background)
-            setPadding(16, 16, 16, 16)
+            setPadding(padding, padding, padding, padding)
         }
         return textView
     }

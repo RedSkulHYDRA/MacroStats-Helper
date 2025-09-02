@@ -144,6 +144,10 @@
     <string name="write_settings_permission_disabled">⚠ Modify System Settings permission is required</string>
     <string name="accessibility_service_enabled">✓ Accessibility service is enabled</string>
     <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
+    <string name="secure_settings_permission_enabled">✓ WRITE_SECURE_SETTINGS permission is granted</string>
+    <string name="secure_settings_permission_disabled">⚠ WRITE_SECURE_SETTINGS permission is required</string>
+    <string name="dns_permission_message_full">⚠ WRITE_SECURE_SETTINGS permission required for DNS management</string>
+    <string name="aod_permission_message_full">⚠ WRITE_SECURE_SETTINGS permission required for AOD management</string>
 
     <!-- Permission Button strings -->
     <string name="open_usage_access_settings">Enable Usage Access Settings</string>
@@ -201,7 +205,7 @@
     <!-- DNS Tile - Updated strings -->
     <string name="private_dns_heading">Private DNS</string>
     <string name="show_dns_heading">Enable Tile Heading</string>
-    <string name="add_dns_entry">+ Add DNS Entry</string>
+    <string name="add_dns_entry">Add DNS Entry</string>
     <string name="remove_dns_entry">Remove DNS entry</string>
 
     <!-- Keep existing DNS strings -->

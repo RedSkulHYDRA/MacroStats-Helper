@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base Dimensions - Standard Size Scale -->
+    <dimen name="size_xxs">2dp</dimen>
     <dimen name="size_xs">4dp</dimen>
     <dimen name="size_sm">8dp</dimen>
     <dimen name="size_md">16dp</dimen>
@@ -27,6 +28,7 @@
     <dimen name="padding_text_xl">@dimen/size_xl</dimen>        <!-- 32dp -->
 
     <!-- Spacing -->
+    <dimen name="spacing_xxs">@dimen/size_xxs</dimen>           <!-- 4dp -->
     <dimen name="spacing_xs">@dimen/size_xs</dimen>             <!-- 4dp -->
     <dimen name="spacing_sm">@dimen/size_sm</dimen>             <!-- 8dp -->
     <dimen name="spacing_md">@dimen/size_md</dimen>             <!-- 16dp -->
@@ -49,8 +51,8 @@
     <dimen name="text_size_large_title">@dimen/text_xxxl</dimen> <!-- 26sp -->
 
     <!-- Input Field Dimensions -->
-    <dimen name="input_padding_horizontal">@dimen/size_md</dimen>  <!-- 16dp -->
-    <dimen name="input_padding_vertical">@dimen/size_md</dimen>    <!-- 16dp -->
+    <dimen name="input_padding_horizontal">@dimen/size_xs</dimen>  <!-- 4dp -->
+    <dimen name="input_padding_vertical">@dimen/size_xs</dimen>    <!-- 4dp -->
 
     <!-- Card Properties -->
     <dimen name="card_radius">@dimen/size_md</dimen>              <!-- 16dp -->

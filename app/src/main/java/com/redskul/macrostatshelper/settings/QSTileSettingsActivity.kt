@@ -29,6 +29,8 @@ import android.content.Intent
 import android.provider.Settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 
 class QSTileSettingsActivity : AppCompatActivity() {
 
@@ -249,7 +251,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             binding.dns2Container.visibility == View.GONE -> {
                 binding.dns2Container.visibility = View.VISIBLE
             }
-            binding.dns3Container.visibility == View.GONE -> {
+            binding.dns3Container.isGone -> {
                 binding.dns3Container.visibility = View.VISIBLE
             }
         }
@@ -260,8 +262,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val binding = binding ?: return
 
         // Hide add button if all 3 DNS entries are visible
-        val allVisible = binding.dns2Container.visibility == View.VISIBLE &&
-                binding.dns3Container.visibility == View.VISIBLE
+        val allVisible = binding.dns2Container.isVisible &&
+                binding.dns3Container.isVisible
         binding.dnsAddButton.visibility = if (allVisible) View.GONE else View.VISIBLE
     }
 
@@ -285,12 +287,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun createCommandView(command: String): android.view.View {
+        val padding = resources.getDimensionPixelSize(R.dimen.spacing_md)
         val textView = android.widget.TextView(this).apply {
             text = command
             setTextIsSelectable(true)
             typeface = android.graphics.Typeface.MONOSPACE
             setBackgroundResource(android.R.drawable.editbox_background)
-            setPadding(16, 16, 16, 16)
+            setPadding(padding, padding, padding, padding)
         }
         return textView
     }
@@ -406,9 +409,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val hasPermission = dnsManager.hasSecureSettingsPermission()
 
         binding.dnsPermissionStatusText.text = if (hasPermission) {
-            "✓ WRITE_SECURE_SETTINGS permission granted\n${dnsManager.getCurrentDNSStatusText()}"
+            getString(R.string.secure_settings_permission_enabled)
         } else {
-            "⚠ WRITE_SECURE_SETTINGS permission required for DNS management"
+            getString(R.string.dns_permission_message_full)
         }
 
         binding.dnsPermissionStatusText.setTextColor(
@@ -519,7 +522,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         )
 
         // Only save DNS 2 if container is visible
-        if (binding.dns2Container.visibility == View.VISIBLE) {
+        if (binding.dns2Container.isVisible) {
             dnsManager.saveDNSOption(
                 2,
                 binding.dns2NameEditText.text.toString().trim(),
@@ -531,7 +534,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         // Only save DNS 3 if container is visible
-        if (binding.dns3Container.visibility == View.VISIBLE) {
+        if (binding.dns3Container.isVisible) {
             dnsManager.saveDNSOption(
                 3,
                 binding.dns3NameEditText.text.toString().trim(),

@@ -189,13 +189,13 @@ class DNSQSTileService : TileService() {
             radioButton.text = when {
                 dnsOption.isOff() -> dnsOption.name
                 dnsOption.isAuto() -> dnsOption.name
-                dnsOption.isCustom() -> "${dnsOption.name}\n${dnsOption.url}"
+                dnsOption.isCustom() -> "${dnsOption.name} (${dnsOption.url})"
                 else -> dnsOption.name
             }
 
             // Apply proper text color for theme
             radioButton.setTextColor(textColor)
-            radioButton.setPadding(0, padding / 2, 0, padding / 2)
+            radioButton.setPadding((padding * 0.5).toInt(), padding / 2, padding * 2, padding / 2)
 
             // Check if this is the current selection
             if (dnsOption.url == currentDNS.url) {
