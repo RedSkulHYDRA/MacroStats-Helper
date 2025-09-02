@@ -249,7 +249,8 @@ class DNSQSTileService : TileService() {
                         val showHeading = dnsManager.getShowHeading()
                         val dnsDisplayText = formatDNSDisplayText(currentDNS)
 
-                        tile.state = Tile.STATE_ACTIVE
+                        // Set tile state based on DNS selection
+                        tile.state = if (currentDNS.isOff()) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
                         tile.icon = config.icon
 
                         if (showHeading) {

@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Bundle
 import android.text.InputType
 import android.view.HapticFeedbackConstants
+import android.view.View
 import android.widget.Toast
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -101,6 +102,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Setup DNS section
         setupDNSSection(binding)
+
+        // Setup DNS buttons
+        setupDNSButtons(binding)
     }
 
     private fun setupSpinners(binding: ActivityQsTileSettingsBinding) {
@@ -201,7 +205,64 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         binding.dnsShowHeadingSwitch.isChecked = dnsManager.getShowHeading()
 
+        // Show DNS 2 and 3 if they have data
+        if (dns2.isValid() && dns2.url.isNotEmpty()) {
+            binding.dns2Container.visibility = View.VISIBLE
+        }
+        if (dns3.isValid() && dns3.url.isNotEmpty()) {
+            binding.dns3Container.visibility = View.VISIBLE
+        }
+
+        updateDNSAddButtonVisibility()
         updateDNSPermissionStatus()
+    }
+
+    private fun setupDNSButtons(binding: ActivityQsTileSettingsBinding) {
+        // Main Add DNS button
+        binding.dnsAddButton.setOnClickListener {
+            addNextDNSEntry()
+        }
+
+        // Remove DNS 2 button
+        binding.dnsRemove2Button.setOnClickListener {
+            binding.dns2Container.visibility = View.GONE
+            // Clear the fields
+            binding.dns2NameEditText.setText("")
+            binding.dns2UrlEditText.setText("")
+            updateDNSAddButtonVisibility()
+        }
+
+        // Remove DNS 3 button
+        binding.dnsRemove3Button.setOnClickListener {
+            binding.dns3Container.visibility = View.GONE
+            // Clear the fields
+            binding.dns3NameEditText.setText("")
+            binding.dns3UrlEditText.setText("")
+            updateDNSAddButtonVisibility()
+        }
+    }
+
+    private fun addNextDNSEntry() {
+        val binding = binding ?: return
+
+        when {
+            binding.dns2Container.visibility == View.GONE -> {
+                binding.dns2Container.visibility = View.VISIBLE
+            }
+            binding.dns3Container.visibility == View.GONE -> {
+                binding.dns3Container.visibility = View.VISIBLE
+            }
+        }
+        updateDNSAddButtonVisibility()
+    }
+
+    private fun updateDNSAddButtonVisibility() {
+        val binding = binding ?: return
+
+        // Hide add button if all 3 DNS entries are visible
+        val allVisible = binding.dns2Container.visibility == View.VISIBLE &&
+                binding.dns3Container.visibility == View.VISIBLE
+        binding.dnsAddButton.visibility = if (allVisible) View.GONE else View.VISIBLE
     }
 
     private fun showDNSPermissionDialog() {
@@ -309,6 +370,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dns3NameEditText.isEnabled = hasSecureSettings
         binding.dns3UrlEditText.isEnabled = hasSecureSettings
         binding.dnsShowHeadingSwitch.isEnabled = hasSecureSettings
+        binding.dnsAddButton.isEnabled = hasSecureSettings
+        binding.dnsRemove2Button.isEnabled = hasSecureSettings
+        binding.dnsRemove3Button.isEnabled = hasSecureSettings
     }
 
     private fun updatePermissionStatuses() {
@@ -453,22 +517,36 @@ class QSTileSettingsActivity : AppCompatActivity() {
             binding.dns1NameEditText.text.toString().trim(),
             binding.dns1UrlEditText.text.toString().trim()
         )
-        dnsManager.saveDNSOption(
-            2,
-            binding.dns2NameEditText.text.toString().trim(),
-            binding.dns2UrlEditText.text.toString().trim()
-        )
-        dnsManager.saveDNSOption(
-            3,
-            binding.dns3NameEditText.text.toString().trim(),
-            binding.dns3UrlEditText.text.toString().trim()
-        )
+
+        // Only save DNS 2 if container is visible
+        if (binding.dns2Container.visibility == View.VISIBLE) {
+            dnsManager.saveDNSOption(
+                2,
+                binding.dns2NameEditText.text.toString().trim(),
+                binding.dns2UrlEditText.text.toString().trim()
+            )
+        } else {
+            // Clear DNS 2 if hidden
+            dnsManager.saveDNSOption(2, "", "")
+        }
+
+        // Only save DNS 3 if container is visible
+        if (binding.dns3Container.visibility == View.VISIBLE) {
+            dnsManager.saveDNSOption(
+                3,
+                binding.dns3NameEditText.text.toString().trim(),
+                binding.dns3UrlEditText.text.toString().trim()
+            )
+        } else {
+            // Clear DNS 3 if hidden
+            dnsManager.saveDNSOption(3, "", "")
+        }
 
         // Save DNS heading preference
         dnsManager.setShowHeading(binding.dnsShowHeadingSwitch.isChecked)
 
         // Enable DNS tile if any DNS options are configured
-        val hasValidDNS = dnsManager.getAllDNSOptions().any { !it.isDefault() && it.isValid() }
+        val hasValidDNS = dnsManager.getAllDNSOptions().any { !it.isOff() && !it.isAuto() && it.isValid() }
         dnsManager.setDNSEnabled(hasValidDNS)
 
         android.util.Log.d("QSTileSettings", "DNS settings saved. DNS tile enabled: $hasValidDNS")

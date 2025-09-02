@@ -200,7 +200,9 @@
 
     <!-- DNS Tile - Updated strings -->
     <string name="private_dns_heading">Private DNS</string>
-    <string name="show_dns_heading">Show "Private DNS" prefix in tile</string>
+    <string name="show_dns_heading">Enable Tile Heading</string>
+    <string name="add_dns_entry">+ Add DNS Entry</string>
+    <string name="remove_dns_entry">Remove DNS entry</string>
 
     <!-- Keep existing DNS strings -->
     <string name="dns_provider">DNS Provider</string>
@@ -218,6 +220,6 @@
     <string name="dns_option_3">DNS Provider 3</string>
     <string name="dns_name_hint">e.g., Google DNS</string>
     <string name="dns_url_hint">e.g., dns.google</string>
-    <string name="dns_description">Configure up to 3 custom DNS providers. Leave name empty to disable an option.</string>
+    <string name="dns_description">Use the button above to add up to 3 custom DNS providers. Remove entries using the button next to each DNS heading.</string>
     <string name="dns_permission_message">DNS switching requires WRITE_SECURE_SETTINGS permission to modify private DNS settings. This permission can only be granted via ADB command:</string>
 </resources>
