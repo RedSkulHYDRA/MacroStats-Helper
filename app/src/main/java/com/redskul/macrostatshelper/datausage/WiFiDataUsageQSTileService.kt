@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import com.redskul.macrostatshelper.utils.PermissionHelper
+import com.redskul.macrostatshelper.utils.WorkManagerRepository
 import kotlinx.coroutines.*
 
 class WiFiDataUsageQSTileService : TileService() {
@@ -19,11 +20,12 @@ class WiFiDataUsageQSTileService : TileService() {
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var dataUsageMonitor: DataUsageMonitor
     private lateinit var permissionHelper: PermissionHelper
+    private lateinit var workManagerRepository: WorkManagerRepository
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val dataUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == DataUsageService.ACTION_DATA_UPDATED) {
+            if (intent?.action == DataUsageWorker.ACTION_DATA_UPDATED) {
                 android.util.Log.d("WiFiQSTile", "Received data update broadcast")
                 updateTile()
             }
@@ -35,13 +37,14 @@ class WiFiDataUsageQSTileService : TileService() {
         qsTileSettingsManager = QSTileSettingsManager(this)
         dataUsageMonitor = DataUsageMonitor(this)
         permissionHelper = PermissionHelper(this)
+        workManagerRepository = WorkManagerRepository(this)
     }
 
     override fun onStartListening() {
         super.onStartListening()
         registerReceiver(
             dataUpdateReceiver,
-            IntentFilter(DataUsageService.ACTION_DATA_UPDATED),
+            IntentFilter(DataUsageWorker.ACTION_DATA_UPDATED),
             Context.RECEIVER_NOT_EXPORTED
         )
         updateTile()
@@ -69,10 +72,7 @@ class WiFiDataUsageQSTileService : TileService() {
         // Permission is granted, proceed with normal functionality
         android.util.Log.d("WiFiQSTile", "Tile clicked - triggering immediate update")
 
-        val serviceIntent = Intent(this, DataUsageService::class.java).apply {
-            action = DataUsageService.ACTION_UPDATE_NOW
-        }
-        startService(serviceIntent)
+        workManagerRepository.triggerImmediateDataUpdate()
         updateTile()
     }
 

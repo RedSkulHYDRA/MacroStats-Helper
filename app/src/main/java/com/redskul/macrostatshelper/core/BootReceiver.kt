@@ -3,8 +3,7 @@ package com.redskul.macrostatshelper.core
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.redskul.macrostatshelper.datausage.DataUsageService
-import com.redskul.macrostatshelper.battery.BatteryService
+import com.redskul.macrostatshelper.utils.WorkManagerRepository
 
 class BootReceiver : BroadcastReceiver() {
 
@@ -21,26 +20,21 @@ class BootReceiver : BroadcastReceiver() {
                 val setupComplete = sharedPreferences.getBoolean("setup_complete", false)
 
                 if (setupComplete) {
-                    android.util.Log.d("BootReceiver", "Setup complete, starting services")
+                    android.util.Log.d("BootReceiver", "Setup complete, starting WorkManager monitoring")
 
                     try {
-                        // Start data usage service
-                        val dataServiceIntent = Intent(context, DataUsageService::class.java)
-                        context.startForegroundService(dataServiceIntent)
-                        android.util.Log.d("BootReceiver", "DataUsageService started successfully after boot")
-
-                        // Start battery service
-                        val batteryServiceIntent = Intent(context, BatteryService::class.java)
-                        context.startService(batteryServiceIntent)
-                        android.util.Log.d("BootReceiver", "BatteryService started successfully after boot")
+                        // WorkManager handles persistence automatically, but we can restart to be sure
+                        val workManagerRepository = WorkManagerRepository(context)
+                        workManagerRepository.startMonitoring()
+                        android.util.Log.d("BootReceiver", "WorkManager monitoring started successfully after boot")
 
                         // Note: Accessibility service will auto-start if enabled by user
                         android.util.Log.d("BootReceiver", "AutoSync accessibility service will auto-start if enabled")
                     } catch (e: Exception) {
-                        android.util.Log.e("BootReceiver", "Failed to start services after boot", e)
+                        android.util.Log.e("BootReceiver", "Failed to start WorkManager monitoring after boot", e)
                     }
                 } else {
-                    android.util.Log.d("BootReceiver", "Setup not complete, skipping service start")
+                    android.util.Log.d("BootReceiver", "Setup not complete, skipping monitoring start")
                 }
             }
         }

@@ -19,7 +19,7 @@ class SettingsManager(private val context: Context) {
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_SHOW_NOTIFICATION = "show_notification"
         private const val KEY_UPDATE_INTERVAL = "update_interval_minutes"
-        private const val DEFAULT_UPDATE_INTERVAL = 15 // 15 minutes
+        private const val DEFAULT_UPDATE_INTERVAL = 15 // Default interval is now 15 minutes
     }
 
     // Extension function to get display string from TimePeriod
@@ -135,14 +135,14 @@ class SettingsManager(private val context: Context) {
     }
 
     fun getUpdateIntervalValues(): List<Int> {
-        return listOf(1, 5, 10, 20, 30, 60)
+        // UPDATED: Changed intervals to respect WorkManager's 15-minute minimum
+        return listOf(15, 30, 45, 60)
     }
 
     fun getUpdateIntervalOptions(): List<String> {
+        // UPDATED: Changed display options to match new interval values
         return getUpdateIntervalValues().map { minutes ->
             when (minutes) {
-                1 -> "1 minute"
-                in 2..59 -> "$minutes minutes"
                 60 -> "1 hour"
                 else -> "$minutes minutes"
             }
@@ -196,7 +196,7 @@ class SettingsManager(private val context: Context) {
             context.getString(R.string.no_data_selected)
         }
 
-        // Create expanded text (same as short text for now, since user only wants selected data)
+        // Create expanded text
         val expandedText = buildString {
             if (wifiParts.isNotEmpty()) {
                 appendLine(context.getString(R.string.wifi_usage_label))

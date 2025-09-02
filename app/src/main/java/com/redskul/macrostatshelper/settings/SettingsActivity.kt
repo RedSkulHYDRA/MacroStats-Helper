@@ -12,7 +12,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
-import com.redskul.macrostatshelper.datausage.DataUsageService
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivitySettingsBinding
 import kotlinx.coroutines.delay
@@ -199,11 +198,7 @@ class SettingsActivity : AppCompatActivity() {
         // Save notification preference (will be validated by SettingsManager)
         settingsManager.saveNotificationEnabled(binding.notificationEnabledSwitch.isChecked)
 
-        // Notify data service about notification changes
-        val dataServiceIntent = Intent(this, DataUsageService::class.java).apply {
-            action = DataUsageService.ACTION_NOTIFICATION_TOGGLE_CHANGED
-        }
-        startService(dataServiceIntent)
+        // REMOVED: DataUsageService intent - WorkManager handles notification changes automatically
 
         Toast.makeText(this, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
         finish()

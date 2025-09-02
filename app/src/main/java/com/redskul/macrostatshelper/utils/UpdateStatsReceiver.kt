@@ -3,7 +3,6 @@ package com.redskul.macrostatshelper.utils
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.redskul.macrostatshelper.datausage.DataUsageService
 
 class UpdateStatsReceiver : BroadcastReceiver() {
 
@@ -13,15 +12,14 @@ class UpdateStatsReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == ACTION_UPDATE_STATS) {
-            // Send intent to service to trigger immediate update
-            val serviceIntent = Intent(context, DataUsageService::class.java).apply {
-                action = DataUsageService.ACTION_UPDATE_NOW
-            }
+            // Trigger immediate WorkManager updates instead of service calls
             try {
-                context.startService(serviceIntent)
-                android.util.Log.d("UpdateStatsReceiver", "Update stats request sent to service")
+                val workManagerRepository = WorkManagerRepository(context)
+                workManagerRepository.triggerImmediateDataUpdate()
+                workManagerRepository.triggerImmediateBatteryUpdate()
+                android.util.Log.d("UpdateStatsReceiver", "Immediate updates triggered via WorkManager")
             } catch (e: Exception) {
-                android.util.Log.e("UpdateStatsReceiver", "Failed to send update request", e)
+                android.util.Log.e("UpdateStatsReceiver", "Failed to trigger immediate updates", e)
             }
         }
     }

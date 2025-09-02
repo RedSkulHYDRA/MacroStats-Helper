@@ -6,8 +6,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
@@ -59,18 +57,7 @@
             android:label="QS Tile Settings"
             android:theme="@style/Theme.MacroStatsHelper.NoActionBar" />
 
-        <!-- Foreground service for continuous data monitoring -->
-        <service
-            android:name=".datausage.DataUsageService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
-
-        <!-- Background service for battery monitoring -->
-        <service
-            android:name=".battery.BatteryService"
-            android:enabled="true"
-            android:exported="false" />
+        <!-- REMOVED: DataUsageService and BatteryService - replaced by WorkManager -->
 
         <!-- AutoSync Accessibility Service -->
         <service

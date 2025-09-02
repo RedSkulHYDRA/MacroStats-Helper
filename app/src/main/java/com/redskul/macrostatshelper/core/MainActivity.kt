@@ -20,8 +20,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
-import com.redskul.macrostatshelper.datausage.DataUsageService
-import com.redskul.macrostatshelper.battery.BatteryService
+import androidx.work.WorkInfo
 import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
 import com.redskul.macrostatshelper.autosync.AutoSyncManager
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
@@ -31,6 +30,7 @@ import com.redskul.macrostatshelper.settings.SettingsManager
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivityMainBinding
 import com.redskul.macrostatshelper.databinding.ActivitySetupBinding
+import com.redskul.macrostatshelper.utils.WorkManagerRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -40,13 +40,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var settingsManager: SettingsManager
     private lateinit var autoSyncManager: AutoSyncManager
+    private lateinit var workManagerRepository: WorkManagerRepository // NEW
 
     private var mainBinding: ActivityMainBinding? = null
     private var setupBinding: ActivitySetupBinding? = null
 
-    // Store service intents as class properties to ensure we use the same instances for stop calls
-    private var dataServiceIntent: Intent? = null
-    private var batteryServiceIntent: Intent? = null
+    // Removed service intents - no longer needed
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -107,10 +106,7 @@ class MainActivity : AppCompatActivity() {
         permissionHelper = PermissionHelper(this)
         settingsManager = SettingsManager(this)
         autoSyncManager = AutoSyncManager(this)
-
-        // Initialize service intents
-        dataServiceIntent = Intent(this, DataUsageService::class.java)
-        batteryServiceIntent = Intent(this, BatteryService::class.java)
+        workManagerRepository = WorkManagerRepository(this) // NEW
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
@@ -170,7 +166,8 @@ class MainActivity : AppCompatActivity() {
 
         setupWindowInsets(mainBinding!!.root, mainBinding!!.mainLayout)
         setupMainUIComponents()
-        ensureServicesRunning()
+        ensureMonitoringStarted() // UPDATED
+        observeWorkStatus() // NEW
     }
 
     private fun setupMainUIComponents() {
@@ -230,12 +227,12 @@ class MainActivity : AppCompatActivity() {
                 val selectedInterval = settingsManager.getUpdateIntervalValues()[position]
                 val currentSavedInterval = settingsManager.getUpdateInterval()
 
-                // Only proceed if the interval actually changed (fixed variable shadowing)
+                // Only proceed if the interval actually changed
                 if (selectedInterval != currentSavedInterval) {
                     settingsManager.setUpdateInterval(selectedInterval)
 
-                    // Restart services with new interval
-                    restartServicesWithNewInterval()
+                    // Update WorkManager interval instead of restarting services
+                    workManagerRepository.updateDataMonitoringInterval() // UPDATED
 
                     showToast(getString(R.string.update_frequency_changed))
                 }
@@ -328,17 +325,31 @@ class MainActivity : AppCompatActivity() {
     private fun setupStopServiceButton(binding: ActivityMainBinding) {
         binding.stopServiceButton.setOnClickListener {
             if (binding.stopServiceButton.text == getString(R.string.stop_monitoring)) {
-                // Use the stored service intent instances for stopping (fixed stopService bug)
-                dataServiceIntent?.let { stopService(it) }
-                batteryServiceIntent?.let { stopService(it) }
+                // Stop WorkManager monitoring instead of services
+                workManagerRepository.stopMonitoring() // UPDATED
                 showToast(getString(R.string.monitoring_stopped))
                 binding.statusText.text = getString(R.string.monitoring_stopped_restart_note)
                 binding.stopServiceButton.text = getString(R.string.start_monitoring)
             } else {
-                startServicesAndShowSuccess()
+                startMonitoringAndShowSuccess() // UPDATED
                 binding.statusText.text = getString(R.string.data_usage_monitoring_running)
                 binding.stopServiceButton.text = getString(R.string.stop_monitoring)
             }
+        }
+    }
+
+    // NEW: Observe WorkManager status
+    private fun observeWorkStatus() {
+        // Observe data monitoring work status
+        workManagerRepository.getDataWorkStatus().observe(this) { workInfoList ->
+            val isRunning = workInfoList?.any { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING } == true
+            android.util.Log.d("MainActivity", "Data monitoring work status: running=$isRunning")
+        }
+
+        // Observe battery monitoring work status
+        workManagerRepository.getBatteryWorkStatus().observe(this) { workInfoList ->
+            val isRunning = workInfoList?.any { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING } == true
+            android.util.Log.d("MainActivity", "Battery monitoring work status: running=$isRunning")
         }
     }
 
@@ -471,7 +482,7 @@ class MainActivity : AppCompatActivity() {
     private fun requestBatteryOptimizationExemption() {
         try {
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                data = "package:$packageName".toUri() // Fixed: Use KTX extension
+                data = "package:$packageName".toUri()
             }
             batteryOptimizationLauncher.launch(intent)
         } catch (e: Exception) {
@@ -480,40 +491,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun restartServicesWithNewInterval() {
+    // UPDATED: Use WorkManager instead of services
+    private fun ensureMonitoringStarted() {
         try {
-            // Use the stored service intent instances for stopping (fixed stopService bug)
-            dataServiceIntent?.let { stopService(it) }
-            batteryServiceIntent?.let { stopService(it) }
-
-            lifecycleScope.launch {
-                delay(1000)
-                startServicesAndShowSuccess()
-            }
+            workManagerRepository.startMonitoring()
+            android.util.Log.d("MainActivity", "WorkManager monitoring ensured to be running")
         } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Error restarting services", e)
-        }
-    }
-
-    private fun ensureServicesRunning() {
-        try {
-            dataServiceIntent?.let { intent ->
-                if (settingsManager.isNotificationEnabled()) {
-                    startForegroundService(intent)
-                } else {
-                    startService(intent)
-                }
-            }
-
-            batteryServiceIntent?.let { intent ->
-                startService(intent)
-            }
-
-            // REMOVED: No toast here since this runs every time the app opens
-            // This ensures services are running without bothering the user with notifications
-
-        } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Error ensuring services are running", e)
+            android.util.Log.e("MainActivity", "Error ensuring monitoring is running", e)
         }
     }
 
@@ -538,7 +522,7 @@ class MainActivity : AppCompatActivity() {
     private fun requestWriteSettingsPermission() {
         if (!permissionHelper.hasWriteSettingsPermission()) {
             val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                data = "package:$packageName".toUri() // Fixed: Use KTX extension
+                data = "package:$packageName".toUri()
             }
             writeSettingsPermissionLauncher.launch(intent)
         } else {
@@ -553,40 +537,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun completeSetup() {
         if (permissionHelper.hasAllPermissions()) {
-            sharedPreferences.edit { // Fixed: Use KTX extension
+            sharedPreferences.edit {
                 putBoolean("setup_complete", true)
             }
-            startServicesAndTransitionToMain()
+            startMonitoringAndTransitionToMain() // UPDATED
         } else {
             showToast(getString(R.string.setup_description))
         }
     }
 
-    private fun startServicesAndTransitionToMain() {
+    // UPDATED: Use WorkManager instead of services
+    private fun startMonitoringAndTransitionToMain() {
         try {
-            dataServiceIntent?.let { intent ->
-                val dataResult = if (settingsManager.isNotificationEnabled()) {
-                    startForegroundService(intent)
-                } else {
-                    startService(intent)
-                }
+            workManagerRepository.startMonitoring()
+            showToast(getString(R.string.monitoring_started))
 
-                batteryServiceIntent?.let { batteryIntent ->
-                    val batteryResult = startService(batteryIntent)
-
-                    if (dataResult != null && batteryResult != null) {
-                        // Only show toast during actual setup completion
-                        showToast(getString(R.string.monitoring_started))
-
-                        lifecycleScope.launch {
-                            delay(1500)
-                            showMainUI()
-                            startPermissionMonitoring()
-                        }
-                    } else {
-                        showToast(getString(R.string.service_start_failed))
-                    }
-                }
+            lifecycleScope.launch {
+                delay(1500)
+                showMainUI()
+                startPermissionMonitoring()
             }
         } catch (e: Exception) {
             showToast(getString(R.string.service_error, e.message ?: "Unknown"))
@@ -594,21 +563,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startServicesAndShowSuccess() {
+    // UPDATED: Use WorkManager instead of services
+    private fun startMonitoringAndShowSuccess() {
         try {
-            dataServiceIntent?.let { intent ->
-                if (settingsManager.isNotificationEnabled()) {
-                    startForegroundService(intent)
-                } else {
-                    startService(intent)
-                }
-            }
-
-            batteryServiceIntent?.let { intent ->
-                startService(intent)
-            }
-
-            // Only show toast when user manually starts services
+            workManagerRepository.startMonitoring()
             showToast(getString(R.string.monitoring_started))
         } catch (e: Exception) {
             showToast(getString(R.string.service_error, e.message ?: "Unknown"))

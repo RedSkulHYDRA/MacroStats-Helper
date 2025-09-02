@@ -9,18 +9,20 @@ import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
+import com.redskul.macrostatshelper.utils.WorkManagerRepository
 import kotlinx.coroutines.*
 
 class BatteryChargeQSTileService : TileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var batteryChargeMonitor: BatteryChargeMonitor
+    private lateinit var workManagerRepository: WorkManagerRepository
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val batteryUpdateReceiver = object : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == BatteryService.ACTION_BATTERY_UPDATED) {
+            if (intent?.action == BatteryWorker.ACTION_BATTERY_UPDATED) {
                 android.util.Log.d("ChargeQSTile", "Received battery update broadcast")
                 updateTile()
             }
@@ -31,6 +33,7 @@ class BatteryChargeQSTileService : TileService() {
         super.onCreate()
         qsTileSettingsManager = QSTileSettingsManager(this)
         batteryChargeMonitor = BatteryChargeMonitor(this)
+        workManagerRepository = WorkManagerRepository(this)
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -38,7 +41,7 @@ class BatteryChargeQSTileService : TileService() {
         super.onStartListening()
         registerReceiver(
             batteryUpdateReceiver,
-            IntentFilter(BatteryService.ACTION_BATTERY_UPDATED),
+            IntentFilter(BatteryWorker.ACTION_BATTERY_UPDATED),
             Context.RECEIVER_NOT_EXPORTED
         )
         updateTile()
@@ -58,10 +61,7 @@ class BatteryChargeQSTileService : TileService() {
         super.onClick()
         android.util.Log.d("ChargeQSTile", "Tile clicked - triggering immediate update")
 
-        val serviceIntent = Intent(this, BatteryService::class.java).apply {
-            action = BatteryService.ACTION_UPDATE_NOW
-        }
-        startService(serviceIntent)
+        workManagerRepository.triggerImmediateBatteryUpdate()
         updateTile()
     }
 
