@@ -1,24 +1,20 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:viewportWidth="500"
-    android:viewportHeight="500"
-    android:width="24dp"
-    android:height="24dp">
+    android:viewportWidth="512"
+    android:viewportHeight="512"
+    android:width="50dp"
+    android:height="50dp">
 
     <!-- Left Arrow -->
     <path
         android:fillColor="#000000"
-        android:fillAlpha="0.996"
         android:strokeColor="#000000"
-        android:strokeAlpha="0.996"
-        android:strokeWidth="1"
+        android:strokeWidth="10"
         android:pathData="M168.5 104Q176.5 103 180.5 106L256 178.5L260 185.5L260 193.5Q258.5 200 253.5 203L243.5 206L235.5 203L188.5 158L188 354.5Q186.8 362.8 180.5 366Q176.5 369 168.5 368Q161.3 366.2 158 360.5L156 354.5L155.5 158L107.5 204L97.5 206Q89.4 204.6 86 198.5Q82.5 194.5 84 185.5L89.5 177L163.5 106L168.5 104Z"/>
 
     <!-- Right Arrow -->
     <path
         android:fillColor="#000000"
-        android:fillAlpha="0.996"
         android:strokeColor="#000000"
-        android:strokeAlpha="0.996"
-        android:strokeWidth="1"
+        android:strokeWidth="10"
         android:pathData="M336.5 144Q349 143 353 150.5L356 157.5L356.5 354L403.5 309L413.5 306Q422 307.5 426 313.5Q429.1 317.9 428 326.5L421.5 336L348.5 406Q344.5 409 336.5 408L331.5 406L255 332.5Q250.5 328 252 317.5Q253.6 310.6 259.5 308L269.5 306L275.5 308L323.5 354L324 157.5Q325.4 149.4 331.5 146L336.5 144Z"/>
 </vector>
