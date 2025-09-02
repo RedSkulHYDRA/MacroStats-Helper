@@ -1,8 +1,11 @@
 package com.redskul.macrostatshelper.core
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -12,6 +15,7 @@ import android.widget.Toast
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -21,6 +25,8 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkInfo
+import com.redskul.macrostatshelper.aod.AODManager
+import com.redskul.macrostatshelper.aod.PowerConnectionReceiver
 import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
 import com.redskul.macrostatshelper.autosync.AutoSyncManager
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
@@ -40,12 +46,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var settingsManager: SettingsManager
     private lateinit var autoSyncManager: AutoSyncManager
-    private lateinit var workManagerRepository: WorkManagerRepository // NEW
+    private lateinit var aodManager: AODManager
+    private lateinit var workManagerRepository: WorkManagerRepository
+    private lateinit var powerConnectionReceiver: PowerConnectionReceiver
 
     private var mainBinding: ActivityMainBinding? = null
     private var setupBinding: ActivitySetupBinding? = null
-
-    // Removed service intents - no longer needed
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -106,13 +112,16 @@ class MainActivity : AppCompatActivity() {
         permissionHelper = PermissionHelper(this)
         settingsManager = SettingsManager(this)
         autoSyncManager = AutoSyncManager(this)
-        workManagerRepository = WorkManagerRepository(this) // NEW
+        aodManager = AODManager(this)
+        workManagerRepository = WorkManagerRepository(this)
+        powerConnectionReceiver = PowerConnectionReceiver()
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
         } else {
             showMainUI()
             startPermissionMonitoring()
+            registerPowerReceiver()
         }
     }
 
@@ -120,6 +129,25 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         mainBinding = null
         setupBinding = null
+        try {
+            unregisterReceiver(powerConnectionReceiver)
+        } catch (e: IllegalArgumentException) {
+            // Receiver not registered
+        }
+    }
+
+    private fun registerPowerReceiver() {
+        try {
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+                addAction(Intent.ACTION_BATTERY_CHANGED)
+            }
+            registerReceiver(powerConnectionReceiver, filter)
+            android.util.Log.d("MainActivity", "Power connection receiver registered")
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Error registering power receiver", e)
+        }
     }
 
     private fun startPermissionMonitoring() {
@@ -149,6 +177,7 @@ class MainActivity : AppCompatActivity() {
                 // Update UI
                 updateBatteryOptimizationUI()
                 updateAccessibilityStatus()
+                updateAODPermissionStatus()
 
                 lastUsageStats = currentUsageStats
                 lastAccessibility = currentAccessibility
@@ -166,8 +195,11 @@ class MainActivity : AppCompatActivity() {
 
         setupWindowInsets(mainBinding!!.root, mainBinding!!.mainLayout)
         setupMainUIComponents()
-        ensureMonitoringStarted() // UPDATED
-        observeWorkStatus() // NEW
+        ensureMonitoringStarted()
+        observeWorkStatus()
+
+        // Show AOD card after setup is complete
+        mainBinding!!.aodChargingCard.visibility = android.view.View.VISIBLE
     }
 
     private fun setupMainUIComponents() {
@@ -182,9 +214,116 @@ class MainActivity : AppCompatActivity() {
         // Setup autosync card
         setupAutoSyncCard(binding)
 
+        // Setup AOD card
+        setupAODCard(binding)
+
         // Setup action buttons
         setupActionButtons(binding)
     }
+
+    private fun setupAODCard(binding: ActivityMainBinding) {
+        // Initial state - disabled and greyed out
+        binding.aodChargingSwitch.isEnabled = false
+
+        binding.aodChargingSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+
+            if (isChecked && !aodManager.hasSecureSettingsPermission()) {
+                binding.aodChargingSwitch.isChecked = false
+                showSecureSettingsPermissionDialog()
+                return@setOnCheckedChangeListener
+            }
+
+            aodManager.setAODWhileChargingEnabled(isChecked)
+        }
+
+        binding.aodPermissionButton.setOnClickListener {
+            showSecureSettingsPermissionDialog()
+        }
+
+        // Load current settings
+        binding.aodChargingSwitch.isChecked = aodManager.isAODWhileChargingEnabled()
+        updateAODPermissionStatus()
+    }
+
+    private fun updateAODPermissionStatus() {
+        val binding = mainBinding ?: return
+        val hasPermission = aodManager.hasSecureSettingsPermission()
+
+        // Update switch state
+        binding.aodChargingSwitch.isEnabled = hasPermission
+
+        // Update status text
+        binding.aodPermissionStatusText.text = if (hasPermission) {
+            "✓ WRITE_SECURE_SETTINGS permission granted\n${aodManager.getCurrentAODStatusText()}"
+        } else {
+            "⚠ WRITE_SECURE_SETTINGS permission required for AOD management"
+        }
+
+        binding.aodPermissionStatusText.setTextColor(
+            if (hasPermission) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
+        )
+
+        // Update button text
+        binding.aodPermissionButton.text = if (hasPermission) {
+            getString(R.string.permission_granted_check)
+        } else {
+            getString(R.string.grant_secure_settings_permission)
+        }
+
+        binding.aodPermissionButton.isEnabled = !hasPermission
+        binding.aodPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
+    }
+
+    private fun showSecureSettingsPermissionDialog() {
+        val command = aodManager.getADBCommand()
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.secure_settings_permission_title))
+            .setMessage(getString(R.string.secure_settings_permission_message))
+            .setView(createCommandView(command))
+            .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
+                copyCommandToClipboard(command)
+            }
+            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNeutralButton(getString(R.string.learn_more)) { _, _ ->
+                // Open documentation or help
+                showADBInstructions()
+            }
+            .show()
+    }
+
+    private fun createCommandView(command: String): android.view.View {
+        val textView = android.widget.TextView(this).apply {
+            text = command
+            setTextIsSelectable(true)
+            typeface = android.graphics.Typeface.MONOSPACE
+            setBackgroundResource(android.R.drawable.editbox_background)
+            setPadding(16, 16, 16, 16)
+        }
+        return textView
+    }
+
+    private fun copyCommandToClipboard(command: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("ADB Command", command)
+        clipboard.setPrimaryClip(clip)
+        showToast(getString(R.string.command_copied))
+    }
+
+    private fun showADBInstructions() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.adb_instructions_title))
+            .setMessage(getString(R.string.adb_instructions_message))
+            .setPositiveButton(getString(R.string.ok_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    // ... [Rest of the existing MainActivity methods remain the same] ...
 
     private fun setupBatteryOptimizationCard(binding: ActivityMainBinding) {
         updateBatteryOptimizationUI()
@@ -232,7 +371,7 @@ class MainActivity : AppCompatActivity() {
                     settingsManager.setUpdateInterval(selectedInterval)
 
                     // Update WorkManager interval instead of restarting services
-                    workManagerRepository.updateDataMonitoringInterval() // UPDATED
+                    workManagerRepository.updateDataMonitoringInterval()
 
                     showToast(getString(R.string.update_frequency_changed))
                 }
@@ -326,12 +465,12 @@ class MainActivity : AppCompatActivity() {
         binding.stopServiceButton.setOnClickListener {
             if (binding.stopServiceButton.text == getString(R.string.stop_monitoring)) {
                 // Stop WorkManager monitoring instead of services
-                workManagerRepository.stopMonitoring() // UPDATED
+                workManagerRepository.stopMonitoring()
                 showToast(getString(R.string.monitoring_stopped))
                 binding.statusText.text = getString(R.string.monitoring_stopped_restart_note)
                 binding.stopServiceButton.text = getString(R.string.start_monitoring)
             } else {
-                startMonitoringAndShowSuccess() // UPDATED
+                startMonitoringAndShowSuccess()
                 binding.statusText.text = getString(R.string.data_usage_monitoring_running)
                 binding.stopServiceButton.text = getString(R.string.stop_monitoring)
             }
@@ -491,7 +630,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // UPDATED: Use WorkManager instead of services
     private fun ensureMonitoringStarted() {
         try {
             workManagerRepository.startMonitoring()
@@ -540,13 +678,12 @@ class MainActivity : AppCompatActivity() {
             sharedPreferences.edit {
                 putBoolean("setup_complete", true)
             }
-            startMonitoringAndTransitionToMain() // UPDATED
+            startMonitoringAndTransitionToMain()
         } else {
             showToast(getString(R.string.setup_description))
         }
     }
 
-    // UPDATED: Use WorkManager instead of services
     private fun startMonitoringAndTransitionToMain() {
         try {
             workManagerRepository.startMonitoring()
@@ -556,6 +693,7 @@ class MainActivity : AppCompatActivity() {
                 delay(1500)
                 showMainUI()
                 startPermissionMonitoring()
+                registerPowerReceiver()
             }
         } catch (e: Exception) {
             showToast(getString(R.string.service_error, e.message ?: "Unknown"))
@@ -563,7 +701,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // UPDATED: Use WorkManager instead of services
     private fun startMonitoringAndShowSuccess() {
         try {
             workManagerRepository.startMonitoring()

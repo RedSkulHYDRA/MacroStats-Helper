@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Required permissions -->
+    <!-- Existing permissions -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -11,16 +11,17 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- Usage stats permission (special permission) -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- Battery optimization exemption permission -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!-- AutoSync permissions -->
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+
+    <!-- NEW: Add WRITE_SECURE_SETTINGS permission -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -33,6 +34,7 @@
         android:theme="@style/Theme.MacroStatsHelper"
         tools:targetApi="31">
 
+        <!-- Existing activities and services -->
         <activity
             android:name=".core.MainActivity"
             android:exported="true"
@@ -43,23 +45,18 @@
             </intent-filter>
         </activity>
 
-        <!-- Settings Activity -->
         <activity
             android:name=".settings.SettingsActivity"
             android:exported="false"
             android:label="Display Settings"
             android:theme="@style/Theme.MacroStatsHelper.NoActionBar" />
 
-        <!-- QS Tile Settings Activity -->
         <activity
             android:name=".settings.QSTileSettingsActivity"
             android:exported="false"
             android:label="QS Tile Settings"
             android:theme="@style/Theme.MacroStatsHelper.NoActionBar" />
 
-        <!-- REMOVED: DataUsageService and BatteryService - replaced by WorkManager -->
-
-        <!-- AutoSync Accessibility Service -->
         <service
             android:name=".autosync.AutoSyncAccessibilityService"
             android:exported="false"
@@ -72,7 +69,6 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!-- Boot receiver for auto-start -->
         <receiver
             android:name=".core.BootReceiver"
             android:enabled="true"
@@ -85,7 +81,18 @@
             </intent-filter>
         </receiver>
 
-        <!-- BroadcastReceiver for Update Stats button -->
+        <!-- NEW: Power Connection Receiver -->
+        <receiver
+            android:name=".aod.PowerConnectionReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+                <action android:name="android.intent.action.BATTERY_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".utils.UpdateStatsReceiver"
             android:enabled="true"
