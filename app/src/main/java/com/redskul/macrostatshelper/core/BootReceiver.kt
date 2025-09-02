@@ -28,6 +28,10 @@ class BootReceiver : BroadcastReceiver() {
                         workManagerRepository.startMonitoring()
                         android.util.Log.d("BootReceiver", "WorkManager monitoring started successfully after boot")
 
+                        // This ensures fresh data is available immediately after device restart
+                        workManagerRepository.triggerImmediateUpdates()
+                        android.util.Log.d("BootReceiver", "Immediate data and battery updates triggered after boot")
+
                         // Note: Accessibility service will auto-start if enabled by user
                         android.util.Log.d("BootReceiver", "AutoSync accessibility service will auto-start if enabled")
                     } catch (e: Exception) {
