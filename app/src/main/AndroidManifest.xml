@@ -19,7 +19,6 @@
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
 
-    <!-- NEW: Add WRITE_SECURE_SETTINGS permission -->
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
 
@@ -34,7 +33,7 @@
         android:theme="@style/Theme.MacroStatsHelper"
         tools:targetApi="31">
 
-        <!-- Existing activities and services -->
+        <!-- Existing activities -->
         <activity
             android:name=".core.MainActivity"
             android:exported="true"
@@ -81,7 +80,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- NEW: Power Connection Receiver -->
         <receiver
             android:name=".aod.PowerConnectionReceiver"
             android:enabled="true"
@@ -152,6 +150,18 @@
             android:exported="true"
             android:icon="@drawable/ic_screen_timeout"
             android:label="@string/screen_timeout"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- NEW: DNS QS Tile Service -->
+        <service
+            android:name=".dns.DNSQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_dns"
+            android:label="@string/dns_provider"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />

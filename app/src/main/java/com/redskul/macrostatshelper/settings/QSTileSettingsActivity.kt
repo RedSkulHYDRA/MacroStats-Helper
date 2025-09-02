@@ -1,9 +1,13 @@
 package com.redskul.macrostatshelper.settings
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.text.InputType
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +21,7 @@ import com.redskul.macrostatshelper.battery.BatteryHealthMonitor
 import com.redskul.macrostatshelper.battery.BatteryHealthQSTileService
 import com.redskul.macrostatshelper.battery.BatteryWorker
 import com.redskul.macrostatshelper.datausage.DataUsageWorker
+import com.redskul.macrostatshelper.dns.DNSManager
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent
@@ -29,6 +34,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var batteryHealthMonitor: BatteryHealthMonitor
     private lateinit var permissionHelper: PermissionHelper
+    private lateinit var dnsManager: DNSManager
     private var binding: ActivityQsTileSettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +51,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager = QSTileSettingsManager(this)
         batteryHealthMonitor = BatteryHealthMonitor(this)
         permissionHelper = PermissionHelper(this)
+        dnsManager = DNSManager(this)
 
         setupWindowInsets()
         setupUI()
@@ -89,8 +96,11 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Setup buttons
         setupButtons(binding)
 
-        // Setup EditText
-        setupEditText(binding)
+        // Setup EditTexts
+        setupEditTexts(binding)
+
+        // Setup DNS section
+        setupDNSSection(binding)
     }
 
     private fun setupSpinners(binding: ActivityQsTileSettingsBinding) {
@@ -124,7 +134,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
                 return@setOnCheckedChangeListener
             }
-            // Immediately update tiles when period in title setting changes
             triggerImmediateTileUpdates()
         }
 
@@ -135,20 +144,23 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
                 return@setOnCheckedChangeListener
             }
-            // Immediately update tiles when screen timeout setting changes
             triggerImmediateTileUpdates()
         }
 
         // Add haptic feedback to other switches and immediate tile updates
         binding.showChargeInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            // Immediately update tiles when charge in title setting changes
             triggerImmediateTileUpdates()
         }
         binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            // Immediately update tiles when battery health setting changes
             triggerImmediateTileUpdates()
+        }
+
+        // DNS heading switch
+        binding.dnsShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerDNSTileUpdate()
         }
     }
 
@@ -161,29 +173,101 @@ class QSTileSettingsActivity : AppCompatActivity() {
             requestWriteSettingsPermission()
         }
 
+        binding.dnsPermissionButton.setOnClickListener {
+            showDNSPermissionDialog()
+        }
+
         binding.qsSaveButton.setOnClickListener {
             saveSettings()
         }
     }
 
-    private fun setupEditText(binding: ActivityQsTileSettingsBinding) {
+    private fun setupEditTexts(binding: ActivityQsTileSettingsBinding) {
         binding.designCapacityEditText.inputType = InputType.TYPE_CLASS_NUMBER
+    }
+
+    private fun setupDNSSection(binding: ActivityQsTileSettingsBinding) {
+        // Load DNS options
+        val dns1 = dnsManager.getDNSOption(1)
+        val dns2 = dnsManager.getDNSOption(2)
+        val dns3 = dnsManager.getDNSOption(3)
+
+        binding.dns1NameEditText.setText(dns1.name)
+        binding.dns1UrlEditText.setText(dns1.url)
+        binding.dns2NameEditText.setText(dns2.name)
+        binding.dns2UrlEditText.setText(dns2.url)
+        binding.dns3NameEditText.setText(dns3.name)
+        binding.dns3UrlEditText.setText(dns3.url)
+
+        binding.dnsShowHeadingSwitch.isChecked = dnsManager.getShowHeading()
+
+        updateDNSPermissionStatus()
+    }
+
+    private fun showDNSPermissionDialog() {
+        val command = dnsManager.getADBCommand()
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.secure_settings_permission_title))
+            .setMessage(getString(R.string.dns_permission_message))
+            .setView(createCommandView(command))
+            .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
+                copyCommandToClipboard(command)
+            }
+            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNeutralButton(getString(R.string.learn_more)) { _, _ ->
+                showADBInstructions()
+            }
+            .show()
+    }
+
+    private fun createCommandView(command: String): android.view.View {
+        val textView = android.widget.TextView(this).apply {
+            text = command
+            setTextIsSelectable(true)
+            typeface = android.graphics.Typeface.MONOSPACE
+            setBackgroundResource(android.R.drawable.editbox_background)
+            setPadding(16, 16, 16, 16)
+        }
+        return textView
+    }
+
+    private fun copyCommandToClipboard(command: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("ADB Command", command)
+        clipboard.setPrimaryClip(clip)
+        showToast(getString(R.string.command_copied))
+    }
+
+    private fun showADBInstructions() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.adb_instructions_title))
+            .setMessage(getString(R.string.adb_instructions_message))
+            .setPositiveButton(getString(R.string.ok_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun startPermissionMonitoring() {
         lifecycleScope.launch {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
             var lastWriteSettings = permissionHelper.hasWriteSettingsPermission()
+            var lastSecureSettings = dnsManager.hasSecureSettingsPermission()
 
             while (binding != null) {
                 delay(1000)
 
                 val currentUsageStats = permissionHelper.hasUsageStatsPermission()
                 val currentWriteSettings = permissionHelper.hasWriteSettingsPermission()
+                val currentSecureSettings = dnsManager.hasSecureSettingsPermission()
 
-                if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings) {
+                if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings || lastSecureSettings != currentSecureSettings) {
                     updatePermissionBasedUI()
                     updatePermissionStatuses()
+                    updateDNSPermissionStatus()
 
                     if (lastUsageStats && !currentUsageStats) {
                         showToast(getString(R.string.data_tiles_disabled))
@@ -191,10 +275,14 @@ class QSTileSettingsActivity : AppCompatActivity() {
                     if (lastWriteSettings && !currentWriteSettings) {
                         showToast(getString(R.string.screen_timeout_disabled))
                     }
+                    if (lastSecureSettings && !currentSecureSettings) {
+                        showToast("DNS tile disabled")
+                    }
                 }
 
                 lastUsageStats = currentUsageStats
                 lastWriteSettings = currentWriteSettings
+                lastSecureSettings = currentSecureSettings
             }
         }
     }
@@ -203,6 +291,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val binding = binding ?: return
         val hasUsageStats = permissionHelper.hasUsageStatsPermission()
         val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+        val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
 
         // Enable/disable data usage related controls
         binding.wifiTileSpinner.isEnabled = hasUsageStats
@@ -211,6 +300,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Enable/disable screen timeout controls
         binding.showScreenTimeoutInTitleSwitch.isEnabled = hasWriteSettings
+
+        // Enable/disable DNS controls
+        binding.dns1NameEditText.isEnabled = hasSecureSettings
+        binding.dns1UrlEditText.isEnabled = hasSecureSettings
+        binding.dns2NameEditText.isEnabled = hasSecureSettings
+        binding.dns2UrlEditText.isEnabled = hasSecureSettings
+        binding.dns3NameEditText.isEnabled = hasSecureSettings
+        binding.dns3UrlEditText.isEnabled = hasSecureSettings
+        binding.dnsShowHeadingSwitch.isEnabled = hasSecureSettings
     }
 
     private fun updatePermissionStatuses() {
@@ -237,6 +335,30 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.writeSettingsStatusText.setTextColor(
             if (hasWriteSettings) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
         )
+    }
+
+    private fun updateDNSPermissionStatus() {
+        val binding = binding ?: return
+        val hasPermission = dnsManager.hasSecureSettingsPermission()
+
+        binding.dnsPermissionStatusText.text = if (hasPermission) {
+            "✓ WRITE_SECURE_SETTINGS permission granted\n${dnsManager.getCurrentDNSStatusText()}"
+        } else {
+            "⚠ WRITE_SECURE_SETTINGS permission required for DNS management"
+        }
+
+        binding.dnsPermissionStatusText.setTextColor(
+            if (hasPermission) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
+        )
+
+        binding.dnsPermissionButton.text = if (hasPermission) {
+            getString(R.string.permission_granted_check)
+        } else {
+            getString(R.string.grant_secure_settings_permission)
+        }
+
+        binding.dnsPermissionButton.isEnabled = !hasPermission
+        binding.dnsPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
     }
 
     private fun loadCurrentSettings() {
@@ -276,6 +398,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         updatePermissionBasedUI()
         updatePermissionStatuses()
+        updateDNSPermissionStatus()
     }
 
     private fun saveSettings() {
@@ -299,7 +422,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Get design capacity
         val designCapacity = binding.designCapacityEditText.text.toString().toIntOrNull() ?: 0
 
-        // Save all settings
+        // Save all existing settings
         qsTileSettingsManager.saveWiFiTilePeriod(wifiPeriod)
         qsTileSettingsManager.saveMobileTilePeriod(mobilePeriod)
         qsTileSettingsManager.saveShowPeriodInTitle(binding.showPeriodInTitleSwitch.isChecked)
@@ -312,11 +435,43 @@ class QSTileSettingsActivity : AppCompatActivity() {
             batteryHealthMonitor.setDesignCapacity(designCapacity)
         }
 
+        // Save DNS settings
+        saveDNSSettings(binding)
+
         // Trigger immediate tile updates after saving all settings
         triggerImmediateTileUpdates()
+        triggerDNSTileUpdate()
 
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
         finish()
+    }
+
+    private fun saveDNSSettings(binding: ActivityQsTileSettingsBinding) {
+        // Save DNS options
+        dnsManager.saveDNSOption(
+            1,
+            binding.dns1NameEditText.text.toString().trim(),
+            binding.dns1UrlEditText.text.toString().trim()
+        )
+        dnsManager.saveDNSOption(
+            2,
+            binding.dns2NameEditText.text.toString().trim(),
+            binding.dns2UrlEditText.text.toString().trim()
+        )
+        dnsManager.saveDNSOption(
+            3,
+            binding.dns3NameEditText.text.toString().trim(),
+            binding.dns3UrlEditText.text.toString().trim()
+        )
+
+        // Save DNS heading preference
+        dnsManager.setShowHeading(binding.dnsShowHeadingSwitch.isChecked)
+
+        // Enable DNS tile if any DNS options are configured
+        val hasValidDNS = dnsManager.getAllDNSOptions().any { !it.isDefault() && it.isValid() }
+        dnsManager.setDNSEnabled(hasValidDNS)
+
+        android.util.Log.d("QSTileSettings", "DNS settings saved. DNS tile enabled: $hasValidDNS")
     }
 
     /**
@@ -349,6 +504,21 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 android.util.Log.d("QSTileSettings", "All immediate tile update broadcasts sent")
             } catch (e: Exception) {
                 android.util.Log.e("QSTileSettings", "Error sending immediate tile update broadcasts", e)
+            }
+        }
+    }
+
+    private fun triggerDNSTileUpdate() {
+        lifecycleScope.launch {
+            try {
+                // Send broadcast for DNS tile update
+                val dnsUpdateIntent = Intent("com.redskul.macrostatshelper.DNS_SETTINGS_UPDATED").apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(dnsUpdateIntent)
+                android.util.Log.d("QSTileSettings", "DNS tile update broadcast sent")
+            } catch (e: Exception) {
+                android.util.Log.e("QSTileSettings", "Error sending DNS tile update broadcast", e)
             }
         }
     }

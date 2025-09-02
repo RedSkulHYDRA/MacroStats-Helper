@@ -8,6 +8,7 @@ import com.redskul.macrostatshelper.settings.TimePeriod
 
 data class TileConfiguration(
     val icon: Icon,
+    val iconRes: Int,
     val labelPrefix: String,
     val defaultState: Int = Tile.STATE_ACTIVE
 )
@@ -18,40 +19,60 @@ object TileConfigHelper {
     private const val HIDE_DIVIDER_LENGTH_THRESHOLD = 12
 
     fun getWiFiTileConfig(context: Context): TileConfiguration {
+        val iconRes = R.drawable.ic_wifi
         return TileConfiguration(
-            icon = Icon.createWithResource(context, R.drawable.ic_wifi),
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
 
     fun getMobileTileConfig(context: Context): TileConfiguration {
+        val iconRes = R.drawable.ic_mobile
         return TileConfiguration(
-            icon = Icon.createWithResource(context, R.drawable.ic_mobile),
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
 
     fun getChargeTileConfig(context: Context): TileConfiguration {
+        val iconRes = R.drawable.ic_battery_cc
         return TileConfiguration(
-            icon = Icon.createWithResource(context, R.drawable.ic_battery_cc),
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
 
     fun getBatteryHealthTileConfig(context: Context): TileConfiguration {
+        val iconRes = R.drawable.ic__battery_health
         return TileConfiguration(
-            icon = Icon.createWithResource(context, R.drawable.ic__battery_health),
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )
     }
 
     fun getScreenTimeoutTileConfig(context: Context): TileConfiguration {
+        val iconRes = R.drawable.ic_screen_timeout
         return TileConfiguration(
-            icon = Icon.createWithResource(context, R.drawable.ic_screen_timeout),
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
+            defaultState = Tile.STATE_ACTIVE
+        )
+    }
+
+    fun getDNSTileConfig(context: Context): TileConfiguration {
+        val iconRes = R.drawable.ic_dns
+        return TileConfiguration(
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
         )

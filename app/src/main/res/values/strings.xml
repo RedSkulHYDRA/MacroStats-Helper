@@ -198,4 +198,26 @@
     <string name="adb_instructions_title">How to Grant Permission via ADB</string>
     <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>
 
-    </resources>
+    <!-- DNS Tile - Updated strings -->
+    <string name="private_dns_heading">Private DNS</string>
+    <string name="show_dns_heading">Show "Private DNS" prefix in tile</string>
+
+    <!-- Keep existing DNS strings -->
+    <string name="dns_provider">DNS Provider</string>
+    <string name="dns_tile_title">DNS Provider Tile</string>
+    <string name="select_dns_provider">Select DNS Provider</string>
+    <string name="dns_permission_required">Permission Required</string>
+    <string name="dns_not_configured">DNS Not Configured</string>
+    <string name="tap_to_setup">Tap to setup</string>
+    <string name="apply_button">Apply</string>
+    <string name="settings_button">Settings</string>
+
+    <!-- DNS Configuration -->
+    <string name="dns_option_1">DNS Provider 1</string>
+    <string name="dns_option_2">DNS Provider 2</string>
+    <string name="dns_option_3">DNS Provider 3</string>
+    <string name="dns_name_hint">e.g., Google DNS</string>
+    <string name="dns_url_hint">e.g., dns.google</string>
+    <string name="dns_description">Configure up to 3 custom DNS providers. Leave name empty to disable an option.</string>
+    <string name="dns_permission_message">DNS switching requires WRITE_SECURE_SETTINGS permission to modify private DNS settings. This permission can only be granted via ADB command:</string>
+</resources>

@@ -141,6 +141,166 @@
 
         </LinearLayout>
 
+        <!-- DNS Tile Card -->
+        <LinearLayout
+            android:id="@+id/dns_tile_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/dns_tile_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dns_tile_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <LinearLayout
+                android:id="@+id/dns_heading_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/dns_heading_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/show_dns_heading"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/dns_show_heading_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+
+            <!-- DNS Option 1 -->
+            <TextView
+                android:id="@+id/dns_1_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dns_option_1"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_xs" />
+
+            <EditText
+                android:id="@+id/dns_1_name_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/dns_name_hint"
+                android:autofillHints="none"
+                android:paddingHorizontal="@dimen/input_padding_horizontal"
+                android:paddingVertical="@dimen/input_padding_vertical" />
+
+            <EditText
+                android:id="@+id/dns_1_url_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/dns_url_hint"
+                android:autofillHints="none"
+                android:paddingHorizontal="@dimen/input_padding_horizontal"
+                android:paddingVertical="@dimen/input_padding_vertical"
+                android:layout_marginTop="@dimen/spacing_xs" />
+
+            <!-- DNS Option 2 -->
+            <TextView
+                android:id="@+id/dns_2_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dns_option_2"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_xs" />
+
+            <EditText
+                android:id="@+id/dns_2_name_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/dns_name_hint"
+                android:autofillHints="none"
+                android:paddingHorizontal="@dimen/input_padding_horizontal"
+                android:paddingVertical="@dimen/input_padding_vertical" />
+
+            <EditText
+                android:id="@+id/dns_2_url_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/dns_url_hint"
+                android:autofillHints="none"
+                android:paddingHorizontal="@dimen/input_padding_horizontal"
+                android:paddingVertical="@dimen/input_padding_vertical"
+                android:layout_marginTop="@dimen/spacing_xs" />
+
+            <!-- DNS Option 3 -->
+            <TextView
+                android:id="@+id/dns_3_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dns_option_3"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_xs" />
+
+            <EditText
+                android:id="@+id/dns_3_name_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/dns_name_hint"
+                android:autofillHints="none"
+                android:paddingHorizontal="@dimen/input_padding_horizontal"
+                android:paddingVertical="@dimen/input_padding_vertical" />
+
+            <EditText
+                android:id="@+id/dns_3_url_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/dns_url_hint"
+                android:autofillHints="none"
+                android:paddingHorizontal="@dimen/input_padding_horizontal"
+                android:paddingVertical="@dimen/input_padding_vertical"
+                android:layout_marginTop="@dimen/spacing_xs" />
+
+            <TextView
+                android:id="@+id/dns_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dns_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingTop="@dimen/spacing_md" />
+
+            <!-- DNS Permission Status -->
+            <TextView
+                android:id="@+id/dns_permission_status_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_small"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <Button
+                android:id="@+id/dns_permission_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/grant_secure_settings_permission"
+                android:textSize="@dimen/text_size_body"
+                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
+                android:paddingVertical="@dimen/button_padding_small_vertical" />
+
+        </LinearLayout>
+
         <!-- Battery Tiles Card -->
         <LinearLayout
             android:id="@+id/battery_tiles_card"
