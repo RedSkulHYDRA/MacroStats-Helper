@@ -6,11 +6,12 @@ plugins {
 
 android {
     namespace = "com.redskul.macrostatshelper"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.redskul.macrostatshelper"
         minSdk = 33
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -31,8 +32,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        jvmToolchain(11)
     }
     buildFeatures {
         compose = true
@@ -53,7 +54,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.service)
 
     // WorkManager - NEW DEPENDENCY
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
