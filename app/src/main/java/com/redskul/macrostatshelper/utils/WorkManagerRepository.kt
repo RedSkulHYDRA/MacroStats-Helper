@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.BatteryManager
 import android.os.PowerManager
 import androidx.work.*
+import androidx.work.WorkManager
 import com.redskul.macrostatshelper.settings.SettingsManager
 import com.redskul.macrostatshelper.battery.BatteryWorker
 import com.redskul.macrostatshelper.datausage.DataUsageWorker
@@ -19,7 +20,9 @@ class WorkManagerRepository(private val context: Context) {
     private val settingsManager = SettingsManager(context)
 
     companion object {
-        private const val TAG = "WorkManagerRepository"
+        private const val TAG = "WorkManager"
+        private const val IMMEDIATE_DATA_WORK_TAG = "immediate_data_update"
+        private const val IMMEDIATE_BATTERY_WORK_TAG = "immediate_battery_update"
     }
 
     /**
@@ -37,6 +40,9 @@ class WorkManagerRepository(private val context: Context) {
     fun stopMonitoring() {
         workManager.cancelUniqueWork(DataUsageWorker.WORK_NAME)
         workManager.cancelUniqueWork(BatteryWorker.WORK_NAME)
+        // Also cancel any pending immediate work
+        workManager.cancelAllWorkByTag(IMMEDIATE_DATA_WORK_TAG)
+        workManager.cancelAllWorkByTag(IMMEDIATE_BATTERY_WORK_TAG)
         android.util.Log.d(TAG, "All monitoring work stopped")
     }
 
@@ -156,7 +162,7 @@ class WorkManagerRepository(private val context: Context) {
     fun getBatteryWorkStatus() = workManager.getWorkInfosForUniqueWorkLiveData(BatteryWorker.WORK_NAME)
 
     /**
-     * Force immediate data update
+     * Force immediate data update with high priority
      */
     fun triggerImmediateDataUpdate() {
         val constraints = Constraints.Builder()
@@ -166,23 +172,42 @@ class WorkManagerRepository(private val context: Context) {
         val immediateWork = OneTimeWorkRequestBuilder<DataUsageWorker>()
             .setConstraints(constraints)
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .addTag("immediate_data_update")
+            .addTag(IMMEDIATE_DATA_WORK_TAG)
             .build()
 
-        workManager.enqueue(immediateWork)
+        // Use enqueueUniqueWork to prevent duplicate immediate requests
+        workManager.enqueueUniqueWork(
+            "immediate_data_update_${System.currentTimeMillis()}",
+            ExistingWorkPolicy.REPLACE,
+            immediateWork
+        )
         android.util.Log.d(TAG, "Immediate data update triggered")
     }
 
     /**
-     * Force immediate battery update
+     * Force immediate battery update with high priority
      */
     fun triggerImmediateBatteryUpdate() {
         val immediateWork = OneTimeWorkRequestBuilder<BatteryWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .addTag("immediate_battery_update")
+            .addTag(IMMEDIATE_BATTERY_WORK_TAG)
             .build()
 
-        workManager.enqueue(immediateWork)
+        // Use enqueueUniqueWork to prevent duplicate immediate requests
+        workManager.enqueueUniqueWork(
+            "immediate_battery_update_${System.currentTimeMillis()}",
+            ExistingWorkPolicy.REPLACE,
+            immediateWork
+        )
         android.util.Log.d(TAG, "Immediate battery update triggered")
+    }
+
+    /**
+     * Trigger both data and battery updates immediately
+     */
+    fun triggerImmediateUpdates() {
+        triggerImmediateDataUpdate()
+        triggerImmediateBatteryUpdate()
+        android.util.Log.d(TAG, "All immediate updates triggered")
     }
 }

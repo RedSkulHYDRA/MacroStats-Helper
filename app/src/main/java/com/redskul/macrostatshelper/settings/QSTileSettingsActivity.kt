@@ -14,6 +14,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.core.net.toUri
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.battery.BatteryHealthMonitor
+import com.redskul.macrostatshelper.battery.BatteryHealthQSTileService
+import com.redskul.macrostatshelper.battery.BatteryWorker
+import com.redskul.macrostatshelper.datausage.DataUsageWorker
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent
@@ -121,6 +124,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
                 return@setOnCheckedChangeListener
             }
+            // Immediately update tiles when period in title setting changes
+            triggerImmediateTileUpdates()
         }
 
         binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
@@ -130,14 +135,20 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
                 return@setOnCheckedChangeListener
             }
+            // Immediately update tiles when screen timeout setting changes
+            triggerImmediateTileUpdates()
         }
 
-        // Add haptic feedback to other switches
+        // Add haptic feedback to other switches and immediate tile updates
         binding.showChargeInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Immediately update tiles when charge in title setting changes
+            triggerImmediateTileUpdates()
         }
         binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Immediately update tiles when battery health setting changes
+            triggerImmediateTileUpdates()
         }
     }
 
@@ -301,8 +312,45 @@ class QSTileSettingsActivity : AppCompatActivity() {
             batteryHealthMonitor.setDesignCapacity(designCapacity)
         }
 
+        // Trigger immediate tile updates after saving all settings
+        triggerImmediateTileUpdates()
+
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
         finish()
+    }
+
+    /**
+     * Triggers immediate tile updates by sending broadcasts to all tile services
+     */
+    private fun triggerImmediateTileUpdates() {
+        lifecycleScope.launch {
+            try {
+                // Send broadcast for data usage tiles update
+                val dataUpdateIntent = Intent(DataUsageWorker.ACTION_DATA_UPDATED).apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(dataUpdateIntent)
+                android.util.Log.d("QSTileSettings", "Data usage tiles update broadcast sent")
+
+                // Send broadcast for battery tiles update
+                val batteryUpdateIntent = Intent(BatteryWorker.ACTION_BATTERY_UPDATED).apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(batteryUpdateIntent)
+                android.util.Log.d("QSTileSettings", "Battery tiles update broadcast sent")
+
+                // Send broadcast specifically for battery health tile
+                val healthUpdateIntent = Intent(BatteryHealthQSTileService.ACTION_BATTERY_HEALTH_UPDATED).apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(healthUpdateIntent)
+                android.util.Log.d("QSTileSettings", "Battery health tile update broadcast sent")
+
+                android.util.Log.d("QSTileSettings", "All immediate tile update broadcasts sent")
+            } catch (e: Exception) {
+                android.util.Log.e("QSTileSettings", "Error sending immediate tile update broadcasts", e)
+            }
+        }
     }
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {

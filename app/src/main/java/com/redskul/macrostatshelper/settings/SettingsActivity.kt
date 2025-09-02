@@ -14,6 +14,9 @@ import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivitySettingsBinding
+import com.redskul.macrostatshelper.datausage.DataUsageMonitor
+import com.redskul.macrostatshelper.notification.NotificationHelper
+import com.redskul.macrostatshelper.utils.WorkManagerRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -21,6 +24,9 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var settingsManager: SettingsManager
     private lateinit var permissionHelper: PermissionHelper
+    private lateinit var notificationHelper: NotificationHelper
+    private lateinit var dataUsageMonitor: DataUsageMonitor
+    private lateinit var workManagerRepository: WorkManagerRepository
     private var binding: ActivitySettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +42,9 @@ class SettingsActivity : AppCompatActivity() {
         // Initialize managers
         settingsManager = SettingsManager(this)
         permissionHelper = PermissionHelper(this)
+        notificationHelper = NotificationHelper(this)
+        dataUsageMonitor = DataUsageMonitor(this)
+        workManagerRepository = WorkManagerRepository(this)
 
         setupWindowInsets()
         setupUI()
@@ -195,10 +204,33 @@ class SettingsActivity : AppCompatActivity() {
         val settings = DisplaySettings(wifiPeriods, mobilePeriods)
         settingsManager.saveDisplaySettings(settings)
 
-        // Save notification preference (will be validated by SettingsManager)
-        settingsManager.saveNotificationEnabled(binding.notificationEnabledSwitch.isChecked)
+        // Handle notification setting changes immediately
+        val wasNotificationEnabled = settingsManager.isNotificationEnabled()
+        val isNotificationEnabled = binding.notificationEnabledSwitch.isChecked
 
-        // REMOVED: DataUsageService intent - WorkManager handles notification changes automatically
+        // Save notification preference (will be validated by SettingsManager)
+        settingsManager.saveNotificationEnabled(isNotificationEnabled)
+
+        // Handle immediate notification changes
+        if (isNotificationEnabled && !wasNotificationEnabled) {
+            // Notification was just enabled - show immediately
+            lifecycleScope.launch {
+                try {
+                    val usageData = dataUsageMonitor.getUsageData()
+                    notificationHelper.showUsageNotification(usageData)
+                    android.util.Log.d("SettingsActivity", "Notification shown immediately after enabling")
+                } catch (e: Exception) {
+                    android.util.Log.e("SettingsActivity", "Error showing immediate notification", e)
+                }
+            }
+        } else if (!isNotificationEnabled && wasNotificationEnabled) {
+            // Notification was just disabled - hide immediately
+            notificationHelper.cancelNotification()
+            android.util.Log.d("SettingsActivity", "Notification hidden immediately after disabling")
+        }
+
+        // Trigger immediate data update to refresh everything
+        workManagerRepository.triggerImmediateDataUpdate()
 
         Toast.makeText(this, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
         finish()
