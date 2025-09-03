@@ -205,6 +205,7 @@
     <string name="dns_url_hint">e.g., dns.google</string>
     <string name="dns_description">Use the button above to add up to 3 custom DNS providers. Remove entries using the button next to each DNS heading.</string>
     <string name="dns_permission_message">DNS switching requires WRITE_SECURE_SETTINGS permission to modify private DNS settings. This permission can only be granted via ADB command:</string>
+    <string name="dns_permission_message_full">⚠ WRITE_SECURE_SETTINGS permission required for DNS management</string>
 
     <!-- Secure Settings Permission -->
     <string name="grant_secure_settings_permission">Grant WRITE_SECURE_SETTINGS Permission</string>

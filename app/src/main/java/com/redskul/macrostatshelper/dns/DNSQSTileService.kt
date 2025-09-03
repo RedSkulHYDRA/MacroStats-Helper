@@ -5,32 +5,27 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Build
-import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import android.util.TypedValue
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
-import com.redskul.macrostatshelper.utils.PermissionHelper
 import kotlinx.coroutines.*
 
 class DNSQSTileService : TileService() {
 
     private lateinit var dnsManager: DNSManager
-    private lateinit var permissionHelper: PermissionHelper
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onCreate() {
         super.onCreate()
         dnsManager = DNSManager(this)
-        permissionHelper = PermissionHelper(this)
     }
 
     override fun onStartListening() {
@@ -43,7 +38,7 @@ class DNSQSTileService : TileService() {
         super.onClick()
 
         if (!dnsManager.hasSecureSettingsPermission()) {
-            // Request permission by opening settings
+            // Request permission by opening settings - same pattern as other tiles
             requestSecureSettingsPermission()
             return
         }
@@ -67,15 +62,15 @@ class DNSQSTileService : TileService() {
 
             val pendingIntent = PendingIntent.getActivity(
                 this,
-                0,
+                2, // Different request code from other tiles
                 intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
             startActivityAndCollapse(pendingIntent)
-            android.util.Log.d("DNSQSTile", "Opened settings for permission")
+            android.util.Log.d("DNSQSTile", "Permission request activity started with PendingIntent")
         } catch (e: Exception) {
-            android.util.Log.e("DNSQSTile", "Error opening settings", e)
+            android.util.Log.e("DNSQSTile", "Error starting permission activity", e)
         }
     }
 
@@ -132,6 +127,7 @@ class DNSQSTileService : TileService() {
                         withContext(Dispatchers.Main) {
                             if (success) {
                                 updateTile()
+                                Toast.makeText(this@DNSQSTileService, "${getString(R.string.private_dns_heading)}: ${selectedDNS.name}", Toast.LENGTH_SHORT).show()
                                 android.util.Log.d("DNSQSTile", "DNS changed to: ${selectedDNS.name}")
                             } else {
                                 android.util.Log.e("DNSQSTile", "Failed to change DNS to: ${selectedDNS.name}")
@@ -231,7 +227,7 @@ class DNSQSTileService : TileService() {
                     val tile = qsTile ?: return@withContext
 
                     if (!hasPermission) {
-                        // No permission
+                        // No permission - same pattern as other tiles
                         tile.state = Tile.STATE_INACTIVE
                         tile.icon = config.icon
                         tile.label = getString(R.string.dns_permission_required)
