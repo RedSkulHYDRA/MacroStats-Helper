@@ -1,15 +1,12 @@
 package com.redskul.macrostatshelper.autosync
 
 import android.accessibilityservice.AccessibilityService
-import android.app.AlarmManager
 import android.app.KeyguardManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -26,6 +23,10 @@ import java.util.concurrent.TimeUnit
 /**
  * Accessibility service that manages auto-sync functionality based on device lock state.
  * Monitors device lock/unlock events and automatically toggles sync settings after a configured delay.
+ *
+ * Updated to use:
+ * - Foreground service for delays ≤ 15 minutes (precise timing)
+ * - WorkManager for delays > 15 minutes (reliable background execution)
  */
 class AutoSyncAccessibilityService : AccessibilityService() {
 
@@ -35,18 +36,17 @@ class AutoSyncAccessibilityService : AccessibilityService() {
     private var isDeviceLocked = false
     private var lastEventTime = 0L
 
-    // Receiver for handling alarm-based sync disable
+    // Receiver for handling alarm-based sync disable (kept for backward compatibility)
     private val syncDisableReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d(TAG, "Received alarm for sync disable")
-            handleAlarmSyncDisable()
+            Log.d(TAG, "Received broadcast for sync disable")
+            handleLegacySyncDisable()
         }
     }
 
     companion object {
         private const val MIN_EVENT_INTERVAL = 1000L // Minimum 1 second between events
         private const val TAG = "AutoSyncAccessibility"
-        private const val ALARM_REQUEST_CODE = 1001
         private const val ACTION_SYNC_DISABLE = "com.redskul.macrostatshelper.SYNC_DISABLE"
 
         /**
@@ -60,7 +60,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
                     context.contentResolver,
                     Settings.Secure.ACCESSIBILITY_ENABLED
                 )
-            } catch (_: Settings.SettingNotFoundException) {
+            } catch (e: Settings.SettingNotFoundException) {
                 0
             }
 
@@ -84,7 +84,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         super.onCreate()
         autoSyncManager = AutoSyncManager(this)
 
-        // Register the sync disable receiver
+        // Register the legacy sync disable receiver
         val filter = IntentFilter(ACTION_SYNC_DISABLE)
         registerReceiver(syncDisableReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
 
@@ -154,6 +154,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
 
     private fun handleDeviceLocked() {
         Log.d(TAG, "Device locked detected")
+
         if (!autoSyncManager.isAutoSyncEnabled()) {
             Log.d(TAG, "AutoSync management disabled, ignoring lock event")
             return
@@ -165,7 +166,9 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         val delayMinutes = autoSyncManager.getAutoSyncDelay()
         val delayMs = delayMinutes * 60 * 1000L
 
-        Log.d(TAG, "Scheduling autosync turn-off in $delayMinutes minutes using ${if (delayMinutes >= 15) "WorkManager" else "AlarmManager"}")
+        Log.d(TAG, "Scheduling autosync turn-off in $delayMinutes minutes using ${
+            if (delayMinutes <= 15) "ForegroundService" else "WorkManager"
+        }")
 
         // Cancel any existing scheduled operations
         cancelAllScheduledOperations()
@@ -174,73 +177,60 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         scheduleAutoSyncDisable(delayMs)
     }
 
+    /**
+     * Schedules auto sync disable using the appropriate method based on delay duration
+     * @param delayMs Delay in milliseconds
+     */
     private fun scheduleAutoSyncDisable(delayMs: Long) {
         val delayMinutes = delayMs / (60 * 1000L)
 
-        if (delayMinutes >= 15) {
-            // Use WorkManager for delays >= 15 minutes
-            scheduleWithWorkManager(delayMs)
+        if (delayMinutes <= 15) {
+            // Use foreground service for short delays (≤ 15 minutes)
+            scheduleWithForegroundService(delayMs)
         } else {
-            // Use AlarmManager for delays < 15 minutes
-            scheduleWithAlarmManager(delayMs)
+            // Use WorkManager for longer delays (> 15 minutes)
+            scheduleWithWorkManager(delayMs)
         }
 
         // Always add handler backup for additional reliability
         scheduleHandlerBackup(delayMs)
     }
 
-    private fun scheduleWithAlarmManager(delayMs: Long) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    /**
+     * Schedules sync disable using foreground service for precise timing
+     * @param delayMs Delay in milliseconds
+     */
+    private fun scheduleWithForegroundService(delayMs: Long) {
+        val prefs = getSharedPreferences("autosyncstate", Context.MODE_PRIVATE)
+        val scheduledTime = prefs.getLong("scheduleddisabletime", 0)
 
-        // Check if we can schedule exact alarms for Android 12+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmManager.canScheduleExactAlarms()) {
-                Log.w(TAG, "Cannot schedule exact alarms, falling back to WorkManager")
-                scheduleWithWorkManager(delayMs)
-                return
-            }
-        }
-
-        // Create PendingIntent for the internal receiver
-        val intent = Intent(ACTION_SYNC_DISABLE)
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            ALARM_REQUEST_CODE,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val triggerTime = System.currentTimeMillis() + delayMs
-
-        try {
-            // Use exact alarm for precise timing with proper exception handling
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
-            Log.d(TAG, "Scheduled exact alarm in ${delayMs}ms")
-        } catch (e: SecurityException) {
-            Log.w(TAG, "SecurityException scheduling exact alarm, falling back to WorkManager", e)
-            scheduleWithWorkManager(delayMs)
-        }
+        // Start the foreground service
+        AutoSyncForegroundService.scheduleAutoSyncDisable(this, delayMs, scheduledTime)
+        Log.d(TAG, "Scheduled foreground service sync disable in ${delayMs}ms")
     }
 
+    /**
+     * Schedules sync disable using WorkManager for longer delays
+     * @param delayMs Delay in milliseconds
+     */
     private fun scheduleWithWorkManager(delayMs: Long) {
         val workRequest = OneTimeWorkRequestBuilder<AutoSyncEnforcementWorker>()
             .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
-            .addTag("sync_disable_exact")
+            .addTag("syncdisableexact")
             .build()
 
         WorkManager.getInstance(this).enqueueUniqueWork(
-            "exact_sync_disable",
+            "exactsyncdisable",
             ExistingWorkPolicy.REPLACE,
             workRequest
         )
-
         Log.d(TAG, "Scheduled WorkManager sync disable in ${delayMs}ms")
     }
 
+    /**
+     * Schedules handler backup for additional reliability
+     * @param delayMs Delay in milliseconds
+     */
     private fun scheduleHandlerBackup(delayMs: Long) {
         // Cancel existing
         cancelTurnOffSync()
@@ -255,21 +245,20 @@ class AutoSyncAccessibilityService : AccessibilityService() {
             val currentTime = System.currentTimeMillis()
 
             // Only execute if we're at or past the scheduled time
-            if (isStillLocked && scheduledTime > 0 && currentTime >= scheduledTime - 5000) { // 5s tolerance
+            if (isStillLocked && scheduledTime > 0 && currentTime >= (scheduledTime - 5000)) { // 5s tolerance
                 val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-
                 if (keyguardManager.isKeyguardLocked) {
                     try {
                         val currentSyncState = ContentResolver.getMasterSyncAutomatically()
                         if (currentSyncState) {
                             ContentResolver.setMasterSyncAutomatically(false)
                             Log.d(TAG, "AutoSync turned OFF via handler backup")
-                        }
 
-                        // Update persistence using KTX extension
-                        prefs.edit {
-                            putBoolean("syncdisablescheduled", false)
-                            remove("scheduleddisabletime")
+                            // Update persistence using KTX extension
+                            prefs.edit {
+                                putBoolean("syncdisablescheduled", false)
+                                remove("scheduleddisabletime")
+                            }
                         }
                     } catch (e: SecurityException) {
                         Log.e(TAG, "Permission denied to change sync settings", e)
@@ -283,9 +272,12 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         turnOffSyncRunnable?.let { handler.postDelayed(it, delayMs) }
     }
 
-    private fun handleAlarmSyncDisable() {
+    /**
+     * Handle legacy alarm-based sync disable (kept for backward compatibility)
+     */
+    private fun handleLegacySyncDisable() {
         if (!autoSyncManager.isAutoSyncEnabled()) {
-            Log.d(TAG, "AutoSync disabled, ignoring alarm")
+            Log.d(TAG, "AutoSync disabled, ignoring legacy alarm")
             return
         }
 
@@ -295,15 +287,14 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         val currentTime = System.currentTimeMillis()
 
         // Verify conditions are still met (30s tolerance for timing)
-        if (isLocked && scheduledDisableTime > 0 && currentTime >= scheduledDisableTime - 30000) {
+        if (isLocked && scheduledDisableTime > 0 && currentTime >= (scheduledDisableTime - 30000)) {
             val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-
             if (keyguardManager.isKeyguardLocked) {
                 try {
                     val currentSyncState = ContentResolver.getMasterSyncAutomatically()
                     if (currentSyncState) {
                         ContentResolver.setMasterSyncAutomatically(false)
-                        Log.d(TAG, "AutoSync turned OFF via alarm")
+                        Log.d(TAG, "AutoSync turned OFF via legacy alarm")
 
                         // Update persistence using KTX extension
                         prefs.edit {
@@ -314,7 +305,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
                 } catch (e: SecurityException) {
                     Log.e(TAG, "Permission denied to change sync settings", e)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error disabling sync via alarm", e)
+                    Log.e(TAG, "Error disabling sync via legacy alarm", e)
                 }
             } else {
                 Log.d(TAG, "Device unlocked before alarm trigger, ignoring")
@@ -354,10 +345,14 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * Cancel all scheduled operations across all methods
+     */
     private fun cancelAllScheduledOperations() {
         cancelTurnOffSync() // Handler
-        cancelAlarmManager() // AlarmManager
-        WorkManager.getInstance(this).cancelUniqueWork("exact_sync_disable") // WorkManager
+        cancelForegroundService() // Foreground service
+        // WorkManager
+        WorkManager.getInstance(this).cancelUniqueWork("exactsyncdisable")
     }
 
     private fun cancelTurnOffSync() {
@@ -368,21 +363,12 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         turnOffSyncRunnable = null
     }
 
-    private fun cancelAlarmManager() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(ACTION_SYNC_DISABLE)
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            ALARM_REQUEST_CODE,
-            intent,
-            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        pendingIntent?.let {
-            alarmManager.cancel(it)
-            it.cancel()
-            Log.d(TAG, "Cancelled scheduled alarm")
-        }
+    /**
+     * Cancel the foreground service
+     */
+    private fun cancelForegroundService() {
+        AutoSyncForegroundService.cancelScheduledSyncDisable(this)
+        Log.d(TAG, "Cancelled foreground service")
     }
 
     override fun onInterrupt() {
@@ -395,7 +381,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
 
         try {
             unregisterReceiver(syncDisableReceiver)
-        } catch (_: IllegalArgumentException) {
+        } catch (e: IllegalArgumentException) {
             // Receiver not registered
         }
 
@@ -452,7 +438,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         ).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "autosync_enforcement",
+            "autosyncenforcement",
             ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )

@@ -11,17 +11,17 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
-
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
-
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
-
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
+
+    <!-- NEW: Foreground service permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:allowBackup="true"
@@ -32,9 +32,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MacroStatsHelper"
-        tools:targetApi="31">
+        tools:targetApi="35">
 
-        <!-- Existing activities -->
+        <!-- Main Activity -->
         <activity
             android:name=".core.MainActivity"
             android:exported="true"
@@ -69,6 +69,18 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
+        <!-- NEW: AutoSync Foreground Service -->
+        <service
+            android:name=".autosync.AutoSyncForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="AutoSync timing management for precise execution without Doze mode interference" />
+        </service>
+
+        <!-- Boot Receiver -->
         <receiver
             android:name=".core.BootReceiver"
             android:enabled="true"
@@ -138,7 +150,7 @@
         <service
             android:name=".battery.BatteryHealthQSTileService"
             android:exported="true"
-            android:icon="@drawable/ic__battery_health"
+            android:icon="@drawable/ic_battery_health"
             android:label="@string/battery_health"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>

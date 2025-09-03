@@ -49,7 +49,7 @@ object TileConfigHelper {
     }
 
     fun getBatteryHealthTileConfig(context: Context): TileConfiguration {
-        val iconRes = R.drawable.ic__battery_health
+        val iconRes = R.drawable.ic_battery_health
         return TileConfiguration(
             icon = Icon.createWithResource(context, iconRes),
             iconRes = iconRes,
