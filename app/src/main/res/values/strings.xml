@@ -60,7 +60,6 @@
     <string name="autosync_delay_label">Turn off sync after:</string>
     <string name="autosync_delay_description">Delay before turning off sync when locked</string>
 
-
     <!-- Accessibility Service -->
     <string name="accessibility_service_description">Manages AutoSync based on device lock state</string>
 
@@ -146,8 +145,6 @@
     <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
     <string name="secure_settings_permission_enabled">✓ WRITE_SECURE_SETTINGS permission is granted</string>
     <string name="secure_settings_permission_disabled">⚠ WRITE_SECURE_SETTINGS permission is required</string>
-    <string name="dns_permission_message_full">⚠ WRITE_SECURE_SETTINGS permission required for DNS management</string>
-    <string name="aod_permission_message_full">⚠ WRITE_SECURE_SETTINGS permission required for AOD management</string>
 
     <!-- Permission Button strings -->
     <string name="open_usage_access_settings">Enable Usage Access Settings</string>
@@ -184,24 +181,6 @@
     <string name="permission_required_dialog_message">%1$s requires %2$s permission. Grant now?</string>
     <string name="permission_required_settings_dialog_message">%1$s requires %2$s. Grant in settings?</string>
 
-    <!-- AOD While Charging -->
-    <string name="aod_charging_title">Always On Display While Charging</string>
-    <string name="enable_aod_while_charging">Enable AOD While Charging</string>
-    <string name="aod_charging_description">Automatically enable Always On Display when charging and restore your settings when unplugged</string>
-
-    <!-- Secure Settings Permission -->
-    <string name="grant_secure_settings_permission">Grant WRITE_SECURE_SETTINGS Permission</string>
-    <string name="secure_settings_permission_title">WRITE_SECURE_SETTINGS Permission Required</string>
-    <string name="secure_settings_permission_message">This feature requires WRITE_SECURE_SETTINGS permission to modify Always On Display settings. This permission can only be granted via ADB command:</string>
-    <string name="permission_granted_check">✓ Permission Granted</string>
-    <string name="copy_command">Copy Command</string>
-    <string name="command_copied">Command copied to clipboard</string>
-    <string name="learn_more">Learn More</string>
-
-    <!-- ADB Instructions -->
-    <string name="adb_instructions_title">How to Grant Permission via ADB</string>
-    <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>
-
     <!-- DNS Tile - Updated strings -->
     <string name="private_dns_heading">Private DNS</string>
     <string name="show_dns_heading">Enable Tile Heading</string>
@@ -226,4 +205,16 @@
     <string name="dns_url_hint">e.g., dns.google</string>
     <string name="dns_description">Use the button above to add up to 3 custom DNS providers. Remove entries using the button next to each DNS heading.</string>
     <string name="dns_permission_message">DNS switching requires WRITE_SECURE_SETTINGS permission to modify private DNS settings. This permission can only be granted via ADB command:</string>
+
+    <!-- Secure Settings Permission -->
+    <string name="grant_secure_settings_permission">Grant WRITE_SECURE_SETTINGS Permission</string>
+    <string name="secure_settings_permission_title">WRITE_SECURE_SETTINGS Permission Required</string>
+    <string name="permission_granted_check">✓ Permission Granted</string>
+    <string name="copy_command">Copy Command</string>
+    <string name="command_copied">Command copied to clipboard</string>
+    <string name="learn_more">Learn More</string>
+
+    <!-- ADB Instructions -->
+    <string name="adb_instructions_title">How to Grant Permission via ADB</string>
+    <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>
 </resources>

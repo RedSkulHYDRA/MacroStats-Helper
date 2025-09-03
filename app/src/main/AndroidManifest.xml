@@ -94,17 +94,6 @@
         </receiver>
 
         <receiver
-            android:name=".aod.PowerConnectionReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
-                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
-                <action android:name="android.intent.action.BATTERY_CHANGED" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
             android:name=".utils.UpdateStatsReceiver"
             android:enabled="true"
             android:exported="false">
