@@ -1,8 +1,10 @@
 package com.redskul.macrostatshelper.core
 
 import android.content.BroadcastReceiver
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import com.redskul.macrostatshelper.autosync.AutoSyncManager
 import com.redskul.macrostatshelper.utils.WorkManagerRepository
 
 class BootReceiver : BroadcastReceiver() {
@@ -34,6 +36,22 @@ class BootReceiver : BroadcastReceiver() {
 
                         // Note: Accessibility service will auto-start if enabled by user
                         android.util.Log.d("BootReceiver", "AutoSync accessibility service will auto-start if enabled")
+
+                        // Handle AutoSync state restoration on boot
+                        val autoSyncManager = AutoSyncManager(context)
+                        if (autoSyncManager.isAutoSyncEnabled()) {
+                            // Check if device is currently locked and restore appropriate sync state
+                            val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
+                            if (!keyguardManager.isKeyguardLocked) {
+                                // Device is unlocked on boot, ensure sync is enabled
+                                try {
+                                    ContentResolver.setMasterSyncAutomatically(true)
+                                    android.util.Log.d("BootReceiver", "Enabled AutoSync on boot (device unlocked)")
+                                } catch (e: Exception) {
+                                    android.util.Log.e("BootReceiver", "Error enabling sync on boot", e)
+                                }
+                            }
+                        }
                     } catch (e: Exception) {
                         android.util.Log.e("BootReceiver", "Failed to start WorkManager monitoring after boot", e)
                     }

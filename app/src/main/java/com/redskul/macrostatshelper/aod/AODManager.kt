@@ -8,7 +8,7 @@ import androidx.core.content.edit
 
 /**
  * Manager class for Always On Display (AOD) functionality while charging.
- * Handles AOD state management and permission checking.
+ * Handles AOD state management and permission checking with enhanced error handling.
  */
 class AODManager(private val context: Context) {
 
@@ -20,7 +20,7 @@ class AODManager(private val context: Context) {
         private const val KEY_SAVED_AOD_MODE = "saved_aod_mode"
         private const val KEY_SAVED_DOZE_STATE = "saved_doze_state"
 
-        // Correct AOD display mode values (based on user clarification)
+        // Correct AOD display mode values based on user clarification
         private const val AOD_MODE_ALWAYS_ON = 0
         private const val AOD_MODE_SCHEDULE = 1
         private const val AOD_MODE_TAP_TO_SHOW = 2
@@ -47,6 +47,7 @@ class AODManager(private val context: Context) {
             Log.w(TAG, "Cannot enable AOD without WRITE_SECURE_SETTINGS permission")
             return
         }
+
         sharedPreferences.edit {
             putBoolean(KEY_AOD_ENABLED, enabled)
         }
@@ -72,6 +73,13 @@ class AODManager(private val context: Context) {
     }
 
     /**
+     * Checks if AOD changes are currently allowed (both permission and user setting).
+     */
+    fun isAODChangeAllowed(): Boolean {
+        return isAODWhileChargingEnabled() && hasSecureSettingsPermission()
+    }
+
+    /**
      * Gets the ADB command needed to grant WRITE_SECURE_SETTINGS permission.
      */
     fun getADBCommand(): String {
@@ -90,7 +98,8 @@ class AODManager(private val context: Context) {
                 putInt(KEY_SAVED_AOD_MODE, currentAODMode)
                 putInt(KEY_SAVED_DOZE_STATE, currentDozeState)
             }
-            Log.d(TAG, "Saved AOD state: mode=$currentAODMode, doze=$currentDozeState")
+
+            Log.d(TAG, "Saved AOD state - mode:$currentAODMode, doze:$currentDozeState")
         } catch (e: Exception) {
             Log.e(TAG, "Error saving current AOD settings", e)
         }
@@ -107,24 +116,23 @@ class AODManager(private val context: Context) {
             Settings.Secure.putInt(context.contentResolver, "aod_display_mode", savedAODMode)
             Settings.Secure.putInt(context.contentResolver, "doze_always_on", savedDozeState)
 
-            Log.d(TAG, "Restored AOD state: mode=$savedAODMode, doze=$savedDozeState")
+            Log.d(TAG, "Restored AOD state - mode:$savedAODMode, doze:$savedDozeState")
         } catch (e: Exception) {
             Log.e(TAG, "Error restoring AOD settings", e)
         }
     }
 
     /**
-     * Enables AOD when charging starts.
-     * Sets doze_always_on = 1 and aod_display_mode = 0 (Always On)
+     * Enhanced enable method with better error handling and return value.
      */
-    fun enableAODForCharging() {
-        if (!isAODWhileChargingEnabled() || !hasSecureSettingsPermission()) {
-            Log.d(TAG, "AOD charging disabled or no permission. Enabled: ${isAODWhileChargingEnabled()}, Permission: ${hasSecureSettingsPermission()}")
-            return
+    fun enableAODForChargingEnhanced(): Boolean {
+        if (!isAODChangeAllowed()) {
+            Log.w(TAG, "AOD change not allowed - enabled: ${isAODWhileChargingEnabled()}, permission: ${hasSecureSettingsPermission()}")
+            return false
         }
 
-        try {
-            // Save current settings first (only if we haven't saved them already)
+        return try {
+            // Save current settings first only if we haven't saved them already
             val hasSavedSettings = sharedPreferences.contains(KEY_SAVED_AOD_MODE)
             if (!hasSavedSettings) {
                 saveCurrentAODSettings()
@@ -133,13 +141,16 @@ class AODManager(private val context: Context) {
                 Log.d(TAG, "AOD settings already saved, not overwriting")
             }
 
-            // Set charging AOD mode: doze_always_on = 1, aod_display_mode = 0
+            // Set charging AOD mode: doze_always_on = 1, aod_display_mode = 0 (Always On)
             Settings.Secure.putInt(context.contentResolver, "doze_always_on", DOZE_ALWAYS_ON_ENABLED)
             Settings.Secure.putInt(context.contentResolver, "aod_display_mode", AOD_MODE_ALWAYS_ON)
 
             Log.d(TAG, "AOD enabled for charging: doze_always_on=1, aod_display_mode=0")
+            true
+
         } catch (e: Exception) {
             Log.e(TAG, "Error enabling AOD for charging", e)
+            false
         }
     }
 
@@ -163,6 +174,7 @@ class AODManager(private val context: Context) {
                     remove(KEY_SAVED_AOD_MODE)
                     remove(KEY_SAVED_DOZE_STATE)
                 }
+
                 Log.d(TAG, "AOD settings restored after charging and cleared from preferences")
             } else {
                 Log.w(TAG, "No saved AOD settings found to restore")
@@ -214,14 +226,15 @@ class AODManager(private val context: Context) {
             val dozeText = if (dozeState == DOZE_ALWAYS_ON_ENABLED) "Enabled" else "Disabled"
 
             "AOD Mode: $modeText, Doze Always On: $dozeText"
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             "Unable to read AOD status"
         }
     }
 
     /**
-     * Manual method to clear saved settings if needed (for debugging)
+     * Manual method to clear saved settings if needed for debugging.
      */
+    @Suppress("unused")
     fun clearSavedSettings() {
         sharedPreferences.edit {
             remove(KEY_SAVED_AOD_MODE)
