@@ -566,6 +566,74 @@
                 android:paddingVertical="@dimen/button_padding_small_vertical" />
 
         </LinearLayout>
+        <!-- Torch/Glyph Tile Card -->
+        <LinearLayout
+            android:id="@+id/torch_glyph_tile_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/torch_glyph_tile_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/torch_glyph_tile_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <LinearLayout
+                android:id="@+id/torch_glyph_heading_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/torch_glyph_heading_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/show_torch_glyph_heading"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/torch_glyph_show_heading_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/torch_glyph_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/torch_glyph_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <!-- Torch/Glyph Permission Status -->
+            <TextView
+                android:id="@+id/torch_glyph_permission_status_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_small"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <Button
+                android:id="@+id/torch_glyph_permission_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/grant_secure_settings_permission"
+                android:textSize="@dimen/text_size_body"
+                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
+                android:paddingVertical="@dimen/button_padding_small_vertical" />
+
+        </LinearLayout>
 
         <!-- Save Button -->
         <Button

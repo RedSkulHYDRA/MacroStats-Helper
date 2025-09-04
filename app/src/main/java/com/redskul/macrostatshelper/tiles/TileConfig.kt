@@ -5,6 +5,7 @@ import android.graphics.drawable.Icon
 import android.service.quicksettings.Tile
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.TimePeriod
+import com.redskul.macrostatshelper.torchglyph.TorchGlyphManager
 
 data class TileConfiguration(
     val icon: Icon,
@@ -75,6 +76,20 @@ object TileConfigHelper {
             iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
+        )
+    }
+
+    fun getTorchGlyphTileConfig(context: Context, state: TorchGlyphManager.TorchGlyphState): TileConfiguration {
+        val iconRes = when (state) {
+            TorchGlyphManager.TorchGlyphState.TORCH_ON -> R.drawable.ic_torch
+            TorchGlyphManager.TorchGlyphState.GLYPH_ON -> R.drawable.ic_glyph
+            TorchGlyphManager.TorchGlyphState.OFF -> R.drawable.ic_torch_off
+        }
+        return TileConfiguration(
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
+            defaultState = if (state == TorchGlyphManager.TorchGlyphState.OFF) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
         )
     }
 

@@ -23,6 +23,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
+    <!-- NEW: Flashlight permission -->
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -78,6 +81,18 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="AutoSync timing management for precise execution without Doze mode interference" />
+        </service>
+
+        <!-- Torch/Glyph QS Tile Service -->
+        <service
+            android:name=".torchglyph.TorchGlyphQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_torch_off"
+            android:label="@string/torch_glyph"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
         </service>
 
         <!-- Boot Receiver -->

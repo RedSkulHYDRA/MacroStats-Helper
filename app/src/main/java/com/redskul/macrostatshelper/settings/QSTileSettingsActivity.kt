@@ -23,6 +23,8 @@ import com.redskul.macrostatshelper.battery.BatteryHealthQSTileService
 import com.redskul.macrostatshelper.battery.BatteryWorker
 import com.redskul.macrostatshelper.datausage.DataUsageWorker
 import com.redskul.macrostatshelper.dns.DNSManager
+import com.redskul.macrostatshelper.torchglyph.TorchGlyphManager
+import com.redskul.macrostatshelper.torchglyph.TorchGlyphQSTileService
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent
@@ -38,6 +40,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var batteryHealthMonitor: BatteryHealthMonitor
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var dnsManager: DNSManager
+    private lateinit var torchGlyphManager: TorchGlyphManager
     private var binding: ActivityQsTileSettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +58,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         batteryHealthMonitor = BatteryHealthMonitor(this)
         permissionHelper = PermissionHelper(this)
         dnsManager = DNSManager(this)
+        torchGlyphManager = TorchGlyphManager(this)
 
         setupWindowInsets()
         setupUI()
@@ -107,6 +111,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Setup DNS buttons
         setupDNSButtons(binding)
+
+        // Setup Torch/Glyph section
+        setupTorchGlyphSection(binding)
     }
 
     private fun setupSpinners(binding: ActivityQsTileSettingsBinding) {
@@ -168,6 +175,12 @@ class QSTileSettingsActivity : AppCompatActivity() {
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             triggerDNSTileUpdate()
         }
+
+        // Torch/Glyph heading switch
+        binding.torchGlyphShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerTorchGlyphTileUpdate()
+        }
     }
 
     private fun setupButtons(binding: ActivityQsTileSettingsBinding) {
@@ -181,6 +194,10 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         binding.dnsPermissionButton.setOnClickListener {
             showDNSPermissionDialog()
+        }
+
+        binding.torchGlyphPermissionButton.setOnClickListener {
+            showTorchGlyphPermissionDialog()
         }
 
         binding.qsSaveButton.setOnClickListener {
@@ -217,6 +234,11 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         updateDNSAddButtonVisibility()
         updateDNSPermissionStatus()
+    }
+
+    private fun setupTorchGlyphSection(binding: ActivityQsTileSettingsBinding) {
+        binding.torchGlyphShowHeadingSwitch.isChecked = torchGlyphManager.getShowHeading()
+        updateTorchGlyphPermissionStatus()
     }
 
     private fun setupDNSButtons(binding: ActivityQsTileSettingsBinding) {
@@ -286,6 +308,25 @@ class QSTileSettingsActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun showTorchGlyphPermissionDialog() {
+        val command = torchGlyphManager.getADBCommand()
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.secure_settings_permission_title))
+            .setMessage(getString(R.string.torch_glyph_permission_message))
+            .setView(createCommandView(command))
+            .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
+                copyCommandToClipboard(command)
+            }
+            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNeutralButton(getString(R.string.learn_more)) { _, _ ->
+                showADBInstructions()
+            }
+            .show()
+    }
+
     private fun createCommandView(command: String): android.view.View {
         val padding = resources.getDimensionPixelSize(R.dimen.spacing_md)
         val textView = android.widget.TextView(this).apply {
@@ -320,6 +361,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
             var lastWriteSettings = permissionHelper.hasWriteSettingsPermission()
             var lastSecureSettings = dnsManager.hasSecureSettingsPermission()
+            var lastTorchGlyphPermissions = torchGlyphManager.hasRequiredPermissions()
 
             while (binding != null) {
                 delay(1000)
@@ -327,11 +369,14 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 val currentUsageStats = permissionHelper.hasUsageStatsPermission()
                 val currentWriteSettings = permissionHelper.hasWriteSettingsPermission()
                 val currentSecureSettings = dnsManager.hasSecureSettingsPermission()
+                val currentTorchGlyphPermissions = torchGlyphManager.hasRequiredPermissions()
 
-                if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings || lastSecureSettings != currentSecureSettings) {
+                if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings ||
+                    lastSecureSettings != currentSecureSettings || lastTorchGlyphPermissions != currentTorchGlyphPermissions) {
                     updatePermissionBasedUI()
                     updatePermissionStatuses()
                     updateDNSPermissionStatus()
+                    updateTorchGlyphPermissionStatus()
 
                     if (lastUsageStats && !currentUsageStats) {
                         showToast(getString(R.string.data_tiles_disabled))
@@ -342,11 +387,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
                     if (lastSecureSettings && !currentSecureSettings) {
                         showToast("DNS tile disabled")
                     }
+                    if (lastTorchGlyphPermissions && !currentTorchGlyphPermissions) {
+                        showToast("Torch/Glyph tile disabled")
+                    }
                 }
 
                 lastUsageStats = currentUsageStats
                 lastWriteSettings = currentWriteSettings
                 lastSecureSettings = currentSecureSettings
+                lastTorchGlyphPermissions = currentTorchGlyphPermissions
             }
         }
     }
@@ -356,6 +405,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val hasUsageStats = permissionHelper.hasUsageStatsPermission()
         val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
         val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
+        val hasTorchGlyphPermissions = torchGlyphManager.hasRequiredPermissions()
 
         // Enable/disable data usage related controls
         binding.wifiTileSpinner.isEnabled = hasUsageStats
@@ -376,6 +426,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dnsAddButton.isEnabled = hasSecureSettings
         binding.dnsRemove2Button.isEnabled = hasSecureSettings
         binding.dnsRemove3Button.isEnabled = hasSecureSettings
+
+        // Enable/disable Torch/Glyph controls
+        binding.torchGlyphShowHeadingSwitch.isEnabled = hasTorchGlyphPermissions
     }
 
     private fun updatePermissionStatuses() {
@@ -428,6 +481,30 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dnsPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
     }
 
+    private fun updateTorchGlyphPermissionStatus() {
+        val binding = binding ?: return
+        val hasPermission = torchGlyphManager.hasRequiredPermissions()
+
+        binding.torchGlyphPermissionStatusText.text = if (hasPermission) {
+            getString(R.string.secure_settings_permission_enabled)
+        } else {
+            getString(R.string.torch_glyph_permission_message_full)
+        }
+
+        binding.torchGlyphPermissionStatusText.setTextColor(
+            if (hasPermission) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
+        )
+
+        binding.torchGlyphPermissionButton.text = if (hasPermission) {
+            getString(R.string.permission_granted_check)
+        } else {
+            getString(R.string.grant_secure_settings_permission)
+        }
+
+        binding.torchGlyphPermissionButton.isEnabled = !hasPermission
+        binding.torchGlyphPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
+    }
+
     private fun loadCurrentSettings() {
         val binding = binding ?: return
 
@@ -437,6 +514,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
         val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
         val showScreenTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
+        val showTorchGlyphInTitle = qsTileSettingsManager.getShowTorchGlyphInTitle()
         val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
 
         // Set spinner selections
@@ -457,6 +535,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.showChargeInTitleSwitch.isChecked = showChargeInTitle
         binding.showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
         binding.showScreenTimeoutInTitleSwitch.isChecked = showScreenTimeoutInTitle
+        binding.torchGlyphShowHeadingSwitch.isChecked = showTorchGlyphInTitle
 
         // Set design capacity
         if (designCapacity > 0) {
@@ -466,6 +545,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         updatePermissionBasedUI()
         updatePermissionStatuses()
         updateDNSPermissionStatus()
+        updateTorchGlyphPermissionStatus()
     }
 
     private fun saveSettings() {
@@ -496,6 +576,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager.saveShowChargeInTitle(binding.showChargeInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowBatteryHealthInTitle(binding.showBatteryHealthInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowScreenTimeoutInTitle(binding.showScreenTimeoutInTitleSwitch.isChecked)
+        qsTileSettingsManager.saveShowTorchGlyphInTitle(binding.torchGlyphShowHeadingSwitch.isChecked)
 
         if (designCapacity > 0) {
             qsTileSettingsManager.saveBatteryDesignCapacity(designCapacity)
@@ -505,9 +586,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Save DNS settings
         saveDNSSettings(binding)
 
+        // Save Torch/Glyph settings
+        saveTorchGlyphSettings(binding)
+
         // Trigger immediate tile updates after saving all settings
         triggerImmediateTileUpdates()
         triggerDNSTileUpdate()
+        triggerTorchGlyphTileUpdate()
 
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
         finish()
@@ -555,6 +640,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
         android.util.Log.d("QSTileSettings", "DNS settings saved. DNS tile enabled: $hasValidDNS")
     }
 
+    private fun saveTorchGlyphSettings(binding: ActivityQsTileSettingsBinding) {
+        // Save Torch/Glyph heading preference
+        torchGlyphManager.setShowHeading(binding.torchGlyphShowHeadingSwitch.isChecked)
+
+        // Enable Torch/Glyph tile if permissions are granted
+        val hasValidTorchGlyph = torchGlyphManager.hasRequiredPermissions()
+        torchGlyphManager.setTorchGlyphEnabled(hasValidTorchGlyph)
+
+        android.util.Log.d("QSTileSettings", "Torch/Glyph settings saved. Torch/Glyph tile enabled: $hasValidTorchGlyph")
+    }
+
     /**
      * Triggers immediate tile updates by sending broadcasts to all tile services
      */
@@ -600,6 +696,21 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 android.util.Log.d("QSTileSettings", "DNS tile update broadcast sent")
             } catch (e: Exception) {
                 android.util.Log.e("QSTileSettings", "Error sending DNS tile update broadcast", e)
+            }
+        }
+    }
+
+    private fun triggerTorchGlyphTileUpdate() {
+        lifecycleScope.launch {
+            try {
+                // Send broadcast for Torch/Glyph tile update
+                val torchGlyphUpdateIntent = Intent(TorchGlyphQSTileService.ACTION_TORCH_GLYPH_SETTINGS_UPDATED).apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(torchGlyphUpdateIntent)
+                android.util.Log.d("QSTileSettings", "Torch/Glyph tile update broadcast sent")
+            } catch (e: Exception) {
+                android.util.Log.e("QSTileSettings", "Error sending Torch/Glyph tile update broadcast", e)
             }
         }
     }

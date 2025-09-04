@@ -215,6 +215,21 @@
     <string name="command_copied">Command copied to clipboard</string>
     <string name="learn_more">Learn More</string>
 
+    <!-- Torch/Glyph Tile strings -->
+    <string name="torch_glyph">Torch/Glyph</string>
+    <string name="torch_glyph_heading">Torch/Glyph</string>
+    <string name="torch_glyph_tile_title">Torch/Glyph Tile</string>
+    <string name="show_torch_glyph_heading">Enable Tile Heading</string>
+    <string name="torch_glyph_description">Toggle between Torch and Glyph lights</string>
+    <string name="torch_glyph_permission_required">Permission Required</string>
+    <string name="torch_glyph_not_configured">Torch/Glyph Not Configured</string>
+    <string name="torch_glyph_permission_message_full">⚠ WRITE_SECURE_SETTINGS permission required for Torch/Glyph management</string>
+    <string name="torch_glyph_permission_message">Torch/Glyph switching requires WRITE_SECURE_SETTINGS permission to modify system torch and glyph settings. This permission can only be granted via ADB command:</string>
+    <string name="torch_glyph_state_off">Off</string>
+    <string name="torch_glyph_state_torch">Torch On</string>
+    <string name="torch_glyph_state_glyph">Glyphs On</string>
+    <string name="torch_glyph_state_change_failed">Failed to change torch/glyph state</string>
+
     <!-- ADB Instructions -->
     <string name="adb_instructions_title">How to Grant Permission via ADB</string>
     <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>
