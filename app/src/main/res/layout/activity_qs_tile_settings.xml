@@ -47,6 +47,15 @@
                 android:text="@string/data_usage_tiles_title"
                 android:textSize="@dimen/text_size_heading"
                 android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/data_usage_tiles_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/data_usage_tiles_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
             <LinearLayout
@@ -141,6 +150,237 @@
 
         </LinearLayout>
 
+        <!-- Screen Timeout Card -->
+        <LinearLayout
+            android:id="@+id/screen_timeout_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/screen_timeout_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/screen_timeout_tile_label"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/screen_timeout_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/screen_timeout_tile_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <LinearLayout
+                android:id="@+id/timeout_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_md">
+
+                <TextView
+                    android:id="@+id/timeout_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/show_screen_timeout_in_title"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/show_screen_timeout_in_title_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <!-- Write Settings Permission Status -->
+            <TextView
+                android:id="@+id/write_settings_status_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_small"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <Button
+                android:id="@+id/write_settings_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/open_write_settings"
+                android:textSize="@dimen/text_size_body"
+                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
+                android:paddingVertical="@dimen/button_padding_small_vertical" />
+
+        </LinearLayout>
+
+        <!-- Battery Tiles Card -->
+        <LinearLayout
+            android:id="@+id/battery_tiles_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/battery_tiles_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/battery_tiles_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/battery_tiles_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/battery_tiles_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <!-- Charge Cycles Section -->
+            <TextView
+                android:id="@+id/charge_tile_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/charge_tile_label"
+                android:textSize="@dimen/text_size_subheading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <LinearLayout
+                android:id="@+id/charge_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/charge_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/show_charge_cycles_in_title"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/show_charge_in_title_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <!-- Battery Health Section -->
+            <TextView
+                android:id="@+id/battery_health_tile_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/battery_health_tile_label"
+                android:textSize="@dimen/text_size_subheading"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <LinearLayout
+                android:id="@+id/health_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/health_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/show_battery_health_in_title"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/show_battery_health_in_title_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <!-- Design Capacity Input -->
+            <TextView
+                android:id="@+id/design_capacity_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/design_capacity_label"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_xs" />
+
+            <EditText
+                android:id="@+id/design_capacity_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:hint="@string/design_capacity_hint"
+                android:autofillHints="none"
+                android:paddingHorizontal="@dimen/input_padding_horizontal"
+                android:paddingVertical="@dimen/input_padding_vertical" />
+
+            <TextView
+                android:id="@+id/design_capacity_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/design_capacity_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingTop="@dimen/spacing_xs" />
+
+        </LinearLayout>
+
+        <!-- Advanced Tiles Header Section (Outside of cards) -->
+        <TextView
+            android:id="@+id/advanced_tiles_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/advanced_tiles_section_title"
+            android:textSize="@dimen/text_size_heading"
+            android:textStyle="bold"
+            android:paddingBottom="@dimen/spacing_sm"
+            android:layout_marginTop="@dimen/spacing_md" />
+
+        <TextView
+            android:id="@+id/advanced_tiles_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/advanced_tiles_permission_note"
+            android:textSize="@dimen/text_size_small"
+            android:alpha="0.8"
+            android:paddingBottom="@dimen/spacing_md" />
+
+        <!-- Secure Settings Permission Status -->
+        <TextView
+            android:id="@+id/secure_settings_permission_status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size_small"
+            android:paddingBottom="@dimen/spacing_md" />
+
+        <Button
+            android:id="@+id/secure_settings_permission_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/grant_secure_settings_permission"
+            android:textSize="@dimen/text_size_body"
+            android:paddingHorizontal="@dimen/button_padding_small_horizontal"
+            android:paddingVertical="@dimen/button_padding_small_vertical"
+            android:layout_marginBottom="@dimen/spacing_lg" />
+
         <!-- DNS Tile Card -->
         <LinearLayout
             android:id="@+id/dns_tile_card"
@@ -157,6 +397,15 @@
                 android:text="@string/dns_tile_title"
                 android:textSize="@dimen/text_size_heading"
                 android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/dns_tile_card_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dns_tile_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
             <LinearLayout
@@ -172,7 +421,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/show_dns_heading"
-                    android:textSize="@dimen/text_size_subheading" />
+                    android:textSize="@dimen/text_size_body" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/dns_show_heading_switch"
@@ -347,7 +596,7 @@
 
             </LinearLayout>
 
-            <!-- Add DNS Button - Positioned above description -->
+            <!-- Add DNS Button -->
             <Button
                 android:id="@+id/dns_add_button"
                 android:layout_width="wrap_content"
@@ -363,209 +612,18 @@
                 android:drawableStart="@drawable/ic_add"
                 android:drawablePadding="2dp"
                 android:gravity="center_vertical" />
+
             <TextView
-                android:id="@+id/dns_description"
+                android:id="@+id/dns_configuration_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/dns_description"
+                android:text="@string/dns_configuration_description"
                 android:textSize="@dimen/text_size_small"
                 android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
-            <!-- DNS Permission Status -->
-            <TextView
-                android:id="@+id/dns_permission_status_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <Button
-                android:id="@+id/dns_permission_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/grant_secure_settings_permission"
-                android:textSize="@dimen/text_size_body"
-                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_small_vertical" />
-
         </LinearLayout>
 
-        <!-- Battery Tiles Card -->
-        <LinearLayout
-            android:id="@+id/battery_tiles_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/card_background"
-            android:layout_marginBottom="@dimen/spacing_md">
-
-            <TextView
-                android:id="@+id/battery_tiles_card_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/battery_tiles_title"
-                android:textSize="@dimen/text_size_heading"
-                android:textStyle="bold"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <!-- Charge Cycles Section -->
-            <TextView
-                android:id="@+id/charge_tile_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/charge_tile_label"
-                android:textSize="@dimen/text_size_subheading"
-                android:textStyle="bold"
-                android:paddingBottom="@dimen/spacing_sm" />
-
-            <LinearLayout
-                android:id="@+id/charge_switch_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingBottom="@dimen/spacing_sm">
-
-                <TextView
-                    android:id="@+id/charge_switch_label"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/show_charge_cycles_in_title"
-                    android:textSize="@dimen/text_size_subheading" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/show_charge_in_title_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <!-- Battery Health Section -->
-            <TextView
-                android:id="@+id/battery_health_tile_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/battery_health_tile_label"
-                android:textSize="@dimen/text_size_subheading"
-                android:textStyle="bold"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_sm" />
-
-            <LinearLayout
-                android:id="@+id/health_switch_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingBottom="@dimen/spacing_sm">
-
-                <TextView
-                    android:id="@+id/health_switch_label"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/show_battery_health_in_title"
-                    android:textSize="@dimen/text_size_subheading" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/show_battery_health_in_title_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <!-- Design Capacity Input -->
-            <TextView
-                android:id="@+id/design_capacity_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/design_capacity_label"
-                android:textSize="@dimen/text_size_body"
-                android:textStyle="bold"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_xs" />
-
-            <EditText
-                android:id="@+id/design_capacity_edit_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:hint="@string/design_capacity_hint"
-                android:autofillHints="none"
-                android:paddingHorizontal="@dimen/input_padding_horizontal"
-                android:paddingVertical="@dimen/input_padding_vertical" />
-
-            <TextView
-                android:id="@+id/design_capacity_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/design_capacity_description"
-                android:textSize="@dimen/text_size_small"
-                android:alpha="0.7"
-                android:paddingTop="@dimen/spacing_xs" />
-
-        </LinearLayout>
-
-        <!-- Screen Timeout Card -->
-        <LinearLayout
-            android:id="@+id/screen_timeout_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/card_background"
-            android:layout_marginBottom="@dimen/spacing_lg">
-
-            <TextView
-                android:id="@+id/screen_timeout_card_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/screen_timeout_tile_label"
-                android:textSize="@dimen/text_size_heading"
-                android:textStyle="bold"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <LinearLayout
-                android:id="@+id/timeout_switch_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingBottom="@dimen/spacing_md">
-
-                <TextView
-                    android:id="@+id/timeout_switch_label"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/show_screen_timeout_in_title"
-                    android:textSize="@dimen/text_size_subheading" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/show_screen_timeout_in_title_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <!-- Write Settings Permission Status -->
-            <TextView
-                android:id="@+id/write_settings_status_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <Button
-                android:id="@+id/write_settings_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/open_write_settings"
-                android:textSize="@dimen/text_size_body"
-                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_small_vertical" />
-
-        </LinearLayout>
         <!-- Torch/Glyph Tile Card -->
         <LinearLayout
             android:id="@+id/torch_glyph_tile_card"
@@ -573,7 +631,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/card_background"
-            android:layout_marginBottom="@dimen/spacing_md">
+            android:layout_marginBottom="@dimen/spacing_lg">
 
             <TextView
                 android:id="@+id/torch_glyph_tile_card_title"
@@ -582,14 +640,22 @@
                 android:text="@string/torch_glyph_tile_title"
                 android:textSize="@dimen/text_size_heading"
                 android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/torch_glyph_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/torch_glyph_tile_detailed_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
             <LinearLayout
                 android:id="@+id/torch_glyph_heading_switch_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingBottom="@dimen/spacing_sm">
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/torch_glyph_heading_switch_label"
@@ -597,7 +663,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/show_torch_glyph_heading"
-                    android:textSize="@dimen/text_size_subheading" />
+                    android:textSize="@dimen/text_size_body" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/torch_glyph_show_heading_switch"
@@ -605,33 +671,6 @@
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/torch_glyph_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/torch_glyph_description"
-                android:textSize="@dimen/text_size_small"
-                android:alpha="0.7"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <!-- Torch/Glyph Permission Status -->
-            <TextView
-                android:id="@+id/torch_glyph_permission_status_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <Button
-                android:id="@+id/torch_glyph_permission_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/grant_secure_settings_permission"
-                android:textSize="@dimen/text_size_body"
-                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_small_vertical" />
 
         </LinearLayout>
 

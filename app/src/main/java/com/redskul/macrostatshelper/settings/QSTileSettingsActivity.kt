@@ -114,6 +114,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Setup Torch/Glyph section
         setupTorchGlyphSection(binding)
+
+        // Setup Advanced tiles section
+        setupAdvancedTilesSection(binding)
     }
 
     private fun setupSpinners(binding: ActivityQsTileSettingsBinding) {
@@ -192,14 +195,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
             requestWriteSettingsPermission()
         }
 
-        binding.dnsPermissionButton.setOnClickListener {
-            showDNSPermissionDialog()
-        }
-
-        binding.torchGlyphPermissionButton.setOnClickListener {
-            showTorchGlyphPermissionDialog()
-        }
-
         binding.qsSaveButton.setOnClickListener {
             saveSettings()
         }
@@ -233,12 +228,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         updateDNSAddButtonVisibility()
-        updateDNSPermissionStatus()
     }
 
     private fun setupTorchGlyphSection(binding: ActivityQsTileSettingsBinding) {
         binding.torchGlyphShowHeadingSwitch.isChecked = torchGlyphManager.getShowHeading()
-        updateTorchGlyphPermissionStatus()
+    }
+
+    private fun setupAdvancedTilesSection(binding: ActivityQsTileSettingsBinding) {
+        binding.secureSettingsPermissionButton.setOnClickListener {
+            showSecureSettingsPermissionDialog()
+        }
+        updateSecureSettingsPermissionStatus()
     }
 
     private fun setupDNSButtons(binding: ActivityQsTileSettingsBinding) {
@@ -289,31 +289,12 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dnsAddButton.visibility = if (allVisible) View.GONE else View.VISIBLE
     }
 
-    private fun showDNSPermissionDialog() {
+    private fun showSecureSettingsPermissionDialog() {
         val command = dnsManager.getADBCommand()
 
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.secure_settings_permission_title))
-            .setMessage(getString(R.string.dns_permission_message))
-            .setView(createCommandView(command))
-            .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
-                copyCommandToClipboard(command)
-            }
-            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setNeutralButton(getString(R.string.learn_more)) { _, _ ->
-                showADBInstructions()
-            }
-            .show()
-    }
-
-    private fun showTorchGlyphPermissionDialog() {
-        val command = torchGlyphManager.getADBCommand()
-
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.secure_settings_permission_title))
-            .setMessage(getString(R.string.torch_glyph_permission_message))
+            .setMessage(getString(R.string.secure_settings_permission_dialog_message))
             .setView(createCommandView(command))
             .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
                 copyCommandToClipboard(command)
@@ -361,7 +342,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
             var lastWriteSettings = permissionHelper.hasWriteSettingsPermission()
             var lastSecureSettings = dnsManager.hasSecureSettingsPermission()
-            var lastTorchGlyphPermissions = torchGlyphManager.hasRequiredPermissions()
 
             while (binding != null) {
                 delay(1000)
@@ -369,14 +349,12 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 val currentUsageStats = permissionHelper.hasUsageStatsPermission()
                 val currentWriteSettings = permissionHelper.hasWriteSettingsPermission()
                 val currentSecureSettings = dnsManager.hasSecureSettingsPermission()
-                val currentTorchGlyphPermissions = torchGlyphManager.hasRequiredPermissions()
 
                 if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings ||
-                    lastSecureSettings != currentSecureSettings || lastTorchGlyphPermissions != currentTorchGlyphPermissions) {
+                    lastSecureSettings != currentSecureSettings) {
                     updatePermissionBasedUI()
                     updatePermissionStatuses()
-                    updateDNSPermissionStatus()
-                    updateTorchGlyphPermissionStatus()
+                    updateSecureSettingsPermissionStatus()
 
                     if (lastUsageStats && !currentUsageStats) {
                         showToast(getString(R.string.data_tiles_disabled))
@@ -385,17 +363,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
                         showToast(getString(R.string.screen_timeout_disabled))
                     }
                     if (lastSecureSettings && !currentSecureSettings) {
-                        showToast("DNS tile disabled")
-                    }
-                    if (lastTorchGlyphPermissions && !currentTorchGlyphPermissions) {
-                        showToast("Torch/Glyph tile disabled")
+                        showToast(getString(R.string.advanced_tiles_disabled))
                     }
                 }
 
                 lastUsageStats = currentUsageStats
                 lastWriteSettings = currentWriteSettings
                 lastSecureSettings = currentSecureSettings
-                lastTorchGlyphPermissions = currentTorchGlyphPermissions
             }
         }
     }
@@ -405,7 +379,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val hasUsageStats = permissionHelper.hasUsageStatsPermission()
         val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
         val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
-        val hasTorchGlyphPermissions = torchGlyphManager.hasRequiredPermissions()
 
         // Enable/disable data usage related controls
         binding.wifiTileSpinner.isEnabled = hasUsageStats
@@ -415,7 +388,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Enable/disable screen timeout controls
         binding.showScreenTimeoutInTitleSwitch.isEnabled = hasWriteSettings
 
-        // Enable/disable DNS controls
+        // Enable/disable advanced tiles controls
         binding.dns1NameEditText.isEnabled = hasSecureSettings
         binding.dns1UrlEditText.isEnabled = hasSecureSettings
         binding.dns2NameEditText.isEnabled = hasSecureSettings
@@ -426,9 +399,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dnsAddButton.isEnabled = hasSecureSettings
         binding.dnsRemove2Button.isEnabled = hasSecureSettings
         binding.dnsRemove3Button.isEnabled = hasSecureSettings
-
-        // Enable/disable Torch/Glyph controls
-        binding.torchGlyphShowHeadingSwitch.isEnabled = hasTorchGlyphPermissions
+        binding.torchGlyphShowHeadingSwitch.isEnabled = hasSecureSettings
     }
 
     private fun updatePermissionStatuses() {
@@ -457,52 +428,28 @@ class QSTileSettingsActivity : AppCompatActivity() {
         )
     }
 
-    private fun updateDNSPermissionStatus() {
+    private fun updateSecureSettingsPermissionStatus() {
         val binding = binding ?: return
         val hasPermission = dnsManager.hasSecureSettingsPermission()
 
-        binding.dnsPermissionStatusText.text = if (hasPermission) {
+        binding.secureSettingsPermissionStatusText.text = if (hasPermission) {
             getString(R.string.secure_settings_permission_enabled)
         } else {
-            getString(R.string.dns_permission_message_full)
+            getString(R.string.secure_settings_permission_disabled)
         }
 
-        binding.dnsPermissionStatusText.setTextColor(
+        binding.secureSettingsPermissionStatusText.setTextColor(
             if (hasPermission) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
         )
 
-        binding.dnsPermissionButton.text = if (hasPermission) {
+        binding.secureSettingsPermissionButton.text = if (hasPermission) {
             getString(R.string.permission_granted_check)
         } else {
             getString(R.string.grant_secure_settings_permission)
         }
 
-        binding.dnsPermissionButton.isEnabled = !hasPermission
-        binding.dnsPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
-    }
-
-    private fun updateTorchGlyphPermissionStatus() {
-        val binding = binding ?: return
-        val hasPermission = torchGlyphManager.hasRequiredPermissions()
-
-        binding.torchGlyphPermissionStatusText.text = if (hasPermission) {
-            getString(R.string.secure_settings_permission_enabled)
-        } else {
-            getString(R.string.torch_glyph_permission_message_full)
-        }
-
-        binding.torchGlyphPermissionStatusText.setTextColor(
-            if (hasPermission) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-        )
-
-        binding.torchGlyphPermissionButton.text = if (hasPermission) {
-            getString(R.string.permission_granted_check)
-        } else {
-            getString(R.string.grant_secure_settings_permission)
-        }
-
-        binding.torchGlyphPermissionButton.isEnabled = !hasPermission
-        binding.torchGlyphPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
+        binding.secureSettingsPermissionButton.isEnabled = !hasPermission
+        binding.secureSettingsPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
     }
 
     private fun loadCurrentSettings() {
@@ -544,8 +491,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         updatePermissionBasedUI()
         updatePermissionStatuses()
-        updateDNSPermissionStatus()
-        updateTorchGlyphPermissionStatus()
+        updateSecureSettingsPermissionStatus()
     }
 
     private fun saveSettings() {
@@ -716,7 +662,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {
-        AlertDialog.Builder(this)
+        androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle(getString(R.string.permission_required_title))
             .setMessage(getString(R.string.permission_required_settings_dialog_message, featureName, permissionName))
             .setPositiveButton(getString(R.string.ok_button)) { dialog, _ -> dialog.dismiss() }
