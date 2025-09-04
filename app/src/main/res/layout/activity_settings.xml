@@ -22,23 +22,13 @@
             android:textStyle="bold"
             android:paddingBottom="@dimen/spacing_xl" />
 
-        <TextView
-            android:id="@+id/settings_instruction_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_instruction"
-            android:textSize="@dimen/text_size_body"
-            android:alpha="0.8"
-            android:paddingBottom="@dimen/spacing_lg" />
-
-        <!-- Data Usage Settings Card -->
         <LinearLayout
             android:id="@+id/data_usage_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/card_background"
-            android:layout_marginBottom="@dimen/spacing_md">
+            android:layout_marginBottom="@dimen/spacing_lg">
 
             <TextView
                 android:id="@+id/data_usage_card_title"
@@ -49,83 +39,7 @@
                 android:textStyle="bold"
                 android:paddingBottom="@dimen/spacing_md" />
 
-            <!-- WiFi Section -->
-            <TextView
-                android:id="@+id/wifi_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/wifi_usage_label"
-                android:textSize="@dimen/text_size_subheading"
-                android:textStyle="bold"
-                android:paddingBottom="@dimen/spacing_sm" />
-
-            <CheckBox
-                android:id="@+id/wifi_daily_checkbox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/daily" />
-
-            <CheckBox
-                android:id="@+id/wifi_weekly_checkbox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/weekly" />
-
-            <CheckBox
-                android:id="@+id/wifi_monthly_checkbox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/monthly" />
-
-            <!-- Mobile Section -->
-            <TextView
-                android:id="@+id/mobile_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/mobile_data_usage_label"
-                android:textSize="@dimen/text_size_subheading"
-                android:textStyle="bold"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_sm" />
-
-            <CheckBox
-                android:id="@+id/mobile_daily_checkbox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/daily" />
-
-            <CheckBox
-                android:id="@+id/mobile_weekly_checkbox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/weekly" />
-
-            <CheckBox
-                android:id="@+id/mobile_monthly_checkbox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/monthly" />
-
-        </LinearLayout>
-
-        <!-- Notification Settings Card -->
-        <LinearLayout
-            android:id="@+id/notification_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/card_background"
-            android:layout_marginBottom="@dimen/spacing_lg">
-
-            <TextView
-                android:id="@+id/notification_card_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/notification_settings_title"
-                android:textSize="@dimen/text_size_heading"
-                android:textStyle="bold"
-                android:paddingBottom="@dimen/spacing_md" />
-
+            <!-- Notification Toggle Section -->
             <LinearLayout
                 android:id="@+id/notification_switch_layout"
                 android:layout_width="match_parent"
@@ -155,7 +69,86 @@
                 android:text="@string/notification_description"
                 android:textSize="@dimen/text_size_small"
                 android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_xl" />
+
+            <!-- WiFi Section -->
+            <TextView
+                android:id="@+id/wifi_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wifi_usage_label"
+                android:textSize="@dimen/text_size_subheading"
+                android:textStyle="bold"
                 android:paddingBottom="@dimen/spacing_sm" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/wifi_daily_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/daily" />
+
+                <CheckBox
+                    android:id="@+id/wifi_weekly_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/weekly" />
+
+                <CheckBox
+                    android:id="@+id/wifi_monthly_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/monthly" />
+
+            </LinearLayout>
+
+
+            <!-- Mobile Section -->
+            <TextView
+                android:id="@+id/mobile_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mobile_data_usage_label"
+                android:textSize="@dimen/text_size_subheading"
+                android:textStyle="bold"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/mobile_daily_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/daily" />
+
+                <CheckBox
+                    android:id="@+id/mobile_weekly_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/weekly" />
+
+                <CheckBox
+                    android:id="@+id/mobile_monthly_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/monthly" />
+
+            </LinearLayout>
+
 
             <TextView
                 android:id="@+id/notification_note"
@@ -164,7 +157,7 @@
                 android:text="@string/notification_disabled_note"
                 android:textSize="@dimen/text_size_caption"
                 android:alpha="0.6"
-                android:paddingBottom="@dimen/spacing_md" />
+                android:paddingTop="@dimen/spacing_lg"/>
 
             <!-- Permission Status -->
             <TextView
@@ -172,8 +165,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md" />
+                android:paddingTop="@dimen/spacing_xs"/>
+
 
             <Button
                 android:id="@+id/usage_access_button"
@@ -182,7 +175,7 @@
                 android:text="@string/open_usage_access_settings"
                 android:textSize="@dimen/text_size_body"
                 android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_small_vertical" />
+                android:paddingVertical="@dimen/button_padding_extra_small_vertical"/>
 
         </LinearLayout>
 

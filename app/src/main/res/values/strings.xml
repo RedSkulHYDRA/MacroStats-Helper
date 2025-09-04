@@ -39,7 +39,6 @@
 
     <!-- SettingsActivity strings -->
     <string name="settings_title">Display Settings</string>
-    <string name="settings_instruction">Select display preferences:</string>
     <string name="wifi_usage_label">WiFi Usage:</string>
     <string name="mobile_data_usage_label">Mobile Data Usage:</string>
     <string name="daily">Daily</string>

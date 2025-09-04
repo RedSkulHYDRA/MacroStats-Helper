@@ -39,6 +39,7 @@
     <dimen name="button_padding_horizontal">@dimen/size_xl</dimen>     <!-- 32dp -->
     <dimen name="button_padding_vertical">@dimen/size_md</dimen>       <!-- 16dp -->
     <dimen name="button_padding_small_horizontal">@dimen/size_md</dimen>  <!-- 16dp -->
+    <dimen name="button_padding_extra_small_vertical">@dimen/size_xs</dimen>    <!-- 4dp -->
     <dimen name="button_padding_small_vertical">@dimen/size_sm</dimen>    <!-- 8dp -->
 
     <!-- Text Sizes (Semantic) -->

@@ -168,6 +168,9 @@ class SettingsActivity : AppCompatActivity() {
         val binding = binding ?: return
         val settings = settingsManager.getDisplaySettings()
 
+        // Set notification switch (moved to top)
+        binding.notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
+
         // Set WiFi checkboxes
         binding.wifiDailyCheckbox.isChecked = settings.wifiTimePeriods.contains(TimePeriod.DAILY)
         binding.wifiWeeklyCheckbox.isChecked = settings.wifiTimePeriods.contains(TimePeriod.WEEKLY)
@@ -177,9 +180,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.mobileDailyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.DAILY)
         binding.mobileWeeklyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.WEEKLY)
         binding.mobileMonthlyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.MONTHLY)
-
-        // Set notification switch
-        binding.notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
 
         updatePermissionBasedUI()
         updatePermissionStatus()
