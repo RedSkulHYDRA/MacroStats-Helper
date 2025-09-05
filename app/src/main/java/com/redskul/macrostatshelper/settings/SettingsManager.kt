@@ -155,7 +155,6 @@ class SettingsManager(private val context: Context) {
 
     fun getFormattedUsageText(usageData: UsageData): Pair<String, String> {
         val settings = getDisplaySettings()
-
         val wifiParts = mutableListOf<String>()
         val mobileParts = mutableListOf<String>()
 
@@ -166,8 +165,12 @@ class SettingsManager(private val context: Context) {
                 TimePeriod.WEEKLY -> usageData.wifiWeekly
                 TimePeriod.MONTHLY -> usageData.wifiMonthly
             }
-            val periodName = period.toDisplayString()
-            wifiParts.add("$value ($periodName)")
+            val periodPrefix = when (period) {
+                TimePeriod.DAILY -> context.getString(R.string.daily_prefix)
+                TimePeriod.WEEKLY -> context.getString(R.string.weekly_prefix)
+                TimePeriod.MONTHLY -> context.getString(R.string.monthly_prefix)
+            }
+            wifiParts.add("$periodPrefix $value")
         }
 
         // Build Mobile parts
@@ -177,8 +180,12 @@ class SettingsManager(private val context: Context) {
                 TimePeriod.WEEKLY -> usageData.mobileWeekly
                 TimePeriod.MONTHLY -> usageData.mobileMonthly
             }
-            val periodName = period.toDisplayString()
-            mobileParts.add("$value ($periodName)")
+            val periodPrefix = when (period) {
+                TimePeriod.DAILY -> context.getString(R.string.daily_prefix)
+                TimePeriod.WEEKLY -> context.getString(R.string.weekly_prefix)
+                TimePeriod.MONTHLY -> context.getString(R.string.monthly_prefix)
+            }
+            mobileParts.add("$periodPrefix $value")
         }
 
         // Create short text
@@ -191,25 +198,23 @@ class SettingsManager(private val context: Context) {
         }
 
         val shortText = if (shortTextParts.isNotEmpty()) {
-            shortTextParts.joinToString(" | ")
+            shortTextParts.joinToString()
         } else {
             context.getString(R.string.no_data_selected)
         }
 
-        // Create expanded text
+        // Create expanded text with new compact format
         val expandedText = buildString {
             if (wifiParts.isNotEmpty()) {
-                appendLine(context.getString(R.string.wifi_usage_label))
-                wifiParts.forEach { part ->
-                    appendLine("  $part")
-                }
-                if (mobileParts.isNotEmpty()) appendLine()
+                appendLine("${context.getString(R.string.wifi_usage_label)}")
+                appendLine(wifiParts.joinToString(" | "))
             }
             if (mobileParts.isNotEmpty()) {
-                appendLine(context.getString(R.string.mobile_data_usage_label))
-                mobileParts.forEach { part ->
-                    appendLine("  $part")
+                if (wifiParts.isNotEmpty()) {
+                    appendLine() // Add blank line between sections
                 }
+                appendLine("${context.getString(R.string.mobile_data_usage_label)}")
+                appendLine(mobileParts.joinToString(" | "))
             }
             if (wifiParts.isEmpty() && mobileParts.isEmpty()) {
                 appendLine(context.getString(R.string.no_data_periods_selected))
