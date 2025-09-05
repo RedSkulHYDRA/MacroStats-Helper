@@ -95,6 +95,18 @@
             </intent-filter>
         </service>
 
+        <!-- Refresh Rate QS Tile Service -->
+        <service
+            android:name=".refreshrate.RefreshRateQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_refresh_rate"
+            android:label="@string/refresh_rate"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <!-- Boot Receiver -->
         <receiver
             android:name=".core.BootReceiver"

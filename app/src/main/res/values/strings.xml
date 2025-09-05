@@ -243,6 +243,20 @@
     <string name="weekly_prefix">W:</string>
     <string name="monthly_prefix">M:</string>
 
+    <!-- Refresh Rate Tile strings -->
+    <string name="refresh_rate">Refresh Rate</string>
+    <string name="refresh_rate_heading">Refresh Rate</string>
+    <string name="refresh_rate_tile_title">Refresh Rate Tile</string>
+    <string name="show_refresh_rate_heading">Enable Tile Heading</string>
+    <string name="refresh_rate_description">Toggle between Dynamic, High, and Standard refresh rate modes</string>
+    <string name="refresh_rate_permission_required">Permission Required</string>
+    <string name="refresh_rate_not_configured">Refresh Rate Not Configured</string>
+    <string name="refresh_rate_state_dynamic">Dynamic</string>
+    <string name="refresh_rate_state_high">High</string>
+    <string name="refresh_rate_state_standard">Standard</string>
+    <string name="refresh_rate_state_change_failed">Failed to change refresh rate state</string>
+    <string name="refresh_rate_tile_detailed_description">Switch between Dynamic (adaptive), High (120Hz), and Standard (60Hz) refresh rate modes. Cycles between Dynamic → High → Standard → Dynamic states.</string>
+
     <!-- ADB Instructions -->
     <string name="adb_instructions_title">How to Grant Permission via ADB</string>
     <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>

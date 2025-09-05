@@ -6,6 +6,7 @@ import android.service.quicksettings.Tile
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.TimePeriod
 import com.redskul.macrostatshelper.torchglyph.TorchGlyphManager
+import com.redskul.macrostatshelper.refreshrate.RefreshRateManager
 
 data class TileConfiguration(
     val icon: Icon,
@@ -90,6 +91,16 @@ object TileConfigHelper {
             iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = if (state == TorchGlyphManager.TorchGlyphState.OFF) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
+        )
+    }
+
+    fun getRefreshRateTileConfig(context: Context, state: RefreshRateManager.RefreshRateState): TileConfiguration {
+        val iconRes = R.drawable.ic_refresh_rate
+        return TileConfiguration(
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
+            defaultState = Tile.STATE_ACTIVE
         )
     }
 
@@ -220,6 +231,30 @@ object TileConfigHelper {
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
 
             tile.label = if (prefix.isNotEmpty()) "$prefix $timeoutValue" else timeoutValue
+            tile.subtitle = null
+        }
+    }
+
+    fun applyRefreshRateConfigToTile(
+        tile: Tile,
+        config: TileConfiguration,
+        stateText: String,
+        showRefreshRateInTitle: Boolean = false,
+        context: Context? = null
+    ) {
+        tile.state = config.defaultState
+        tile.icon = config.icon
+
+        if (showRefreshRateInTitle && context != null) {
+            // Show "Refresh Rate" in title, state as subtitle
+            tile.label = context.getString(R.string.refresh_rate_heading)
+            tile.subtitle = stateText
+        } else {
+            // Show state directly in title with prefix if short enough
+            val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
+
+            tile.label = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
             tile.subtitle = null
         }
     }

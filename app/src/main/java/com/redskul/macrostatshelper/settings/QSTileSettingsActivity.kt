@@ -25,6 +25,8 @@ import com.redskul.macrostatshelper.datausage.DataUsageWorker
 import com.redskul.macrostatshelper.dns.DNSManager
 import com.redskul.macrostatshelper.torchglyph.TorchGlyphManager
 import com.redskul.macrostatshelper.torchglyph.TorchGlyphQSTileService
+import com.redskul.macrostatshelper.refreshrate.RefreshRateManager
+import com.redskul.macrostatshelper.refreshrate.RefreshRateQSTileService
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent
@@ -41,6 +43,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var dnsManager: DNSManager
     private lateinit var torchGlyphManager: TorchGlyphManager
+    private lateinit var refreshRateManager: RefreshRateManager
     private var binding: ActivityQsTileSettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +62,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         permissionHelper = PermissionHelper(this)
         dnsManager = DNSManager(this)
         torchGlyphManager = TorchGlyphManager(this)
+        refreshRateManager = RefreshRateManager(this)
 
         setupWindowInsets()
         setupUI()
@@ -114,6 +118,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Setup Torch/Glyph section
         setupTorchGlyphSection(binding)
+
+        // Setup Refresh Rate section
+        setupRefreshRateSection(binding)
 
         // Setup Advanced tiles section
         setupAdvancedTilesSection(binding)
@@ -184,6 +191,12 @@ class QSTileSettingsActivity : AppCompatActivity() {
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             triggerTorchGlyphTileUpdate()
         }
+
+        // Refresh Rate heading switch
+        binding.refreshRateShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerRefreshRateTileUpdate()
+        }
     }
 
     private fun setupButtons(binding: ActivityQsTileSettingsBinding) {
@@ -232,6 +245,10 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     private fun setupTorchGlyphSection(binding: ActivityQsTileSettingsBinding) {
         binding.torchGlyphShowHeadingSwitch.isChecked = torchGlyphManager.getShowHeading()
+    }
+
+    private fun setupRefreshRateSection(binding: ActivityQsTileSettingsBinding) {
+        binding.refreshRateShowHeadingSwitch.isChecked = refreshRateManager.getShowHeading()
     }
 
     private fun setupAdvancedTilesSection(binding: ActivityQsTileSettingsBinding) {
@@ -400,6 +417,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dnsRemove2Button.isEnabled = hasSecureSettings
         binding.dnsRemove3Button.isEnabled = hasSecureSettings
         binding.torchGlyphShowHeadingSwitch.isEnabled = hasSecureSettings
+        binding.refreshRateShowHeadingSwitch.isEnabled = hasSecureSettings
     }
 
     private fun updatePermissionStatuses() {
@@ -462,6 +480,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
         val showScreenTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
         val showTorchGlyphInTitle = qsTileSettingsManager.getShowTorchGlyphInTitle()
+        val showRefreshRateInTitle = qsTileSettingsManager.getShowRefreshRateInTitle()
         val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
 
         // Set spinner selections
@@ -483,6 +502,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
         binding.showScreenTimeoutInTitleSwitch.isChecked = showScreenTimeoutInTitle
         binding.torchGlyphShowHeadingSwitch.isChecked = showTorchGlyphInTitle
+        binding.refreshRateShowHeadingSwitch.isChecked = showRefreshRateInTitle
 
         // Set design capacity
         if (designCapacity > 0) {
@@ -523,6 +543,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager.saveShowBatteryHealthInTitle(binding.showBatteryHealthInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowScreenTimeoutInTitle(binding.showScreenTimeoutInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowTorchGlyphInTitle(binding.torchGlyphShowHeadingSwitch.isChecked)
+        qsTileSettingsManager.saveShowRefreshRateInTitle(binding.refreshRateShowHeadingSwitch.isChecked)
 
         if (designCapacity > 0) {
             qsTileSettingsManager.saveBatteryDesignCapacity(designCapacity)
@@ -535,10 +556,14 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Save Torch/Glyph settings
         saveTorchGlyphSettings(binding)
 
+        // Save Refresh Rate settings
+        saveRefreshRateSettings(binding)
+
         // Trigger immediate tile updates after saving all settings
         triggerImmediateTileUpdates()
         triggerDNSTileUpdate()
         triggerTorchGlyphTileUpdate()
+        triggerRefreshRateTileUpdate()
 
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
         finish()
@@ -595,6 +620,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
         torchGlyphManager.setTorchGlyphEnabled(hasValidTorchGlyph)
 
         android.util.Log.d("QSTileSettings", "Torch/Glyph settings saved. Torch/Glyph tile enabled: $hasValidTorchGlyph")
+    }
+
+    private fun saveRefreshRateSettings(binding: ActivityQsTileSettingsBinding) {
+        // Save Refresh Rate heading preference
+        refreshRateManager.setShowHeading(binding.refreshRateShowHeadingSwitch.isChecked)
+
+        // Enable Refresh Rate tile if permissions are granted
+        val hasValidRefreshRate = refreshRateManager.hasRequiredPermissions()
+        refreshRateManager.setRefreshRateEnabled(hasValidRefreshRate)
+
+        android.util.Log.d("QSTileSettings", "Refresh Rate settings saved. Refresh Rate tile enabled: $hasValidRefreshRate")
     }
 
     /**
@@ -657,6 +693,21 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 android.util.Log.d("QSTileSettings", "Torch/Glyph tile update broadcast sent")
             } catch (e: Exception) {
                 android.util.Log.e("QSTileSettings", "Error sending Torch/Glyph tile update broadcast", e)
+            }
+        }
+    }
+
+    private fun triggerRefreshRateTileUpdate() {
+        lifecycleScope.launch {
+            try {
+                // Send broadcast for Refresh Rate tile update
+                val refreshRateUpdateIntent = Intent(RefreshRateQSTileService.ACTION_REFRESH_RATE_SETTINGS_UPDATED).apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(refreshRateUpdateIntent)
+                android.util.Log.d("QSTileSettings", "Refresh Rate tile update broadcast sent")
+            } catch (e: Exception) {
+                android.util.Log.e("QSTileSettings", "Error sending Refresh Rate tile update broadcast", e)
             }
         }
     }
