@@ -20,8 +20,8 @@ class AutoSyncManager(private val context: Context) {
     companion object {
         private const val KEY_AUTOSYNC_ENABLED = "autosync_enabled"
         private const val KEY_AUTOSYNC_DELAY = "autosync_delay"
-        const val DEFAULT_DELAY_MINUTES = 5
-        val ALLOWED_DELAYS: List<Int> = listOf(1, 5, 10, 20, 30)
+        const val DEFAULT_DELAY_MINUTES = 15
+        val ALLOWED_DELAYS: List<Int> = listOf(15, 30, 45, 60)
     }
 
     /**
@@ -113,6 +113,11 @@ class AutoSyncManager(private val context: Context) {
      * @return list of formatted delay option strings
      */
     fun getDelayOptions(): List<String> {
-        return ALLOWED_DELAYS.map { "${it} minute${if (it > 1) "s" else ""}" }
+        return ALLOWED_DELAYS.map { minutes ->
+            when (minutes) {
+                60 -> "1 hour"
+                else -> "$minutes minutes"
+            }
+        }
     }
 }

@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit
  * Monitors device lock/unlock events and automatically toggles sync settings after a configured delay.
  *
  * Updated to use:
- * - Foreground service for delays ≤ 15 minutes (precise timing)
- * - WorkManager for delays > 15 minutes (reliable background execution)
+ * - Foreground service for 15-minute delay (precise timing)
+ * - WorkManager for delays > 15 minutes (30, 45, 60 minutes - reliable background execution)
  */
 class AutoSyncAccessibilityService : AccessibilityService() {
 
@@ -167,7 +167,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         val delayMs = delayMinutes * 60 * 1000L
 
         Log.d(TAG, "Scheduling autosync turn-off in $delayMinutes minutes using ${
-            if (delayMinutes <= 15) "ForegroundService" else "WorkManager"
+            if (delayMinutes == 15) "ForegroundService" else "WorkManager"
         }")
 
         // Cancel any existing scheduled operations
@@ -184,11 +184,11 @@ class AutoSyncAccessibilityService : AccessibilityService() {
     private fun scheduleAutoSyncDisable(delayMs: Long) {
         val delayMinutes = delayMs / (60 * 1000L)
 
-        if (delayMinutes <= 15) {
-            // Use foreground service for short delays (≤ 15 minutes)
+        if (delayMinutes == 15L) {
+            // Use foreground service for 15-minute delay (precise timing)
             scheduleWithForegroundService(delayMs)
         } else {
-            // Use WorkManager for longer delays (> 15 minutes)
+            // Use WorkManager for longer delays (30, 45, 60 minutes)
             scheduleWithWorkManager(delayMs)
         }
 
