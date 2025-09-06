@@ -259,4 +259,11 @@
     <string name="last_month_usage_heading">Last Month\'s Usage:</string>
     <string name="last_month_wifi_label">Wifi:</string>
     <string name="last_month_data_label">Data:</string>
+
+    <!-- Vibration Settings -->
+    <string name="vibration_settings_title">Vibration Settings</string>
+    <string name="enable_tile_vibration">Enable QS Tile Vibration</string>
+    <string name="tile_vibration_description">Provide haptic feedback when Quick Settings tiles are tapped</string>
+    <string name="vibration_disabled_no_hardware">Vibration disabled - device has no vibrator</string>
+
 </resources>

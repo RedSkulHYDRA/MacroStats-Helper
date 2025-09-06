@@ -7,14 +7,14 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.service.quicksettings.Tile
-import android.service.quicksettings.TileService
+import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
-class TorchGlyphQSTileService : TileService() {
+class TorchGlyphQSTileService : BaseQSTileService() {
 
     private lateinit var torchGlyphManager: TorchGlyphManager
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -57,8 +57,7 @@ class TorchGlyphQSTileService : TileService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    override fun onClick() {
-        super.onClick()
+    override fun onTileClick() {
 
         if (!torchGlyphManager.hasRequiredPermissions()) {
             // Request permission by opening settings

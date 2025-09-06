@@ -7,7 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.service.quicksettings.Tile
-import android.service.quicksettings.TileService
+import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
@@ -15,7 +15,7 @@ import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
-class AODQSTileService : TileService() {
+class AODQSTileService : BaseQSTileService() {
 
     private lateinit var aodManager: AODManager
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
@@ -60,8 +60,7 @@ class AODQSTileService : TileService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    override fun onClick() {
-        super.onClick()
+    override fun onTileClick() {
 
         if (!aodManager.hasRequiredPermissions()) {
             // Request permission by opening settings

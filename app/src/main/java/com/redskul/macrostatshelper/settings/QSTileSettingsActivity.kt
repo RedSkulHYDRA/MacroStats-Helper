@@ -30,6 +30,7 @@ import com.redskul.macrostatshelper.refreshrate.RefreshRateQSTileService
 import com.redskul.macrostatshelper.aod.AODManager
 import com.redskul.macrostatshelper.aod.AODQSTileService
 import com.redskul.macrostatshelper.utils.PermissionHelper
+import com.redskul.macrostatshelper.utils.VibrationManager // NEW IMPORT
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent
 import android.provider.Settings
@@ -47,6 +48,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var torchGlyphManager: TorchGlyphManager
     private lateinit var refreshRateManager: RefreshRateManager
     private lateinit var aodManager: AODManager
+    private lateinit var vibrationManager: VibrationManager // NEW
     private var binding: ActivityQsTileSettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +69,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         torchGlyphManager = TorchGlyphManager(this)
         refreshRateManager = RefreshRateManager(this)
         aodManager = AODManager(this)
+        vibrationManager = VibrationManager(this) // NEW
 
         setupWindowInsets()
         setupUI()
@@ -78,6 +81,207 @@ class QSTileSettingsActivity : AppCompatActivity() {
         super.onDestroy()
         binding = null
     }
+
+    // ... [Keep all existing methods unchanged] ...
+
+    // MODIFY the setupSwitches method to add vibration switch handling
+    private fun setupSwitches(binding: ActivityQsTileSettingsBinding) {
+        // Setup permission-required switches
+        binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
+                binding.showPeriodInTitleSwitch.isChecked = false
+                showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
+                return@setOnCheckedChangeListener
+            }
+            triggerImmediateTileUpdates()
+        }
+
+        binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            if (isChecked && !permissionHelper.hasWriteSettingsPermission()) {
+                binding.showScreenTimeoutInTitleSwitch.isChecked = false
+                showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
+                return@setOnCheckedChangeListener
+            }
+            triggerImmediateTileUpdates()
+        }
+
+        // Add haptic feedback to other switches and immediate tile updates
+        binding.showChargeInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerImmediateTileUpdates()
+        }
+        binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerImmediateTileUpdates()
+        }
+
+        // DNS heading switch
+        binding.dnsShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerDNSTileUpdate()
+        }
+
+        // Torch/Glyph heading switch
+        binding.torchGlyphShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerTorchGlyphTileUpdate()
+        }
+
+        // Refresh Rate heading switch
+        binding.refreshRateShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerRefreshRateTileUpdate()
+        }
+
+        // AOD heading switch
+        binding.aodShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerAODTileUpdate()
+        }
+
+        // NEW: Vibration switch
+        binding.vibrationEnabledSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+
+            if (!vibrationManager.hasVibrator() && isChecked) {
+                // Device doesn't have vibrator, disable the switch and show message
+                binding.vibrationEnabledSwitch.isChecked = false
+                showToast(getString(R.string.vibration_disabled_no_hardware))
+                return@setOnCheckedChangeListener
+            }
+
+            vibrationManager.setVibrationEnabled(isChecked)
+
+            // Provide immediate feedback if vibration is being enabled
+            if (isChecked) {
+                vibrationManager.vibrateForTileClick()
+            }
+        }
+    }
+
+    // MODIFY the loadCurrentSettings method to include vibration setting
+    private fun loadCurrentSettings() {
+        val binding = binding ?: return
+
+        val wifiPeriod = qsTileSettingsManager.getWiFiTilePeriod()
+        val mobilePeriod = qsTileSettingsManager.getMobileTilePeriod()
+        val showPeriodInTitle = qsTileSettingsManager.getShowPeriodInTitle()
+        val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
+        val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
+        val showScreenTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
+        val showTorchGlyphInTitle = qsTileSettingsManager.getShowTorchGlyphInTitle()
+        val showRefreshRateInTitle = qsTileSettingsManager.getShowRefreshRateInTitle()
+        val showAODInTitle = qsTileSettingsManager.getShowAODInTitle()
+        val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
+        val vibrationEnabled = vibrationManager.isVibrationEnabled() // NEW
+
+        // Set spinner selections
+        binding.wifiTileSpinner.setSelection(when (wifiPeriod) {
+            TimePeriod.DAILY -> 0
+            TimePeriod.WEEKLY -> 1
+            TimePeriod.MONTHLY -> 2
+        })
+
+        binding.mobileTileSpinner.setSelection(when (mobilePeriod) {
+            TimePeriod.DAILY -> 0
+            TimePeriod.WEEKLY -> 1
+            TimePeriod.MONTHLY -> 2
+        })
+
+        // Set switch states
+        binding.showPeriodInTitleSwitch.isChecked = showPeriodInTitle
+        binding.showChargeInTitleSwitch.isChecked = showChargeInTitle
+        binding.showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
+        binding.showScreenTimeoutInTitleSwitch.isChecked = showScreenTimeoutInTitle
+        binding.torchGlyphShowHeadingSwitch.isChecked = showTorchGlyphInTitle
+        binding.refreshRateShowHeadingSwitch.isChecked = showRefreshRateInTitle
+        binding.aodShowHeadingSwitch.isChecked = showAODInTitle
+        binding.vibrationEnabledSwitch.isChecked = vibrationEnabled // NEW
+
+        // NEW: Disable vibration switch if device has no vibrator
+        if (!vibrationManager.hasVibrator()) {
+            binding.vibrationEnabledSwitch.isEnabled = false
+            binding.vibrationEnabledSwitch.isChecked = false
+            binding.vibrationDescription.text = getString(R.string.vibration_disabled_no_hardware)
+        }
+
+        // Set design capacity
+        if (designCapacity > 0) {
+            binding.designCapacityEditText.setText(designCapacity.toString())
+        }
+
+        updatePermissionBasedUI()
+        updatePermissionStatuses()
+        updateSecureSettingsPermissionStatus()
+    }
+
+    // MODIFY the saveSettings method to include vibration setting
+    private fun saveSettings() {
+        val binding = binding ?: return
+
+        // Get spinner selections
+        val wifiPeriod = when (binding.wifiTileSpinner.selectedItemPosition) {
+            0 -> TimePeriod.DAILY
+            1 -> TimePeriod.WEEKLY
+            2 -> TimePeriod.MONTHLY
+            else -> TimePeriod.DAILY
+        }
+
+        val mobilePeriod = when (binding.mobileTileSpinner.selectedItemPosition) {
+            0 -> TimePeriod.DAILY
+            1 -> TimePeriod.WEEKLY
+            2 -> TimePeriod.MONTHLY
+            else -> TimePeriod.DAILY
+        }
+
+        // Get design capacity
+        val designCapacity = binding.designCapacityEditText.text.toString().toIntOrNull() ?: 0
+
+        // Save all existing settings
+        qsTileSettingsManager.saveWiFiTilePeriod(wifiPeriod)
+        qsTileSettingsManager.saveMobileTilePeriod(mobilePeriod)
+        qsTileSettingsManager.saveShowPeriodInTitle(binding.showPeriodInTitleSwitch.isChecked)
+        qsTileSettingsManager.saveShowChargeInTitle(binding.showChargeInTitleSwitch.isChecked)
+        qsTileSettingsManager.saveShowBatteryHealthInTitle(binding.showBatteryHealthInTitleSwitch.isChecked)
+        qsTileSettingsManager.saveShowScreenTimeoutInTitle(binding.showScreenTimeoutInTitleSwitch.isChecked)
+        qsTileSettingsManager.saveShowTorchGlyphInTitle(binding.torchGlyphShowHeadingSwitch.isChecked)
+        qsTileSettingsManager.saveShowRefreshRateInTitle(binding.refreshRateShowHeadingSwitch.isChecked)
+        qsTileSettingsManager.saveShowAODInTitle(binding.aodShowHeadingSwitch.isChecked)
+
+        // NEW: Save vibration setting
+        vibrationManager.setVibrationEnabled(binding.vibrationEnabledSwitch.isChecked)
+
+        if (designCapacity > 0) {
+            qsTileSettingsManager.saveBatteryDesignCapacity(designCapacity)
+            batteryHealthMonitor.setDesignCapacity(designCapacity)
+        }
+
+        // Save DNS settings
+        saveDNSSettings(binding)
+
+        // Save Torch/Glyph settings
+        saveTorchGlyphSettings(binding)
+
+        // Save Refresh Rate settings
+        saveRefreshRateSettings(binding)
+
+        // Save AOD settings
+        saveAODSettings(binding)
+
+        // Trigger immediate tile updates after saving all settings
+        triggerImmediateTileUpdates()
+        triggerDNSTileUpdate()
+        triggerTorchGlyphTileUpdate()
+        triggerRefreshRateTileUpdate()
+        triggerAODTileUpdate()
+
+        Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    // ... [Keep all other existing methods unchanged] ...
 
     private fun setupWindowInsets() {
         val binding = binding ?: return
@@ -152,63 +356,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
             periodOptions
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-    }
-
-    private fun setupSwitches(binding: ActivityQsTileSettingsBinding) {
-        // Setup permission-required switches
-        binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
-                binding.showPeriodInTitleSwitch.isChecked = false
-                showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
-                return@setOnCheckedChangeListener
-            }
-            triggerImmediateTileUpdates()
-        }
-
-        binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            if (isChecked && !permissionHelper.hasWriteSettingsPermission()) {
-                binding.showScreenTimeoutInTitleSwitch.isChecked = false
-                showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
-                return@setOnCheckedChangeListener
-            }
-            triggerImmediateTileUpdates()
-        }
-
-        // Add haptic feedback to other switches and immediate tile updates
-        binding.showChargeInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            triggerImmediateTileUpdates()
-        }
-        binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            triggerImmediateTileUpdates()
-        }
-
-        // DNS heading switch
-        binding.dnsShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            triggerDNSTileUpdate()
-        }
-
-        // Torch/Glyph heading switch
-        binding.torchGlyphShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            triggerTorchGlyphTileUpdate()
-        }
-
-        // Refresh Rate heading switch
-        binding.refreshRateShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            triggerRefreshRateTileUpdate()
-        }
-
-        // AOD heading switch
-        binding.aodShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            triggerAODTileUpdate()
         }
     }
 
@@ -486,112 +633,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         binding.secureSettingsPermissionButton.isEnabled = !hasPermission
         binding.secureSettingsPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
-    }
-
-    private fun loadCurrentSettings() {
-        val binding = binding ?: return
-
-        val wifiPeriod = qsTileSettingsManager.getWiFiTilePeriod()
-        val mobilePeriod = qsTileSettingsManager.getMobileTilePeriod()
-        val showPeriodInTitle = qsTileSettingsManager.getShowPeriodInTitle()
-        val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
-        val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
-        val showScreenTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
-        val showTorchGlyphInTitle = qsTileSettingsManager.getShowTorchGlyphInTitle()
-        val showRefreshRateInTitle = qsTileSettingsManager.getShowRefreshRateInTitle()
-        val showAODInTitle = qsTileSettingsManager.getShowAODInTitle()
-        val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
-
-        // Set spinner selections
-        binding.wifiTileSpinner.setSelection(when (wifiPeriod) {
-            TimePeriod.DAILY -> 0
-            TimePeriod.WEEKLY -> 1
-            TimePeriod.MONTHLY -> 2
-        })
-
-        binding.mobileTileSpinner.setSelection(when (mobilePeriod) {
-            TimePeriod.DAILY -> 0
-            TimePeriod.WEEKLY -> 1
-            TimePeriod.MONTHLY -> 2
-        })
-
-        // Set switch states
-        binding.showPeriodInTitleSwitch.isChecked = showPeriodInTitle
-        binding.showChargeInTitleSwitch.isChecked = showChargeInTitle
-        binding.showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
-        binding.showScreenTimeoutInTitleSwitch.isChecked = showScreenTimeoutInTitle
-        binding.torchGlyphShowHeadingSwitch.isChecked = showTorchGlyphInTitle
-        binding.refreshRateShowHeadingSwitch.isChecked = showRefreshRateInTitle
-        binding.aodShowHeadingSwitch.isChecked = showAODInTitle
-
-        // Set design capacity
-        if (designCapacity > 0) {
-            binding.designCapacityEditText.setText(designCapacity.toString())
-        }
-
-        updatePermissionBasedUI()
-        updatePermissionStatuses()
-        updateSecureSettingsPermissionStatus()
-    }
-
-    private fun saveSettings() {
-        val binding = binding ?: return
-
-        // Get spinner selections
-        val wifiPeriod = when (binding.wifiTileSpinner.selectedItemPosition) {
-            0 -> TimePeriod.DAILY
-            1 -> TimePeriod.WEEKLY
-            2 -> TimePeriod.MONTHLY
-            else -> TimePeriod.DAILY
-        }
-
-        val mobilePeriod = when (binding.mobileTileSpinner.selectedItemPosition) {
-            0 -> TimePeriod.DAILY
-            1 -> TimePeriod.WEEKLY
-            2 -> TimePeriod.MONTHLY
-            else -> TimePeriod.DAILY
-        }
-
-        // Get design capacity
-        val designCapacity = binding.designCapacityEditText.text.toString().toIntOrNull() ?: 0
-
-        // Save all existing settings
-        qsTileSettingsManager.saveWiFiTilePeriod(wifiPeriod)
-        qsTileSettingsManager.saveMobileTilePeriod(mobilePeriod)
-        qsTileSettingsManager.saveShowPeriodInTitle(binding.showPeriodInTitleSwitch.isChecked)
-        qsTileSettingsManager.saveShowChargeInTitle(binding.showChargeInTitleSwitch.isChecked)
-        qsTileSettingsManager.saveShowBatteryHealthInTitle(binding.showBatteryHealthInTitleSwitch.isChecked)
-        qsTileSettingsManager.saveShowScreenTimeoutInTitle(binding.showScreenTimeoutInTitleSwitch.isChecked)
-        qsTileSettingsManager.saveShowTorchGlyphInTitle(binding.torchGlyphShowHeadingSwitch.isChecked)
-        qsTileSettingsManager.saveShowRefreshRateInTitle(binding.refreshRateShowHeadingSwitch.isChecked)
-        qsTileSettingsManager.saveShowAODInTitle(binding.aodShowHeadingSwitch.isChecked)
-
-        if (designCapacity > 0) {
-            qsTileSettingsManager.saveBatteryDesignCapacity(designCapacity)
-            batteryHealthMonitor.setDesignCapacity(designCapacity)
-        }
-
-        // Save DNS settings
-        saveDNSSettings(binding)
-
-        // Save Torch/Glyph settings
-        saveTorchGlyphSettings(binding)
-
-        // Save Refresh Rate settings
-        saveRefreshRateSettings(binding)
-
-        // Save AOD settings
-        saveAODSettings(binding)
-
-        // Trigger immediate tile updates after saving all settings
-        triggerImmediateTileUpdates()
-        triggerDNSTileUpdate()
-        triggerTorchGlyphTileUpdate()
-        triggerRefreshRateTileUpdate()
-        triggerAODTileUpdate()
-
-        Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
-        finish()
     }
 
     private fun saveDNSSettings(binding: ActivityQsTileSettingsBinding) {

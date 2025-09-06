@@ -6,14 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.service.quicksettings.TileService
+import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
-class BatteryHealthQSTileService : TileService() {
+class BatteryHealthQSTileService : BaseQSTileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var batteryHealthMonitor: BatteryHealthMonitor
@@ -61,8 +61,7 @@ class BatteryHealthQSTileService : TileService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    override fun onClick() {
-        super.onClick()
+    override fun onTileClick() {
 
         // Always open settings when tapped - handles all scenarios
         openBatteryHealthSettings()

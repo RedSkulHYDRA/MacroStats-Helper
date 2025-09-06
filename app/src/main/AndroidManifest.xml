@@ -26,6 +26,9 @@
     <!-- NEW: Flashlight permission -->
     <uses-permission android:name="android.permission.FLASHLIGHT" />
 
+    <!-- NEW: Vibration permission for QS tiles haptic feedback -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

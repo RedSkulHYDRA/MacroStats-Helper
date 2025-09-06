@@ -5,13 +5,13 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.service.quicksettings.Tile
-import android.service.quicksettings.TileService
+import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import kotlinx.coroutines.*
 
-class ScreenTimeoutQSTileService : TileService() {
+class ScreenTimeoutQSTileService : BaseQSTileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -58,8 +58,7 @@ class ScreenTimeoutQSTileService : TileService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    override fun onClick() {
-        super.onClick()
+    override fun onTileClick() {
 
         if (!hasWriteSettingsPermission()) {
             // Request permission by opening settings

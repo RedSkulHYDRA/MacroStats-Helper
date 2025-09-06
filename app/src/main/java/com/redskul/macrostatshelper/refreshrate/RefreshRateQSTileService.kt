@@ -7,7 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.service.quicksettings.Tile
-import android.service.quicksettings.TileService
+import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
@@ -15,7 +15,7 @@ import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
-class RefreshRateQSTileService : TileService() {
+class RefreshRateQSTileService : BaseQSTileService() {
 
     private lateinit var refreshRateManager: RefreshRateManager
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
@@ -60,8 +60,7 @@ class RefreshRateQSTileService : TileService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    override fun onClick() {
-        super.onClick()
+    override fun onTileClick() {
 
         if (!refreshRateManager.hasRequiredPermissions()) {
             // Request permission by opening settings

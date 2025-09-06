@@ -7,7 +7,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.service.quicksettings.Tile
-import android.service.quicksettings.TileService
+import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
@@ -18,7 +18,7 @@ import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
-class DNSQSTileService : TileService() {
+class DNSQSTileService : BaseQSTileService() {
 
     private lateinit var dnsManager: DNSManager
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -34,8 +34,7 @@ class DNSQSTileService : TileService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    override fun onClick() {
-        super.onClick()
+    override fun onTileClick() {
 
         if (!dnsManager.hasSecureSettingsPermission()) {
             // Request permission by opening settings - same pattern as other tiles

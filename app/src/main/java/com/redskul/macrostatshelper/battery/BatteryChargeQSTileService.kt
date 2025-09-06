@@ -5,14 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.service.quicksettings.TileService
+import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import com.redskul.macrostatshelper.utils.WorkManagerRepository
 import kotlinx.coroutines.*
 
-class BatteryChargeQSTileService : TileService() {
+class BatteryChargeQSTileService : BaseQSTileService() {
 
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private lateinit var batteryChargeMonitor: BatteryChargeMonitor
@@ -57,8 +57,7 @@ class BatteryChargeQSTileService : TileService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    override fun onClick() {
-        super.onClick()
+    override fun onTileClick() {
         android.util.Log.d("ChargeQSTile", "Tile clicked - triggering immediate update")
 
         workManagerRepository.triggerImmediateBatteryUpdate()
