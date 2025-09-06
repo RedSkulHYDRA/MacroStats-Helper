@@ -31,7 +31,6 @@
 
     <!-- Short Toast Messages -->
     <string name="monitoring_started">Monitoring started</string>
-    <string name="service_start_failed">Failed to start service</string>
     <string name="service_error">Service error: %1$s</string>
     <string name="settings_saved">Settings saved</string>
     <string name="qs_settings_saved">QS settings saved</string>
@@ -47,7 +46,6 @@
     <string name="save_settings">Save Settings</string>
 
     <!-- Notification Settings -->
-    <string name="notification_settings_title">Notification Settings</string>
     <string name="show_data_usage_notification">Show Data Usage Notification</string>
     <string name="notification_description">Show persistent notification with usage data</string>
     <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background</string>
@@ -93,18 +91,12 @@
 
     <!-- QS Tile strings -->
     <string name="qs_tile_prefix">│ </string>
-    <string name="tile_state_active">Active</string>
-    <string name="tile_state_inactive">Inactive</string>
 
     <!-- NotificationHelper strings -->
     <string name="data_usage_monitor_channel">Data Usage Monitor</string>
     <string name="data_usage_stats_title">Data Usage Stats</string>
     <string name="notification_update">Update</string>
     <string name="channel_description">Shows current data usage statistics</string>
-
-    <!-- DataUsageService strings -->
-    <string name="data_usage_monitor_service">Data Usage Monitor</string>
-    <string name="monitoring_data_usage">Monitoring data usage…</string>
 
     <!-- Common strings -->
     <string name="no_data_selected">No data selected</string>
@@ -119,17 +111,7 @@
 
     <!-- Battery Health Status strings -->
     <string name="set_design_capacity">Set design capacity</string>
-    <string name="calculating_health">Calculating…</string>
-    <string name="estimating_fcc">Estimating…</string>
-    <string name="not_set">Not set</string>
-    <string name="health_enter_design_capacity">Enter design capacity in QS settings</string>
-    <string name="health_calculated_successfully">Health calculated</string>
-    <string name="charge_battery_to_100">Charge to 100% (currently %1$d%%)</string>
-    <string name="wait_for_charging_complete">Wait for charging to complete (%1$dmA)</string>
-    <string name="calculating_ensure_conditions">Calculating… Ensure battery is at 100% and charging current is low</string>
-
-    <!-- Battery Charge Monitor strings -->
-    <string name="android_14_required">Android 14+ required</string>
+    <string name="charge_to_100_for_health">Charge to 100% to calculate battery health</string>
     <string name="not_supported_by_device">Not supported</string>
     <string name="not_available">Not available</string>
     <string name="error_message">Error: %1$s</string>
@@ -176,7 +158,6 @@
     <string name="update_every_label">Update every:</string>
     <string name="update_frequency_changed">Update frequency changed</string>
     <string name="unable_open_battery_settings">Unable to open battery settings</string>
-    <string name="permission_not_required_version">Permission not required on this Android version</string>
     <string name="permission_required_title">Permission Required</string>
     <string name="grant_button">Grant</string>
     <string name="cancel_button">Cancel</string>
@@ -185,7 +166,6 @@
     <string name="data_usage_display_title">Data Usage Display</string>
     <string name="data_usage_tiles_title">Data Usage Tiles</string>
     <string name="battery_tiles_title">Battery Tiles</string>
-    <string name="permission_required_settings">Grant in settings?</string>
     <string name="ok_button">OK</string>
     <string name="data_tiles_disabled">Data tiles disabled due to missing permission</string>
     <string name="screen_timeout_disabled">Screen timeout disabled due to missing permission</string>
@@ -236,7 +216,6 @@
     <string name="torch_glyph_state_off">Off</string>
     <string name="torch_glyph_state_torch">Torch On</string>
     <string name="torch_glyph_state_glyph">Glyphs On</string>
-    <string name="torch_glyph_state_change_failed">Failed to change torch/glyph state</string>
 
     <!-- Compact notification format strings -->
     <string name="daily_prefix">D:</string>
@@ -257,7 +236,7 @@
     <string name="refresh_rate_state_change_failed">Failed to change refresh rate state</string>
     <string name="refresh_rate_tile_detailed_description">Switch between Dynamic (adaptive), High (120Hz), and Standard (60Hz) refresh rate modes. Cycles between Dynamic → High → Standard → Dynamic states.</string>
 
-    <!-- NEW: AOD Tile strings -->
+    <!-- AOD Tile strings -->
     <string name="always_on_display">Always-on Display</string>
     <string name="aod_heading">Always-on Display</string>
     <string name="aod_tile_title">Always-on Display Tile</string>

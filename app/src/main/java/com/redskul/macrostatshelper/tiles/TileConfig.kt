@@ -191,20 +191,45 @@ object TileConfigHelper {
         currentFcc: String,
         designCapacity: String,
         showHealthInTitle: Boolean = false,
+        designCapacityValue: Int = 0,
+        hasPermission: Boolean = true,
+        isHealthCalculated: Boolean = false,
         context: Context? = null
     ) {
-        tile.state = config.defaultState
         tile.icon = config.icon
 
-        // Format: "86% (3480mAh / 4000mAh)"
-        val valueText = "$healthPercentage ($currentFcc / $designCapacity)"
+        // New 3-state logic
+        val valueText = when {
+            !hasPermission -> {
+                // State 1: No permission
+                tile.state = Tile.STATE_INACTIVE
+                tile.label = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
+                tile.subtitle = context?.getString(R.string.tap_to_grant) ?: "Tap to grant"
+                return
+            }
+            designCapacityValue <= 0 -> {
+                // State 2a: Design capacity not set
+                context?.getString(R.string.set_design_capacity) ?: "Set design capacity"
+            }
+            !isHealthCalculated -> {
+                // State 2b: Design capacity set but not charged to 100%
+                context?.getString(R.string.charge_to_100_for_health) ?: "Charge to 100% to calculate battery health"
+            }
+            else -> {
+                // State 3: Health calculated, show normal display
+                "$healthPercentage ($currentFcc / $designCapacity)"
+            }
+        }
+
+        // Set tile to active state (permission already checked above)
+        tile.state = Tile.STATE_ACTIVE
 
         if (showHealthInTitle && context != null) {
-            // Show "Battery Health" in title WITHOUT separator, detailed stats as subtitle
+            // Show "Battery Health" in title, status as subtitle
             tile.label = context.getString(R.string.battery_health)
             tile.subtitle = valueText
         } else {
-            // Show detailed stats directly in title (no separator for long text)
+            // Show status directly in title (no separator for long text)
             val showDivider = valueText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
 

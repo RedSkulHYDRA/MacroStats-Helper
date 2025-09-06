@@ -8,7 +8,6 @@ import android.content.IntentFilter
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
@@ -79,20 +78,8 @@ class TorchGlyphQSTileService : TileService() {
             withContext(Dispatchers.Main) {
                 if (success) {
                     updateTile()
-                    // Show toast with current state
-                    val stateText = torchGlyphManager.getCurrentStateText()
-                    Toast.makeText(
-                        this@TorchGlyphQSTileService,
-                        "${getString(R.string.torch_glyph_heading)}: $stateText",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    android.util.Log.d("TorchGlyphQSTile", "State changed to: $stateText")
+                    android.util.Log.d("TorchGlyphQSTile", "State changed to: ${torchGlyphManager.getCurrentStateText()}")
                 } else {
-                    Toast.makeText(
-                        this@TorchGlyphQSTileService,
-                        getString(R.string.torch_glyph_state_change_failed),
-                        Toast.LENGTH_SHORT
-                    ).show()
                     android.util.Log.e("TorchGlyphQSTile", "Failed to change state")
                 }
             }

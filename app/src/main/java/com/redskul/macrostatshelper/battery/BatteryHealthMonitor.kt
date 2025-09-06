@@ -37,8 +37,8 @@ class BatteryHealthMonitor(private val context: Context) {
 
         return@withContext BatteryHealthData(
             healthPercentage = healthPercentage,
-            currentFcc = if (currentFcc > 0) "${currentFcc} mAh" else context.getString(R.string.estimating_fcc),
-            designCapacity = if (designCapacity > 0) "${designCapacity} mAh" else context.getString(R.string.not_set),
+            currentFcc = if (currentFcc > 0) "${currentFcc}mAh" else "0mAh",
+            designCapacity = if (designCapacity > 0) "${designCapacity}mAh" else "0mAh",
             healthStatus = healthStatus
         )
     }
@@ -74,29 +74,22 @@ class BatteryHealthMonitor(private val context: Context) {
             val healthPercent = (currentFcc.toFloat() / designCapacity.toFloat() * 100).toInt()
             "${healthPercent}%"
         } else {
-            if (designCapacity <= 0) context.getString(R.string.set_design_capacity) else context.getString(R.string.calculating_health)
+            if (designCapacity <= 0) {
+                context.getString(R.string.set_design_capacity)
+            } else {
+                context.getString(R.string.charge_to_100_for_health)
+            }
         }
     }
 
-    @SuppressLint("StringFormatMatches")
     private fun getHealthCalculationStatus(currentFcc: Int, designCapacity: Int): String {
-        val currentNow = try {
-            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-        } catch (e: Exception) {
-            0
-        }
-        val batteryLevel = try {
-            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-        } catch (e: Exception) {
-            0
-        }
-
         return when {
-            designCapacity <= 0 -> context.getString(R.string.health_enter_design_capacity)
-            currentFcc > 0 && designCapacity > 0 -> context.getString(R.string.health_calculated_successfully)
-            batteryLevel < 100 -> context.getString(R.string.charge_battery_to_100, batteryLevel)
-            kotlin.math.abs(currentNow) > CURRENT_FULL_IN_MA -> context.getString(R.string.wait_for_charging_complete, kotlin.math.abs(currentNow), CURRENT_FULL_IN_MA)
-            else -> context.getString(R.string.calculating_ensure_conditions)
+            designCapacity <= 0 -> context.getString(R.string.set_design_capacity)
+            currentFcc > 0 && designCapacity > 0 -> {
+                val healthPercent = (currentFcc.toFloat() / designCapacity.toFloat() * 100).toInt()
+                "Battery Health: ${healthPercent}%"
+            }
+            else -> context.getString(R.string.charge_to_100_for_health)
         }
     }
 
