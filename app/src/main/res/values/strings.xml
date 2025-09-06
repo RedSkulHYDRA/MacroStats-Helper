@@ -254,4 +254,9 @@
     <!-- ADB Instructions -->
     <string name="adb_instructions_title">How to Grant Permission via ADB</string>
     <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>
+
+    <!-- Last Month's Usage strings -->
+    <string name="last_month_usage_heading">Last Month\'s Usage:</string>
+    <string name="last_month_wifi_label">Wifi:</string>
+    <string name="last_month_data_label">Data:</string>
 </resources>

@@ -22,13 +22,6 @@ class SettingsManager(private val context: Context) {
         private const val DEFAULT_UPDATE_INTERVAL = 15 // Default interval is now 15 minutes
     }
 
-    // Extension function to get display string from TimePeriod
-    private fun TimePeriod.toDisplayString(): String = when (this) {
-        TimePeriod.DAILY -> context.getString(R.string.daily)
-        TimePeriod.WEEKLY -> context.getString(R.string.weekly)
-        TimePeriod.MONTHLY -> context.getString(R.string.monthly)
-    }
-
     fun saveDisplaySettings(settings: DisplaySettings) {
         sharedPreferences.edit().apply {
             // Save WiFi periods as comma-separated string (empty string if no periods selected)
@@ -66,7 +59,7 @@ class SettingsManager(private val context: Context) {
             wifiPeriodsString.split(",").mapNotNull { periodName ->
                 try {
                     TimePeriod.valueOf(periodName.trim())
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }
@@ -78,7 +71,7 @@ class SettingsManager(private val context: Context) {
             mobilePeriodsString.split(",").mapNotNull { periodName ->
                 try {
                     TimePeriod.valueOf(periodName.trim())
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }
@@ -102,10 +95,6 @@ class SettingsManager(private val context: Context) {
             return false
         }
         return sharedPreferences.getBoolean(KEY_SHOW_NOTIFICATION, true)
-    }
-
-    fun canEnableNotifications(): Boolean {
-        return permissionHelper.hasUsageStatsPermission()
     }
 
     fun enforcePermissionRestrictions() {
@@ -147,10 +136,6 @@ class SettingsManager(private val context: Context) {
                 else -> "$minutes minutes"
             }
         }
-    }
-
-    fun getUpdateIntervalMillis(): Long {
-        return getUpdateInterval() * 60 * 1000L
     }
 
     fun getFormattedUsageText(usageData: UsageData): Pair<String, String> {
@@ -206,16 +191,22 @@ class SettingsManager(private val context: Context) {
         // Create expanded text with new compact format
         val expandedText = buildString {
             if (wifiParts.isNotEmpty()) {
-                appendLine("${context.getString(R.string.wifi_usage_label)}")
+                appendLine(context.getString(R.string.wifi_usage_label))
                 appendLine(wifiParts.joinToString(" | "))
             }
             if (mobileParts.isNotEmpty()) {
                 if (wifiParts.isNotEmpty()) {
                     appendLine() // Add blank line between sections
                 }
-                appendLine("${context.getString(R.string.mobile_data_usage_label)}")
+                appendLine(context.getString(R.string.mobile_data_usage_label))
                 appendLine(mobileParts.joinToString(" | "))
             }
+
+            // Add Last Month's Usage section
+            appendLine() // Add blank line before last month section
+            appendLine(context.getString(R.string.last_month_usage_heading))
+            appendLine("${context.getString(R.string.last_month_wifi_label)} ${usageData.wifiLastMonth} | ${context.getString(R.string.last_month_data_label)} ${usageData.mobileLastMonth}")
+
             if (wifiParts.isEmpty() && mobileParts.isEmpty()) {
                 appendLine(context.getString(R.string.no_data_periods_selected))
                 appendLine(context.getString(R.string.configure_display_settings))

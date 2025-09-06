@@ -15,7 +15,9 @@ data class UsageData(
     val wifiMonthly: String,
     val mobileDaily: String,
     val mobileWeekly: String,
-    val mobileMonthly: String
+    val mobileMonthly: String,
+    val wifiLastMonth: String,
+    val mobileLastMonth: String
 )
 
 class DataUsageMonitor(private val context: Context) {
@@ -71,24 +73,47 @@ class DataUsageMonitor(private val context: Context) {
         calendar.set(Calendar.MILLISECOND, 0)
         val monthlyStart = calendar.timeInMillis
 
+        // Last month calculation
+        val lastMonthCalendar = Calendar.getInstance()
+        lastMonthCalendar.add(Calendar.MONTH, -1) // Go to last month
+        lastMonthCalendar.set(Calendar.DAY_OF_MONTH, 1) // First day of last month
+        lastMonthCalendar.set(Calendar.HOUR_OF_DAY, 0)
+        lastMonthCalendar.set(Calendar.MINUTE, 0)
+        lastMonthCalendar.set(Calendar.SECOND, 0)
+        lastMonthCalendar.set(Calendar.MILLISECOND, 0)
+        val lastMonthStart = lastMonthCalendar.timeInMillis
+
+        // Last day of last month
+        lastMonthCalendar.add(Calendar.MONTH, 1) // Go to current month
+        lastMonthCalendar.add(Calendar.DAY_OF_MONTH, -1) // Last day of last month
+        lastMonthCalendar.set(Calendar.HOUR_OF_DAY, 23)
+        lastMonthCalendar.set(Calendar.MINUTE, 59)
+        lastMonthCalendar.set(Calendar.SECOND, 59)
+        lastMonthCalendar.set(Calendar.MILLISECOND, 999)
+        val lastMonthEnd = lastMonthCalendar.timeInMillis
+
         // Debug: Log the time periods
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         Log.d("DataUsageMonitor", "Daily period: ${dateFormat.format(dailyStart)} to ${dateFormat.format(now)}")
         Log.d("DataUsageMonitor", "Weekly period: ${dateFormat.format(weeklyStart)} to ${dateFormat.format(now)}")
         Log.d("DataUsageMonitor", "Monthly period: ${dateFormat.format(monthlyStart)} to ${dateFormat.format(now)}")
+        Log.d("DataUsageMonitor", "Last month period: ${dateFormat.format(lastMonthStart)} to ${dateFormat.format(lastMonthEnd)}")
 
         val subscriberId = getSubscriberId()
 
         val wifiDaily = getWifiUsage(subscriberId, dailyStart, now)
         val wifiWeekly = getWifiUsage(subscriberId, weeklyStart, now)
         val wifiMonthly = getWifiUsage(subscriberId, monthlyStart, now)
+        val wifiLastMonth = getWifiUsage(subscriberId, lastMonthStart, lastMonthEnd)
         val mobileDaily = getMobileUsage(subscriberId, dailyStart, now)
         val mobileWeekly = getMobileUsage(subscriberId, weeklyStart, now)
         val mobileMonthly = getMobileUsage(subscriberId, monthlyStart, now)
+        val mobileLastMonth = getMobileUsage(subscriberId, lastMonthStart, lastMonthEnd)
 
         Log.d("DataUsageMonitor", "Raw bytes - WiFi Daily: $wifiDaily, Mobile Daily: $mobileDaily")
         Log.d("DataUsageMonitor", "Raw bytes - WiFi Weekly: $wifiWeekly, Mobile Weekly: $mobileWeekly")
         Log.d("DataUsageMonitor", "Raw bytes - WiFi Monthly: $wifiMonthly, Mobile Monthly: $mobileMonthly")
+        Log.d("DataUsageMonitor", "Raw bytes - WiFi Last Month: $wifiLastMonth, Mobile Last Month: $mobileLastMonth")
 
         return UsageData(
             wifiDaily = formatBytes(wifiDaily),
@@ -96,7 +121,9 @@ class DataUsageMonitor(private val context: Context) {
             wifiMonthly = formatBytes(wifiMonthly),
             mobileDaily = formatBytes(mobileDaily),
             mobileWeekly = formatBytes(mobileWeekly),
-            mobileMonthly = formatBytes(mobileMonthly)
+            mobileMonthly = formatBytes(mobileMonthly),
+            wifiLastMonth = formatBytes(wifiLastMonth),
+            mobileLastMonth = formatBytes(mobileLastMonth)
         )
     }
 
