@@ -179,17 +179,29 @@ class AutoSyncAccessibilityService : AccessibilityService() {
 
     /**
      * Schedules auto sync disable using the appropriate method based on delay duration
+     * FIXED: Even Simpler Fix - hardcoded logic for reliable 15-minute notifications
      * @param delayMs Delay in milliseconds
      */
     private fun scheduleAutoSyncDisable(delayMs: Long) {
-        val delayMinutes = delayMs / (60 * 1000L)
+        val delayMinutes = autoSyncManager.getAutoSyncDelay()
 
-        if (delayMinutes == 15L) {
-            // Use foreground service for 15-minute delay (precise timing)
-            scheduleWithForegroundService(delayMs)
-        } else {
-            // Use WorkManager for longer delays (30, 45, 60 minutes)
-            scheduleWithWorkManager(delayMs)
+        Log.d(TAG, "=== AutoSync Scheduling ===")
+        Log.d(TAG, "Delay setting: ${delayMinutes} minutes")
+        Log.d(TAG, "Calculated delayMs: $delayMs")
+
+        when (delayMinutes) {
+            15 -> {
+                Log.d(TAG, "✓ Using ForegroundService for 15min (NOTIFICATION WILL SHOW)")
+                scheduleWithForegroundService(delayMs)
+            }
+            30, 45, 60 -> {
+                Log.d(TAG, "Using WorkManager for ${delayMinutes}min (BACKGROUND)")
+                scheduleWithWorkManager(delayMs)
+            }
+            else -> {
+                Log.w(TAG, "Unknown delay: ${delayMinutes}min, defaulting to WorkManager")
+                scheduleWithWorkManager(delayMs)
+            }
         }
 
         // Always add handler backup for additional reliability
