@@ -19,6 +19,7 @@ class QSTileSettingsManager(context: Context) {
         private const val KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE = "show_screen_timeout_in_title"
         private const val KEY_SHOW_TORCH_GLYPH_IN_TITLE = "show_torch_glyph_in_title"
         private const val KEY_SHOW_REFRESH_RATE_IN_TITLE = "show_refresh_rate_in_title"
+        private const val KEY_SHOW_AOD_IN_TITLE = "show_aod_in_title"
         private const val KEY_BATTERY_DESIGN_CAPACITY = "battery_design_capacity"
     }
 
@@ -70,6 +71,12 @@ class QSTileSettingsManager(context: Context) {
         }
     }
 
+    fun saveShowAODInTitle(showAOD: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_SHOW_AOD_IN_TITLE, showAOD)
+        }
+    }
+
     fun saveBatteryDesignCapacity(capacity: Int) {
         sharedPreferences.edit {
             putInt(KEY_BATTERY_DESIGN_CAPACITY, capacity)
@@ -116,6 +123,10 @@ class QSTileSettingsManager(context: Context) {
 
     fun getShowRefreshRateInTitle(): Boolean {
         return sharedPreferences.getBoolean(KEY_SHOW_REFRESH_RATE_IN_TITLE, false)
+    }
+
+    fun getShowAODInTitle(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_AOD_IN_TITLE, false)
     }
 
     fun getBatteryDesignCapacity(): Int {

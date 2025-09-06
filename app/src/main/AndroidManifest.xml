@@ -107,6 +107,18 @@
             </intent-filter>
         </service>
 
+        <!-- NEW: AOD QS Tile Service -->
+        <service
+            android:name=".aod.AODQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_aod"
+            android:label="@string/always_on_display"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <!-- Boot Receiver -->
         <receiver
             android:name=".core.BootReceiver"

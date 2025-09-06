@@ -27,6 +27,8 @@ import com.redskul.macrostatshelper.torchglyph.TorchGlyphManager
 import com.redskul.macrostatshelper.torchglyph.TorchGlyphQSTileService
 import com.redskul.macrostatshelper.refreshrate.RefreshRateManager
 import com.redskul.macrostatshelper.refreshrate.RefreshRateQSTileService
+import com.redskul.macrostatshelper.aod.AODManager
+import com.redskul.macrostatshelper.aod.AODQSTileService
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent
@@ -44,6 +46,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var dnsManager: DNSManager
     private lateinit var torchGlyphManager: TorchGlyphManager
     private lateinit var refreshRateManager: RefreshRateManager
+    private lateinit var aodManager: AODManager
     private var binding: ActivityQsTileSettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,6 +66,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         dnsManager = DNSManager(this)
         torchGlyphManager = TorchGlyphManager(this)
         refreshRateManager = RefreshRateManager(this)
+        aodManager = AODManager(this)
 
         setupWindowInsets()
         setupUI()
@@ -121,6 +125,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Setup Refresh Rate section
         setupRefreshRateSection(binding)
+
+        // Setup AOD section
+        setupAODSection(binding)
 
         // Setup Advanced tiles section
         setupAdvancedTilesSection(binding)
@@ -197,6 +204,12 @@ class QSTileSettingsActivity : AppCompatActivity() {
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             triggerRefreshRateTileUpdate()
         }
+
+        // AOD heading switch
+        binding.aodShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            triggerAODTileUpdate()
+        }
     }
 
     private fun setupButtons(binding: ActivityQsTileSettingsBinding) {
@@ -249,6 +262,10 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     private fun setupRefreshRateSection(binding: ActivityQsTileSettingsBinding) {
         binding.refreshRateShowHeadingSwitch.isChecked = refreshRateManager.getShowHeading()
+    }
+
+    private fun setupAODSection(binding: ActivityQsTileSettingsBinding) {
+        binding.aodShowHeadingSwitch.isChecked = aodManager.getShowHeading()
     }
 
     private fun setupAdvancedTilesSection(binding: ActivityQsTileSettingsBinding) {
@@ -418,6 +435,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dnsRemove3Button.isEnabled = hasSecureSettings
         binding.torchGlyphShowHeadingSwitch.isEnabled = hasSecureSettings
         binding.refreshRateShowHeadingSwitch.isEnabled = hasSecureSettings
+        binding.aodShowHeadingSwitch.isEnabled = hasSecureSettings
     }
 
     private fun updatePermissionStatuses() {
@@ -481,6 +499,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val showScreenTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
         val showTorchGlyphInTitle = qsTileSettingsManager.getShowTorchGlyphInTitle()
         val showRefreshRateInTitle = qsTileSettingsManager.getShowRefreshRateInTitle()
+        val showAODInTitle = qsTileSettingsManager.getShowAODInTitle()
         val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
 
         // Set spinner selections
@@ -503,6 +522,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.showScreenTimeoutInTitleSwitch.isChecked = showScreenTimeoutInTitle
         binding.torchGlyphShowHeadingSwitch.isChecked = showTorchGlyphInTitle
         binding.refreshRateShowHeadingSwitch.isChecked = showRefreshRateInTitle
+        binding.aodShowHeadingSwitch.isChecked = showAODInTitle
 
         // Set design capacity
         if (designCapacity > 0) {
@@ -544,6 +564,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager.saveShowScreenTimeoutInTitle(binding.showScreenTimeoutInTitleSwitch.isChecked)
         qsTileSettingsManager.saveShowTorchGlyphInTitle(binding.torchGlyphShowHeadingSwitch.isChecked)
         qsTileSettingsManager.saveShowRefreshRateInTitle(binding.refreshRateShowHeadingSwitch.isChecked)
+        qsTileSettingsManager.saveShowAODInTitle(binding.aodShowHeadingSwitch.isChecked)
 
         if (designCapacity > 0) {
             qsTileSettingsManager.saveBatteryDesignCapacity(designCapacity)
@@ -559,11 +580,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Save Refresh Rate settings
         saveRefreshRateSettings(binding)
 
+        // Save AOD settings
+        saveAODSettings(binding)
+
         // Trigger immediate tile updates after saving all settings
         triggerImmediateTileUpdates()
         triggerDNSTileUpdate()
         triggerTorchGlyphTileUpdate()
         triggerRefreshRateTileUpdate()
+        triggerAODTileUpdate()
 
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
         finish()
@@ -631,6 +656,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
         refreshRateManager.setRefreshRateEnabled(hasValidRefreshRate)
 
         android.util.Log.d("QSTileSettings", "Refresh Rate settings saved. Refresh Rate tile enabled: $hasValidRefreshRate")
+    }
+
+    private fun saveAODSettings(binding: ActivityQsTileSettingsBinding) {
+        // Save AOD heading preference
+        aodManager.setShowHeading(binding.aodShowHeadingSwitch.isChecked)
+
+        // Enable AOD tile if permissions are granted
+        val hasValidAOD = aodManager.hasRequiredPermissions()
+        aodManager.setAODEnabled(hasValidAOD)
+
+        android.util.Log.d("QSTileSettings", "AOD settings saved. AOD tile enabled: $hasValidAOD")
     }
 
     /**
@@ -708,6 +744,21 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 android.util.Log.d("QSTileSettings", "Refresh Rate tile update broadcast sent")
             } catch (e: Exception) {
                 android.util.Log.e("QSTileSettings", "Error sending Refresh Rate tile update broadcast", e)
+            }
+        }
+    }
+
+    private fun triggerAODTileUpdate() {
+        lifecycleScope.launch {
+            try {
+                // Send broadcast for AOD tile update
+                val aodUpdateIntent = Intent(AODQSTileService.ACTION_AOD_SETTINGS_UPDATED).apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(aodUpdateIntent)
+                android.util.Log.d("QSTileSettings", "AOD tile update broadcast sent")
+            } catch (e: Exception) {
+                android.util.Log.e("QSTileSettings", "Error sending AOD tile update broadcast", e)
             }
         }
     }

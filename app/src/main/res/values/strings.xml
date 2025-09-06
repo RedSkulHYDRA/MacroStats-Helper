@@ -257,6 +257,21 @@
     <string name="refresh_rate_state_change_failed">Failed to change refresh rate state</string>
     <string name="refresh_rate_tile_detailed_description">Switch between Dynamic (adaptive), High (120Hz), and Standard (60Hz) refresh rate modes. Cycles between Dynamic → High → Standard → Dynamic states.</string>
 
+    <!-- NEW: AOD Tile strings -->
+    <string name="always_on_display">Always-on Display</string>
+    <string name="aod_heading">Always-on Display</string>
+    <string name="aod_tile_title">Always-on Display Tile</string>
+    <string name="show_aod_heading">Enable Tile Heading</string>
+    <string name="aod_description">Toggle between Always-on Display modes</string>
+    <string name="aod_permission_required">Permission Required</string>
+    <string name="aod_not_configured">AOD Not Configured</string>
+    <string name="aod_state_off">Off</string>
+    <string name="aod_state_always_on">Always On</string>
+    <string name="aod_state_schedule">Schedule</string>
+    <string name="aod_state_tap_to_show">Tap to show</string>
+    <string name="aod_state_change_failed">Failed to change AOD state</string>
+    <string name="aod_tile_detailed_description">Switch between Always-on Display modes: Off, Always On, Schedule, and Tap to show. Cycles between Off → Always On → Schedule → Tap to show → Off states.</string>
+
     <!-- ADB Instructions -->
     <string name="adb_instructions_title">How to Grant Permission via ADB</string>
     <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>

@@ -7,6 +7,7 @@ import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.TimePeriod
 import com.redskul.macrostatshelper.torchglyph.TorchGlyphManager
 import com.redskul.macrostatshelper.refreshrate.RefreshRateManager
+import com.redskul.macrostatshelper.aod.AODManager
 
 data class TileConfiguration(
     val icon: Icon,
@@ -101,6 +102,16 @@ object TileConfigHelper {
             iconRes = iconRes,
             labelPrefix = context.getString(R.string.qs_tile_prefix),
             defaultState = Tile.STATE_ACTIVE
+        )
+    }
+
+    fun getAODTileConfig(context: Context, state: AODManager.AODState): TileConfiguration {
+        val iconRes = R.drawable.ic_aod
+        return TileConfiguration(
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
+            defaultState = if (state == AODManager.AODState.OFF) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
         )
     }
 
@@ -248,6 +259,30 @@ object TileConfigHelper {
         if (showRefreshRateInTitle && context != null) {
             // Show "Refresh Rate" in title, state as subtitle
             tile.label = context.getString(R.string.refresh_rate_heading)
+            tile.subtitle = stateText
+        } else {
+            // Show state directly in title with prefix if short enough
+            val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
+
+            tile.label = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
+            tile.subtitle = null
+        }
+    }
+
+    fun applyAODConfigToTile(
+        tile: Tile,
+        config: TileConfiguration,
+        stateText: String,
+        showAODInTitle: Boolean = false,
+        context: Context? = null
+    ) {
+        tile.state = config.defaultState
+        tile.icon = config.icon
+
+        if (showAODInTitle && context != null) {
+            // Show "Always-on Display" in title, state as subtitle
+            tile.label = context.getString(R.string.aod_heading)
             tile.subtitle = stateText
         } else {
             // Show state directly in title with prefix if short enough

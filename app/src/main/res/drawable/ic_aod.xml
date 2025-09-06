@@ -1,0 +1,35 @@
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="-1dp">
+    <vector
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+        <!-- Phone outline -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M7,2L17,2C18.1,2 19,2.9 19,4L19,20C19,21.1 18.1,22 17,22L7,22C5.9,22 5,21.1 5,20L5,4C5,2.9 5.9,2 7,2Z
+                          M7,4L7,20L17,20L17,4L7,4Z"/>
+
+        <!-- Always-on display indicator dots -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M9,8C9.55,8 10,8.45 10,9C10,9.55 9.55,10 9,10C8.45,10 8,9.55 8,9C8,8.45 8.45,8 9,8Z"/>
+        <path
+            android:fillColor="#000000"
+            android:pathData="M12,8C12.55,8 13,8.45 13,9C13,9.55 12.55,10 12,10C11.45,10 11,9.55 11,9C11,8.45 11.45,8 12,8Z"/>
+        <path
+            android:fillColor="#000000"
+            android:pathData="M15,8C15.55,8 16,8.45 16,9C16,9.55 15.55,10 15,10C14.45,10 14,9.55 14,9C14,8.45 14.45,8 15,8Z"/>
+
+        <!-- Time representation -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M9,12L15,12C15.55,12 16,12.45 16,13C16,13.55 15.55,14 15,14L9,14C8.45,14 8,13.55 8,13C8,12.45 8.45,12 9,12Z"/>
+
+        <!-- Fixed bottom line (now equal width as the one above) -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M9,15L15,15C15.55,15 16,15.45 16,16C16,16.55 15.55,17 15,17L9,17C8.45,17 8,16.55 8,16C8,15.45 8.45,15 9,15Z"/>
+    </vector>
+</inset>
