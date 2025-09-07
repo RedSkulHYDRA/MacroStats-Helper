@@ -49,6 +49,8 @@
     <string name="show_data_usage_notification">Show Data Usage Notification</string>
     <string name="notification_description">Show persistent notification with usage data</string>
     <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background</string>
+    <string name="show_last_month_usage">Show Last Month\'s Usage</string>
+    <string name="last_month_usage_description">Include previous month\'s data in notification</string>
 
     <!-- AutoSync Settings -->
     <string name="autosync_settings_title">AutoSync Management</string>

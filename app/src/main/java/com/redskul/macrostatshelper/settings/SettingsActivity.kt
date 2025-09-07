@@ -103,6 +103,12 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
+        // Setup last month usage switch
+        binding.lastMonthEnabledSwitch.setOnCheckedChangeListener { switch, _ ->
+            // Add haptic feedback
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
+
         // Setup usage access button
         binding.usageAccessButton.setOnClickListener {
             requestUsageStatsPermission()
@@ -147,6 +153,9 @@ class SettingsActivity : AppCompatActivity() {
         if (!hasUsageStats && binding.notificationEnabledSwitch.isChecked) {
             binding.notificationEnabledSwitch.isChecked = false
         }
+
+        // Last month switch doesn't require permissions, but is dependent on notification being enabled
+        binding.lastMonthEnabledSwitch.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
     }
 
     private fun updatePermissionStatus() {
@@ -170,6 +179,9 @@ class SettingsActivity : AppCompatActivity() {
 
         // Set notification switch (moved to top)
         binding.notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
+
+        // Set last month usage switch
+        binding.lastMonthEnabledSwitch.isChecked = settingsManager.isShowLastMonthUsageEnabled()
 
         // Set WiFi checkboxes
         binding.wifiDailyCheckbox.isChecked = settings.wifiTimePeriods.contains(TimePeriod.DAILY)
@@ -211,6 +223,9 @@ class SettingsActivity : AppCompatActivity() {
         // Save notification preference (will be validated by SettingsManager)
         settingsManager.saveNotificationEnabled(isNotificationEnabled)
 
+        // Save last month usage preference
+        settingsManager.saveShowLastMonthUsage(binding.lastMonthEnabledSwitch.isChecked)
+
         // Handle immediate notification changes
         if (isNotificationEnabled && !wasNotificationEnabled) {
             // Notification was just enabled - show immediately
@@ -227,6 +242,17 @@ class SettingsActivity : AppCompatActivity() {
             // Notification was just disabled - hide immediately
             notificationHelper.cancelNotification()
             android.util.Log.d("SettingsActivity", "Notification hidden immediately after disabling")
+        } else if (isNotificationEnabled) {
+            // Notification is enabled and was already enabled - update to reflect last month toggle change
+            lifecycleScope.launch {
+                try {
+                    val usageData = dataUsageMonitor.getUsageData()
+                    notificationHelper.showUsageNotification(usageData)
+                    android.util.Log.d("SettingsActivity", "Notification updated to reflect last month toggle change")
+                } catch (e: Exception) {
+                    android.util.Log.e("SettingsActivity", "Error updating notification", e)
+                }
+            }
         }
 
         // Trigger immediate data update to refresh everything

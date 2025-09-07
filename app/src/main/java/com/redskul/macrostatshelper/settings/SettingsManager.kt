@@ -18,6 +18,7 @@ class SettingsManager(private val context: Context) {
         private const val KEY_MOBILE_PERIODS = "mobile_periods"
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_SHOW_NOTIFICATION = "show_notification"
+        private const val KEY_SHOW_LAST_MONTH_USAGE = "show_last_month_usage"
         private const val KEY_UPDATE_INTERVAL = "update_interval_minutes"
         private const val DEFAULT_UPDATE_INTERVAL = 15 // Default interval is now 15 minutes
     }
@@ -95,6 +96,14 @@ class SettingsManager(private val context: Context) {
             return false
         }
         return sharedPreferences.getBoolean(KEY_SHOW_NOTIFICATION, true)
+    }
+
+    fun saveShowLastMonthUsage(enabled: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_LAST_MONTH_USAGE, enabled).apply()
+    }
+
+    fun isShowLastMonthUsageEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_LAST_MONTH_USAGE, true)
     }
 
     fun enforcePermissionRestrictions() {
@@ -188,7 +197,7 @@ class SettingsManager(private val context: Context) {
             context.getString(R.string.no_data_selected)
         }
 
-        // Create expanded text with new compact format
+        // Create expanded text with conditional last month section
         val expandedText = buildString {
             if (wifiParts.isNotEmpty()) {
                 appendLine(context.getString(R.string.wifi_usage_label))
@@ -202,10 +211,12 @@ class SettingsManager(private val context: Context) {
                 appendLine(mobileParts.joinToString(" | "))
             }
 
-            // Add Last Month's Usage section
-            appendLine() // Add blank line before last month section
-            appendLine(context.getString(R.string.last_month_usage_heading))
-            appendLine("${context.getString(R.string.last_month_wifi_label)} ${usageData.wifiLastMonth} | ${context.getString(R.string.last_month_data_label)} ${usageData.mobileLastMonth}")
+            // Add Last Month's Usage section only if enabled
+            if (isShowLastMonthUsageEnabled()) {
+                appendLine() // Add blank line before last month section
+                appendLine(context.getString(R.string.last_month_usage_heading))
+                appendLine("${context.getString(R.string.last_month_wifi_label)} ${usageData.wifiLastMonth} | ${context.getString(R.string.last_month_data_label)} ${usageData.mobileLastMonth}")
+            }
 
             if (wifiParts.isEmpty() && mobileParts.isEmpty()) {
                 appendLine(context.getString(R.string.no_data_periods_selected))

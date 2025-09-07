@@ -69,6 +69,38 @@
                 android:text="@string/notification_description"
                 android:textSize="@dimen/text_size_small"
                 android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <!-- Last Month Usage Toggle Section -->
+            <LinearLayout
+                android:id="@+id/last_month_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/last_month_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/show_last_month_usage"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <Switch
+                    android:id="@+id/last_month_enabled_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/last_month_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/last_month_usage_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_xl" />
 
             <!-- WiFi Section -->
@@ -108,7 +140,6 @@
                     android:text="@string/monthly" />
 
             </LinearLayout>
-
 
             <!-- Mobile Section -->
             <TextView
