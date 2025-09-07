@@ -82,18 +82,21 @@ class WorkManagerRepository(private val context: Context) {
     }
 
     /**
-     * Start battery monitoring with charging constraint
+     * Start battery monitoring with user-configured interval and charging constraint
      */
     private fun startBatteryMonitoring() {
+        val baseInterval = settingsManager.getUpdateInterval().toLong()
+        val adaptiveInterval = calculateAdaptiveInterval(baseInterval)
+
         // Define constraints for battery monitoring
         val constraints = Constraints.Builder()
             .setRequiresCharging(false) // Can run on battery
             .setRequiresBatteryNotLow(false) // Users want battery info even when battery is low
             .build()
 
-        // Create periodic work request (every hour)
+        // Create periodic work request using the same adaptive interval as data monitoring
         val batteryWorkRequest = PeriodicWorkRequestBuilder<BatteryWorker>(
-            1, TimeUnit.HOURS
+            adaptiveInterval, TimeUnit.MINUTES
         )
             .setConstraints(constraints)
             .setBackoffCriteria(
@@ -106,11 +109,11 @@ class WorkManagerRepository(private val context: Context) {
         // Enqueue unique work
         workManager.enqueueUniquePeriodicWork(
             BatteryWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP, // Keep existing if already running
+            ExistingPeriodicWorkPolicy.REPLACE, // CHANGED: Replace instead of KEEP to allow interval updates
             batteryWorkRequest
         )
 
-        android.util.Log.d(TAG, "Battery monitoring started with 1 hour interval")
+        android.util.Log.d(TAG, "Battery monitoring started with ${adaptiveInterval}min interval")
     }
 
     /**
@@ -145,13 +148,15 @@ class WorkManagerRepository(private val context: Context) {
     }
 
     /**
-     * Update data monitoring interval when settings change
+     * Update monitoring intervals when settings change
      */
     fun updateDataMonitoringInterval() {
-        // Simply restart data monitoring with new interval
+        // Restart both data and battery monitoring with new interval
         workManager.cancelUniqueWork(DataUsageWorker.WORK_NAME)
+        workManager.cancelUniqueWork(BatteryWorker.WORK_NAME)
         startDataUsageMonitoring()
-        android.util.Log.d(TAG, "Data monitoring interval updated")
+        startBatteryMonitoring()
+        android.util.Log.d(TAG, "Both data and battery monitoring intervals updated")
     }
 
     /**
