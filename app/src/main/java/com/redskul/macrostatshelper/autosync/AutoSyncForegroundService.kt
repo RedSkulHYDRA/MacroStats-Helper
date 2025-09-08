@@ -92,8 +92,22 @@ class AutoSyncForegroundService : Service() {
                     val notification = createNotification(delayMs)
                     startForeground(NOTIFICATION_ID, notification)
 
-                    scheduleSyncDisable(delayMs, scheduledTime)
-                    Log.d(TAG, "Foreground service started with ${delayMs}ms delay")
+                    // Calculate actual remaining time if service restarted
+                    val currentTime = System.currentTimeMillis()
+                    val remainingDelay = if (scheduledTime > 0) {
+                        (scheduledTime - currentTime).coerceAtLeast(1000L) // At least 1 second
+                    } else {
+                        delayMs
+                    }
+
+                    Log.d(TAG, "=== FOREGROUND SERVICE TIMING DEBUG ===")
+                    Log.d(TAG, "Original delay: ${delayMs}ms")
+                    Log.d(TAG, "Scheduled time: $scheduledTime")
+                    Log.d(TAG, "Current time: $currentTime")
+                    Log.d(TAG, "Calculated remaining delay: ${remainingDelay}ms")
+
+                    scheduleSyncDisable(remainingDelay, scheduledTime)
+                    Log.d(TAG, "Foreground service started with remaining delay: ${remainingDelay}ms")
                 } else {
                     Log.w(TAG, "Invalid delay provided: $delayMs, stopping service")
                     stopSelf()
@@ -160,14 +174,20 @@ class AutoSyncForegroundService : Service() {
 
     /**
      * Schedules the sync disable operation
+     * Use the exact remaining delay, don't recalculate
      */
     private fun scheduleSyncDisable(delayMs: Long, scheduledTime: Long) {
         // Cancel any existing scheduled operation
         syncDisableRunnable?.let { handler.removeCallbacks(it) }
 
-        Log.d(TAG, "Scheduling sync disable in ${delayMs}ms at absolute time: $scheduledTime")
+        Log.d(TAG, "Scheduling sync disable in exactly ${delayMs}ms at absolute time: $scheduledTime")
 
         syncDisableRunnable = Runnable {
+            Log.d(TAG, "=== EXECUTING SYNC DISABLE ===")
+            Log.d(TAG, "Actual execution time: ${System.currentTimeMillis()}")
+            Log.d(TAG, "Was scheduled for: $scheduledTime")
+            Log.d(TAG, "Delay from start: ${System.currentTimeMillis() - (scheduledTime - delayMs)}ms")
+
             try {
                 executeSyncDisable(scheduledTime)
             } finally {
@@ -176,6 +196,7 @@ class AutoSyncForegroundService : Service() {
             }
         }
 
+        // Use the EXACT remaining delay passed in, don't recalculate
         syncDisableRunnable?.let { handler.postDelayed(it, delayMs) }
     }
 

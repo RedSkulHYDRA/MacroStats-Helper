@@ -122,11 +122,8 @@ class AutoSyncEnforcementWorker(context: Context, params: WorkerParameters) : Co
                 }
             }
 
-            // Case 3: Device is unlocked but sync is off - enable sync
-            !currentlyLocked && !ContentResolver.getMasterSyncAutomatically() -> {
-                ContentResolver.setMasterSyncAutomatically(true)
-                Log.d(TAG, "Periodic enforcement enabled sync (device unlocked)")
-            }
+            // Case 3: DELETED - No longer automatically enabling sync when unlocked
+            // This prevents overriding user/system AutoSync preferences
 
             // Case 4: Persistent state mismatch - device got locked but we missed it
             !wasLocked && currentlyLocked -> {
