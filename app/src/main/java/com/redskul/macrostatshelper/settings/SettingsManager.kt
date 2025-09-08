@@ -19,6 +19,8 @@ class SettingsManager(private val context: Context) {
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_SHOW_NOTIFICATION = "show_notification"
         private const val KEY_SHOW_LAST_MONTH_USAGE = "show_last_month_usage"
+        private const val KEY_SHOW_LAST_WEEK_USAGE = "show_last_week_usage"
+        private const val KEY_SHOW_YESTERDAY_USAGE = "show_yesterday_usage"
         private const val KEY_UPDATE_INTERVAL = "update_interval_minutes"
         private const val DEFAULT_UPDATE_INTERVAL = 15 // Default interval is now 15 minutes
     }
@@ -104,6 +106,22 @@ class SettingsManager(private val context: Context) {
 
     fun isShowLastMonthUsageEnabled(): Boolean {
         return sharedPreferences.getBoolean(KEY_SHOW_LAST_MONTH_USAGE, true)
+    }
+
+    fun saveShowLastWeekUsage(enabled: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_LAST_WEEK_USAGE, enabled).apply()
+    }
+
+    fun isShowLastWeekUsageEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_LAST_WEEK_USAGE, false)
+    }
+
+    fun saveShowYesterdayUsage(enabled: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_SHOW_YESTERDAY_USAGE, enabled).apply()
+    }
+
+    fun isShowYesterdayUsageEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SHOW_YESTERDAY_USAGE, false)
     }
 
     fun enforcePermissionRestrictions() {
@@ -197,7 +215,7 @@ class SettingsManager(private val context: Context) {
             context.getString(R.string.no_data_selected)
         }
 
-        // Create expanded text with conditional last month section
+        // Create expanded text with conditional additional usage sections
         val expandedText = buildString {
             if (wifiParts.isNotEmpty()) {
                 appendLine(context.getString(R.string.wifi_usage_label))
@@ -216,6 +234,20 @@ class SettingsManager(private val context: Context) {
                 appendLine() // Add blank line before last month section
                 appendLine(context.getString(R.string.last_month_usage_heading))
                 appendLine("${context.getString(R.string.last_month_wifi_label)} ${usageData.wifiLastMonth} | ${context.getString(R.string.last_month_data_label)} ${usageData.mobileLastMonth}")
+            }
+
+            // Add Last Week's Usage section only if enabled
+            if (isShowLastWeekUsageEnabled()) {
+                appendLine() // Add blank line before last week section
+                appendLine(context.getString(R.string.last_week_usage_heading))
+                appendLine("${context.getString(R.string.last_week_wifi_label)} ${usageData.wifiLastWeek} | ${context.getString(R.string.last_week_data_label)} ${usageData.mobileLastWeek}")
+            }
+
+            // Add Yesterday's Usage section only if enabled
+            if (isShowYesterdayUsageEnabled()) {
+                appendLine() // Add blank line before yesterday section
+                appendLine(context.getString(R.string.yesterday_usage_heading))
+                appendLine("${context.getString(R.string.yesterday_wifi_label)} ${usageData.wifiYesterday} | ${context.getString(R.string.yesterday_data_label)} ${usageData.mobileYesterday}")
             }
 
             if (wifiParts.isEmpty() && mobileParts.isEmpty()) {

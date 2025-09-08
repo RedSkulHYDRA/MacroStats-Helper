@@ -103,10 +103,58 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        // Setup last month usage switch
-        binding.lastMonthEnabledSwitch.setOnCheckedChangeListener { switch, _ ->
-            // Add haptic feedback
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        // Setup historical data checkboxes with haptic feedback AND mutual exclusivity
+        binding.lastMonthCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            binding.lastMonthCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            if (isChecked) {
+                // Uncheck other historical data options
+                binding.lastWeekCheckbox.isChecked = false
+                binding.yesterdayCheckbox.isChecked = false
+            }
+        }
+
+        binding.lastWeekCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            binding.lastWeekCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            if (isChecked) {
+                // Uncheck other historical data options
+                binding.lastMonthCheckbox.isChecked = false
+                binding.yesterdayCheckbox.isChecked = false
+            }
+        }
+
+        binding.yesterdayCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            binding.yesterdayCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            if (isChecked) {
+                // Uncheck other historical data options
+                binding.lastMonthCheckbox.isChecked = false
+                binding.lastWeekCheckbox.isChecked = false
+            }
+        }
+
+        // Setup WiFi checkboxes with haptic feedback
+        binding.wifiDailyCheckbox.setOnCheckedChangeListener { _, _ ->
+            binding.wifiDailyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
+
+        binding.wifiWeeklyCheckbox.setOnCheckedChangeListener { _, _ ->
+            binding.wifiWeeklyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
+
+        binding.wifiMonthlyCheckbox.setOnCheckedChangeListener { _, _ ->
+            binding.wifiMonthlyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
+
+        // Setup Mobile checkboxes with haptic feedback
+        binding.mobileDailyCheckbox.setOnCheckedChangeListener { _, _ ->
+            binding.mobileDailyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
+
+        binding.mobileWeeklyCheckbox.setOnCheckedChangeListener { _, _ ->
+            binding.mobileWeeklyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        }
+
+        binding.mobileMonthlyCheckbox.setOnCheckedChangeListener { _, _ ->
+            binding.mobileMonthlyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
 
         // Setup usage access button
@@ -154,8 +202,10 @@ class SettingsActivity : AppCompatActivity() {
             binding.notificationEnabledSwitch.isChecked = false
         }
 
-        // Last month switch doesn't require permissions, but is dependent on notification being enabled
-        binding.lastMonthEnabledSwitch.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
+        // Historical data checkboxes don't require permissions, but are dependent on notification being enabled
+        binding.lastMonthCheckbox.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
+        binding.lastWeekCheckbox.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
+        binding.yesterdayCheckbox.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
     }
 
     private fun updatePermissionStatus() {
@@ -180,8 +230,35 @@ class SettingsActivity : AppCompatActivity() {
         // Set notification switch (moved to top)
         binding.notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
 
-        // Set last month usage switch
-        binding.lastMonthEnabledSwitch.isChecked = settingsManager.isShowLastMonthUsageEnabled()
+        // Set historical data checkboxes (mutually exclusive - only one can be true)
+        val showLastMonth = settingsManager.isShowLastMonthUsageEnabled()
+        val showLastWeek = settingsManager.isShowLastWeekUsageEnabled()
+        val showYesterday = settingsManager.isShowYesterdayUsageEnabled()
+
+        // Ensure only one is selected (priority: Last Month > Last Week > Yesterday)
+        when {
+            showLastMonth -> {
+                binding.lastMonthCheckbox.isChecked = true
+                binding.lastWeekCheckbox.isChecked = false
+                binding.yesterdayCheckbox.isChecked = false
+            }
+            showLastWeek -> {
+                binding.lastMonthCheckbox.isChecked = false
+                binding.lastWeekCheckbox.isChecked = true
+                binding.yesterdayCheckbox.isChecked = false
+            }
+            showYesterday -> {
+                binding.lastMonthCheckbox.isChecked = false
+                binding.lastWeekCheckbox.isChecked = false
+                binding.yesterdayCheckbox.isChecked = true
+            }
+            else -> {
+                // None selected
+                binding.lastMonthCheckbox.isChecked = false
+                binding.lastWeekCheckbox.isChecked = false
+                binding.yesterdayCheckbox.isChecked = false
+            }
+        }
 
         // Set WiFi checkboxes
         binding.wifiDailyCheckbox.isChecked = settings.wifiTimePeriods.contains(TimePeriod.DAILY)
@@ -223,8 +300,11 @@ class SettingsActivity : AppCompatActivity() {
         // Save notification preference (will be validated by SettingsManager)
         settingsManager.saveNotificationEnabled(isNotificationEnabled)
 
-        // Save last month usage preference
-        settingsManager.saveShowLastMonthUsage(binding.lastMonthEnabledSwitch.isChecked)
+        // Save historical data preferences (mutually exclusive)
+        // Only save true for the checked one, false for others
+        settingsManager.saveShowLastMonthUsage(binding.lastMonthCheckbox.isChecked)
+        settingsManager.saveShowLastWeekUsage(binding.lastWeekCheckbox.isChecked)
+        settingsManager.saveShowYesterdayUsage(binding.yesterdayCheckbox.isChecked)
 
         // Handle immediate notification changes
         if (isNotificationEnabled && !wasNotificationEnabled) {
@@ -243,12 +323,12 @@ class SettingsActivity : AppCompatActivity() {
             notificationHelper.cancelNotification()
             android.util.Log.d("SettingsActivity", "Notification hidden immediately after disabling")
         } else if (isNotificationEnabled) {
-            // Notification is enabled and was already enabled - update to reflect last month toggle change
+            // Notification is enabled and was already enabled - update to reflect checkbox changes
             lifecycleScope.launch {
                 try {
                     val usageData = dataUsageMonitor.getUsageData()
                     notificationHelper.showUsageNotification(usageData)
-                    android.util.Log.d("SettingsActivity", "Notification updated to reflect last month toggle change")
+                    android.util.Log.d("SettingsActivity", "Notification updated to reflect historical data checkbox changes")
                 } catch (e: Exception) {
                     android.util.Log.e("SettingsActivity", "Error updating notification", e)
                 }

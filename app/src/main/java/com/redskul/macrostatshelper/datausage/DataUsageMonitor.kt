@@ -17,7 +17,11 @@ data class UsageData(
     val mobileWeekly: String,
     val mobileMonthly: String,
     val wifiLastMonth: String,
-    val mobileLastMonth: String
+    val mobileLastMonth: String,
+    val wifiLastWeek: String,
+    val mobileLastWeek: String,
+    val wifiYesterday: String,
+    val mobileYesterday: String
 )
 
 class DataUsageMonitor(private val context: Context) {
@@ -92,12 +96,58 @@ class DataUsageMonitor(private val context: Context) {
         lastMonthCalendar.set(Calendar.MILLISECOND, 999)
         val lastMonthEnd = lastMonthCalendar.timeInMillis
 
+        // Last week calculation (Monday to Sunday of previous week)
+        val lastWeekCalendar = Calendar.getInstance()
+        val currentWeekDaysSinceMonday = when (lastWeekCalendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> 6
+            Calendar.MONDAY -> 0
+            Calendar.TUESDAY -> 1
+            Calendar.WEDNESDAY -> 2
+            Calendar.THURSDAY -> 3
+            Calendar.FRIDAY -> 4
+            Calendar.SATURDAY -> 5
+            else -> 0
+        }
+        // Go to Monday of current week, then subtract 7 days to get Monday of last week
+        lastWeekCalendar.add(Calendar.DAY_OF_MONTH, -currentWeekDaysSinceMonday - 7)
+        lastWeekCalendar.set(Calendar.HOUR_OF_DAY, 0)
+        lastWeekCalendar.set(Calendar.MINUTE, 0)
+        lastWeekCalendar.set(Calendar.SECOND, 0)
+        lastWeekCalendar.set(Calendar.MILLISECOND, 0)
+        val lastWeekStart = lastWeekCalendar.timeInMillis
+
+        // Sunday of last week (end of last week)
+        lastWeekCalendar.add(Calendar.DAY_OF_MONTH, 6) // Add 6 days to get Sunday
+        lastWeekCalendar.set(Calendar.HOUR_OF_DAY, 23)
+        lastWeekCalendar.set(Calendar.MINUTE, 59)
+        lastWeekCalendar.set(Calendar.SECOND, 59)
+        lastWeekCalendar.set(Calendar.MILLISECOND, 999)
+        val lastWeekEnd = lastWeekCalendar.timeInMillis
+
+        // Yesterday calculation
+        val yesterdayCalendar = Calendar.getInstance()
+        yesterdayCalendar.add(Calendar.DAY_OF_MONTH, -1) // Go to yesterday
+        yesterdayCalendar.set(Calendar.HOUR_OF_DAY, 0)
+        yesterdayCalendar.set(Calendar.MINUTE, 0)
+        yesterdayCalendar.set(Calendar.SECOND, 0)
+        yesterdayCalendar.set(Calendar.MILLISECOND, 0)
+        val yesterdayStart = yesterdayCalendar.timeInMillis
+
+        // End of yesterday
+        yesterdayCalendar.set(Calendar.HOUR_OF_DAY, 23)
+        yesterdayCalendar.set(Calendar.MINUTE, 59)
+        yesterdayCalendar.set(Calendar.SECOND, 59)
+        yesterdayCalendar.set(Calendar.MILLISECOND, 999)
+        val yesterdayEnd = yesterdayCalendar.timeInMillis
+
         // Debug: Log the time periods
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         Log.d("DataUsageMonitor", "Daily period: ${dateFormat.format(dailyStart)} to ${dateFormat.format(now)}")
         Log.d("DataUsageMonitor", "Weekly period: ${dateFormat.format(weeklyStart)} to ${dateFormat.format(now)}")
         Log.d("DataUsageMonitor", "Monthly period: ${dateFormat.format(monthlyStart)} to ${dateFormat.format(now)}")
         Log.d("DataUsageMonitor", "Last month period: ${dateFormat.format(lastMonthStart)} to ${dateFormat.format(lastMonthEnd)}")
+        Log.d("DataUsageMonitor", "Last week period: ${dateFormat.format(lastWeekStart)} to ${dateFormat.format(lastWeekEnd)}")
+        Log.d("DataUsageMonitor", "Yesterday period: ${dateFormat.format(yesterdayStart)} to ${dateFormat.format(yesterdayEnd)}")
 
         val subscriberId = getSubscriberId()
 
@@ -105,15 +155,22 @@ class DataUsageMonitor(private val context: Context) {
         val wifiWeekly = getWifiUsage(subscriberId, weeklyStart, now)
         val wifiMonthly = getWifiUsage(subscriberId, monthlyStart, now)
         val wifiLastMonth = getWifiUsage(subscriberId, lastMonthStart, lastMonthEnd)
+        val wifiLastWeek = getWifiUsage(subscriberId, lastWeekStart, lastWeekEnd)
+        val wifiYesterday = getWifiUsage(subscriberId, yesterdayStart, yesterdayEnd)
+
         val mobileDaily = getMobileUsage(subscriberId, dailyStart, now)
         val mobileWeekly = getMobileUsage(subscriberId, weeklyStart, now)
         val mobileMonthly = getMobileUsage(subscriberId, monthlyStart, now)
         val mobileLastMonth = getMobileUsage(subscriberId, lastMonthStart, lastMonthEnd)
+        val mobileLastWeek = getMobileUsage(subscriberId, lastWeekStart, lastWeekEnd)
+        val mobileYesterday = getMobileUsage(subscriberId, yesterdayStart, yesterdayEnd)
 
         Log.d("DataUsageMonitor", "Raw bytes - WiFi Daily: $wifiDaily, Mobile Daily: $mobileDaily")
         Log.d("DataUsageMonitor", "Raw bytes - WiFi Weekly: $wifiWeekly, Mobile Weekly: $mobileWeekly")
         Log.d("DataUsageMonitor", "Raw bytes - WiFi Monthly: $wifiMonthly, Mobile Monthly: $mobileMonthly")
         Log.d("DataUsageMonitor", "Raw bytes - WiFi Last Month: $wifiLastMonth, Mobile Last Month: $mobileLastMonth")
+        Log.d("DataUsageMonitor", "Raw bytes - WiFi Last Week: $wifiLastWeek, Mobile Last Week: $mobileLastWeek")
+        Log.d("DataUsageMonitor", "Raw bytes - WiFi Yesterday: $wifiYesterday, Mobile Yesterday: $mobileYesterday")
 
         return UsageData(
             wifiDaily = formatBytes(wifiDaily),
@@ -123,7 +180,11 @@ class DataUsageMonitor(private val context: Context) {
             mobileWeekly = formatBytes(mobileWeekly),
             mobileMonthly = formatBytes(mobileMonthly),
             wifiLastMonth = formatBytes(wifiLastMonth),
-            mobileLastMonth = formatBytes(mobileLastMonth)
+            mobileLastMonth = formatBytes(mobileLastMonth),
+            wifiLastWeek = formatBytes(wifiLastWeek),
+            mobileLastWeek = formatBytes(mobileLastWeek),
+            wifiYesterday = formatBytes(wifiYesterday),
+            mobileYesterday = formatBytes(mobileYesterday)
         )
     }
 
@@ -143,10 +204,10 @@ class DataUsageMonitor(private val context: Context) {
                 0L
             }
 
-            Log.d("DataUsageMonitor", "WiFi device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes") // Fixed: Removed redundant qualifier
+            Log.d("DataUsageMonitor", "WiFi device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes")
             totalBytes
         } catch (e: Exception) {
-            Log.e("DataUsageMonitor", "Error getting WiFi device usage", e) // Fixed: Removed redundant qualifier
+            Log.e("DataUsageMonitor", "Error getting WiFi device usage", e)
             // Fallback to original method
             getWifiUsageFallback(startTime, endTime)
         }
@@ -168,10 +229,10 @@ class DataUsageMonitor(private val context: Context) {
                 0L
             }
 
-            Log.d("DataUsageMonitor", "Mobile device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes") // Fixed: Removed redundant qualifier
+            Log.d("DataUsageMonitor", "Mobile device usage: rx=${bucket?.rxBytes}, tx=${bucket?.txBytes}, total=$totalBytes")
             totalBytes
         } catch (e: Exception) {
-            Log.e("DataUsageMonitor", "Error getting mobile device usage", e) // Fixed: Removed redundant qualifier
+            Log.e("DataUsageMonitor", "Error getting mobile device usage", e)
             // Fallback to original method
             getMobileUsageFallback(subscriberId, startTime, endTime)
         }
@@ -194,10 +255,10 @@ class DataUsageMonitor(private val context: Context) {
                 totalBytes += bucket.rxBytes + bucket.txBytes
             }
             networkStats.close()
-            Log.d("DataUsageMonitor", "WiFi fallback total bytes: $totalBytes") // Fixed: Removed redundant qualifier
+            Log.d("DataUsageMonitor", "WiFi fallback total bytes: $totalBytes")
             totalBytes
         } catch (e: Exception) {
-            Log.e("DataUsageMonitor", "Error in WiFi fallback", e) // Fixed: Removed redundant qualifier
+            Log.e("DataUsageMonitor", "Error in WiFi fallback", e)
             0L
         }
     }
@@ -222,7 +283,7 @@ class DataUsageMonitor(private val context: Context) {
 
             // If no data found and subscriberId was provided, try without subscriberId
             if (totalBytes == 0L && subscriberId != null) {
-                Log.d("DataUsageMonitor", "No mobile data with subscriberId, trying without...") // Fixed: Removed redundant qualifier
+                Log.d("DataUsageMonitor", "No mobile data with subscriberId, trying without...")
                 networkStats = networkStatsManager.querySummary(
                     TYPE_MOBILE, // Fixed: Use local constant instead of deprecated ConnectivityManager.TYPE_MOBILE
                     null,
@@ -237,10 +298,10 @@ class DataUsageMonitor(private val context: Context) {
                 networkStats.close()
             }
 
-            Log.d("DataUsageMonitor", "Mobile fallback total bytes: $totalBytes") // Fixed: Removed redundant qualifier
+            Log.d("DataUsageMonitor", "Mobile fallback total bytes: $totalBytes")
             totalBytes
         } catch (e: Exception) {
-            Log.e("DataUsageMonitor", "Error in mobile fallback", e) // Fixed: Removed redundant qualifier
+            Log.e("DataUsageMonitor", "Error in mobile fallback", e)
             0L
         }
     }

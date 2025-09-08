@@ -49,8 +49,13 @@
     <string name="show_data_usage_notification">Show Data Usage Notification</string>
     <string name="notification_description">Show persistent notification with usage data</string>
     <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background</string>
-    <string name="show_last_month_usage">Show Last Month\'s Usage</string>
-    <string name="last_month_usage_description">Include previous month\'s data in notification</string>
+
+    <!-- Historical Data Section -->
+    <string name="historical_data_title">Historical Data</string>
+    <string name="historical_data_description">Include historical usage data in notifications for additional context</string>
+    <string name="last_month_checkbox_label">Last Month</string>
+    <string name="last_week_checkbox_label">Last Week</string>
+    <string name="yesterday_checkbox_label">Yesterday</string>
 
     <!-- AutoSync Settings -->
     <string name="autosync_settings_title">AutoSync Management</string>
@@ -261,6 +266,16 @@
     <string name="last_month_usage_heading">Last Month\'s Usage:</string>
     <string name="last_month_wifi_label">Wifi:</string>
     <string name="last_month_data_label">Data:</string>
+
+    <!-- Last Week's Usage strings -->
+    <string name="last_week_usage_heading">Last Week\'s Usage:</string>
+    <string name="last_week_wifi_label">Wifi:</string>
+    <string name="last_week_data_label">Data:</string>
+
+    <!-- Yesterday's Usage strings -->
+    <string name="yesterday_usage_heading">Yesterday\'s Usage:</string>
+    <string name="yesterday_wifi_label">Wifi:</string>
+    <string name="yesterday_data_label">Data:</string>
 
     <!-- Vibration Settings -->
     <string name="vibration_settings_title">Vibration Settings</string>

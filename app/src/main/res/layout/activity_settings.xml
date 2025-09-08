@@ -69,39 +69,56 @@
                 android:text="@string/notification_description"
                 android:textSize="@dimen/text_size_small"
                 android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_lg" />
+
+            <!-- Historical Data Section -->
+            <TextView
+                android:id="@+id/historical_data_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/historical_data_title"
+                android:textSize="@dimen/text_size_subheading"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/historical_data_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/historical_data_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
-            <!-- Last Month Usage Toggle Section -->
+            <!-- Horizontal Checkboxes for Historical Data -->
             <LinearLayout
-                android:id="@+id/last_month_switch_layout"
+                android:id="@+id/historical_data_checkboxes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingBottom="@dimen/spacing_sm">
+                android:paddingBottom="@dimen/spacing_xl">
 
-                <TextView
-                    android:id="@+id/last_month_switch_label"
+                <CheckBox
+                    android:id="@+id/last_month_checkbox"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_last_month_usage"
-                    android:textSize="@dimen/text_size_subheading" />
+                    android:text="@string/last_month_checkbox_label" />
 
-                <Switch
-                    android:id="@+id/last_month_enabled_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <CheckBox
+                    android:id="@+id/last_week_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/last_week_checkbox_label" />
+
+                <CheckBox
+                    android:id="@+id/yesterday_checkbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/yesterday_checkbox_label" />
 
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/last_month_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/last_month_usage_description"
-                android:textSize="@dimen/text_size_small"
-                android:alpha="0.7"
-                android:paddingBottom="@dimen/spacing_xl" />
 
             <!-- WiFi Section -->
             <TextView
@@ -180,7 +197,6 @@
 
             </LinearLayout>
 
-
             <TextView
                 android:id="@+id/notification_note"
                 android:layout_width="match_parent"
@@ -197,7 +213,6 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_size_small"
                 android:paddingTop="@dimen/spacing_xs"/>
-
 
             <Button
                 android:id="@+id/usage_access_button"
