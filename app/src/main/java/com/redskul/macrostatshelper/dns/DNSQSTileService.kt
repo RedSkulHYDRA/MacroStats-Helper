@@ -15,17 +15,20 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
+import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
 class DNSQSTileService : BaseQSTileService() {
 
     private lateinit var dnsManager: DNSManager
+    private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onCreate() {
         super.onCreate()
         dnsManager = DNSManager(this)
+        qsTileSettingsManager = QSTileSettingsManager(this)
     }
 
     override fun onStartListening() {
@@ -241,7 +244,7 @@ class DNSQSTileService : BaseQSTileService() {
                         // Fully functional
                         dnsManager.syncWithSystemSettings()
                         val currentDNS = dnsManager.getCurrentDNS()
-                        val showHeading = dnsManager.getShowHeading()
+                        val showHeading = qsTileSettingsManager.getShowDNSInTitle()
                         val dnsDisplayText = formatDNSDisplayText(currentDNS)
 
                         // Set tile state based on DNS selection

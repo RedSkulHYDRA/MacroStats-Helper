@@ -11,12 +11,14 @@ import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
+import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
 class TorchGlyphQSTileService : BaseQSTileService() {
 
     private lateinit var torchGlyphManager: TorchGlyphManager
+    private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     companion object {
@@ -35,6 +37,7 @@ class TorchGlyphQSTileService : BaseQSTileService() {
     override fun onCreate() {
         super.onCreate()
         torchGlyphManager = TorchGlyphManager(this)
+        qsTileSettingsManager = QSTileSettingsManager(this)
     }
 
     override fun onStartListening() {
@@ -159,7 +162,7 @@ class TorchGlyphQSTileService : BaseQSTileService() {
                     } else {
                         // Fully functional
                         val currentState = torchGlyphManager.getCurrentState()
-                        val showHeading = torchGlyphManager.getShowHeading()
+                        val showHeading = qsTileSettingsManager.getShowTorchGlyphInTitle()
                         val stateText = torchGlyphManager.getCurrentStateText()
                         val config = TileConfigHelper.getTorchGlyphTileConfig(
                             this@TorchGlyphQSTileService,

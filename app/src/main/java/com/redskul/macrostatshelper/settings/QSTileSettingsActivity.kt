@@ -30,7 +30,7 @@ import com.redskul.macrostatshelper.refreshrate.RefreshRateQSTileService
 import com.redskul.macrostatshelper.aod.AODManager
 import com.redskul.macrostatshelper.aod.AODQSTileService
 import com.redskul.macrostatshelper.utils.PermissionHelper
-import com.redskul.macrostatshelper.utils.VibrationManager // NEW IMPORT
+import com.redskul.macrostatshelper.utils.VibrationManager
 import com.redskul.macrostatshelper.databinding.ActivityQsTileSettingsBinding
 import android.content.Intent
 import android.provider.Settings
@@ -48,7 +48,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var torchGlyphManager: TorchGlyphManager
     private lateinit var refreshRateManager: RefreshRateManager
     private lateinit var aodManager: AODManager
-    private lateinit var vibrationManager: VibrationManager // NEW
+    private lateinit var vibrationManager: VibrationManager
     private var binding: ActivityQsTileSettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +69,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         torchGlyphManager = TorchGlyphManager(this)
         refreshRateManager = RefreshRateManager(this)
         aodManager = AODManager(this)
-        vibrationManager = VibrationManager(this) // NEW
+        vibrationManager = VibrationManager(this)
 
         setupWindowInsets()
         setupUI()
@@ -82,9 +82,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding = null
     }
 
-    // ... [Keep all existing methods unchanged] ...
-
-    // MODIFY the setupSwitches method to add vibration switch handling
     private fun setupSwitches(binding: ActivityQsTileSettingsBinding) {
         // Setup permission-required switches
         binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
@@ -117,31 +114,31 @@ class QSTileSettingsActivity : AppCompatActivity() {
             triggerImmediateTileUpdates()
         }
 
-        // DNS heading switch
+        // DNS heading switch - using centralized QSTileSettingsManager
         binding.dnsShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             triggerDNSTileUpdate()
         }
 
-        // Torch/Glyph heading switch
+        // Torch/Glyph heading switch - using centralized QSTileSettingsManager
         binding.torchGlyphShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             triggerTorchGlyphTileUpdate()
         }
 
-        // Refresh Rate heading switch
+        // Refresh Rate heading switch - using centralized QSTileSettingsManager
         binding.refreshRateShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             triggerRefreshRateTileUpdate()
         }
 
-        // AOD heading switch
+        // AOD heading switch - using centralized QSTileSettingsManager
         binding.aodShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             triggerAODTileUpdate()
         }
 
-        // NEW: Vibration switch
+        // Vibration switch
         binding.vibrationEnabledSwitch.setOnCheckedChangeListener { switch, isChecked ->
             switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
 
@@ -161,7 +158,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
     }
 
-    // MODIFY the loadCurrentSettings method to include vibration setting
     private fun loadCurrentSettings() {
         val binding = binding ?: return
 
@@ -174,8 +170,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val showTorchGlyphInTitle = qsTileSettingsManager.getShowTorchGlyphInTitle()
         val showRefreshRateInTitle = qsTileSettingsManager.getShowRefreshRateInTitle()
         val showAODInTitle = qsTileSettingsManager.getShowAODInTitle()
+        val showDNSInTitle = qsTileSettingsManager.getShowDNSInTitle()
         val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
-        val vibrationEnabled = vibrationManager.isVibrationEnabled() // NEW
+        val vibrationEnabled = vibrationManager.isVibrationEnabled()
 
         // Set spinner selections
         binding.wifiTileSpinner.setSelection(when (wifiPeriod) {
@@ -190,7 +187,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             TimePeriod.MONTHLY -> 2
         })
 
-        // Set switch states
+        // Set switch states - ALL CONSISTENT NOW
         binding.showPeriodInTitleSwitch.isChecked = showPeriodInTitle
         binding.showChargeInTitleSwitch.isChecked = showChargeInTitle
         binding.showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
@@ -198,9 +195,10 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.torchGlyphShowHeadingSwitch.isChecked = showTorchGlyphInTitle
         binding.refreshRateShowHeadingSwitch.isChecked = showRefreshRateInTitle
         binding.aodShowHeadingSwitch.isChecked = showAODInTitle
-        binding.vibrationEnabledSwitch.isChecked = vibrationEnabled // NEW
+        binding.dnsShowHeadingSwitch.isChecked = showDNSInTitle
+        binding.vibrationEnabledSwitch.isChecked = vibrationEnabled
 
-        // NEW: Disable vibration switch if device has no vibrator
+        // Disable vibration switch if device has no vibrator
         if (!vibrationManager.hasVibrator()) {
             binding.vibrationEnabledSwitch.isEnabled = false
             binding.vibrationEnabledSwitch.isChecked = false
@@ -217,7 +215,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         updateSecureSettingsPermissionStatus()
     }
 
-    // MODIFY the saveSettings method to include vibration setting
     private fun saveSettings() {
         val binding = binding ?: return
 
@@ -249,8 +246,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager.saveShowTorchGlyphInTitle(binding.torchGlyphShowHeadingSwitch.isChecked)
         qsTileSettingsManager.saveShowRefreshRateInTitle(binding.refreshRateShowHeadingSwitch.isChecked)
         qsTileSettingsManager.saveShowAODInTitle(binding.aodShowHeadingSwitch.isChecked)
+        qsTileSettingsManager.saveShowDNSInTitle(binding.dnsShowHeadingSwitch.isChecked)
 
-        // NEW: Save vibration setting
+        // Save vibration setting
         vibrationManager.setVibrationEnabled(binding.vibrationEnabledSwitch.isChecked)
 
         if (designCapacity > 0) {
@@ -280,8 +278,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
         finish()
     }
-
-    // ... [Keep all other existing methods unchanged] ...
 
     private fun setupWindowInsets() {
         val binding = binding ?: return
@@ -390,7 +386,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dns3NameEditText.setText(dns3.name)
         binding.dns3UrlEditText.setText(dns3.url)
 
-        binding.dnsShowHeadingSwitch.isChecked = dnsManager.getShowHeading()
+        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
 
         // Show DNS 2 and 3 if they have data
         if (dns2.isValid() && dns2.url.isNotEmpty()) {
@@ -404,15 +400,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun setupTorchGlyphSection(binding: ActivityQsTileSettingsBinding) {
-        binding.torchGlyphShowHeadingSwitch.isChecked = torchGlyphManager.getShowHeading()
+        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
     }
 
     private fun setupRefreshRateSection(binding: ActivityQsTileSettingsBinding) {
-        binding.refreshRateShowHeadingSwitch.isChecked = refreshRateManager.getShowHeading()
+        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
     }
 
     private fun setupAODSection(binding: ActivityQsTileSettingsBinding) {
-        binding.aodShowHeadingSwitch.isChecked = aodManager.getShowHeading()
+        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
     }
 
     private fun setupAdvancedTilesSection(binding: ActivityQsTileSettingsBinding) {
@@ -667,9 +663,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
             dnsManager.saveDNSOption(3, "", "")
         }
 
-        // Save DNS heading preference
-        dnsManager.setShowHeading(binding.dnsShowHeadingSwitch.isChecked)
-
         // Enable DNS tile if any DNS options are configured
         val hasValidDNS = dnsManager.getAllDNSOptions().any { !it.isOff() && !it.isAuto() && it.isValid() }
         dnsManager.setDNSEnabled(hasValidDNS)
@@ -678,9 +671,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun saveTorchGlyphSettings(binding: ActivityQsTileSettingsBinding) {
-        // Save Torch/Glyph heading preference
-        torchGlyphManager.setShowHeading(binding.torchGlyphShowHeadingSwitch.isChecked)
-
         // Enable Torch/Glyph tile if permissions are granted
         val hasValidTorchGlyph = torchGlyphManager.hasRequiredPermissions()
         torchGlyphManager.setTorchGlyphEnabled(hasValidTorchGlyph)
@@ -689,9 +679,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun saveRefreshRateSettings(binding: ActivityQsTileSettingsBinding) {
-        // Save Refresh Rate heading preference
-        refreshRateManager.setShowHeading(binding.refreshRateShowHeadingSwitch.isChecked)
-
         // Enable Refresh Rate tile if permissions are granted
         val hasValidRefreshRate = refreshRateManager.hasRequiredPermissions()
         refreshRateManager.setRefreshRateEnabled(hasValidRefreshRate)
@@ -700,9 +687,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun saveAODSettings(binding: ActivityQsTileSettingsBinding) {
-        // Save AOD heading preference
-        aodManager.setShowHeading(binding.aodShowHeadingSwitch.isChecked)
-
         // Enable AOD tile if permissions are granted
         val hasValidAOD = aodManager.hasRequiredPermissions()
         aodManager.setAODEnabled(hasValidAOD)

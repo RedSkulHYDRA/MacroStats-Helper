@@ -19,7 +19,6 @@ class RefreshRateManager(private val context: Context) {
     companion object {
         private const val KEY_REFRESH_RATE_ENABLED = "refresh_rate_enabled"
         private const val KEY_CURRENT_STATE = "current_state"
-        private const val KEY_SHOW_HEADING = "show_heading"
 
         // Refresh rate modes for Global settings
         private const val REFRESH_RATE_MODE_DYNAMIC = 0
@@ -159,23 +158,6 @@ class RefreshRateManager(private val context: Context) {
             Log.e(TAG, "Error getting refresh rate mode", e)
             REFRESH_RATE_MODE_DYNAMIC
         }
-    }
-
-    /**
-     * Gets whether to show heading in tile.
-     */
-    fun getShowHeading(): Boolean {
-        return sharedPreferences.getBoolean(KEY_SHOW_HEADING, true)
-    }
-
-    /**
-     * Sets whether to show heading in tile.
-     */
-    fun setShowHeading(show: Boolean) {
-        sharedPreferences.edit {
-            putBoolean(KEY_SHOW_HEADING, show)
-        }
-        Log.d(TAG, "Show heading set to: $show")
     }
 
     /**

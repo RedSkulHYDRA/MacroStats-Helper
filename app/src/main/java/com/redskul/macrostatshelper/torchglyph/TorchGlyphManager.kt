@@ -26,7 +26,6 @@ class TorchGlyphManager(private val context: Context) {
     companion object {
         private const val KEY_TORCH_GLYPH_ENABLED = "torch_glyph_enabled"
         private const val KEY_CURRENT_STATE = "current_state"
-        private const val KEY_SHOW_HEADING = "show_heading"
 
         // Torch/Glyph states
         const val STATE_OFF = 0
@@ -289,23 +288,6 @@ class TorchGlyphManager(private val context: Context) {
     }
 
     /**
-     * Gets whether to show heading in tile.
-     */
-    fun getShowHeading(): Boolean {
-        return sharedPreferences.getBoolean(KEY_SHOW_HEADING, true)
-    }
-
-    /**
-     * Sets whether to show heading in tile.
-     */
-    fun setShowHeading(show: Boolean) {
-        sharedPreferences.edit {
-            putBoolean(KEY_SHOW_HEADING, show)
-        }
-        Log.d(TAG, "Show heading set to: $show")
-    }
-
-    /**
      * Gets current state display text.
      */
     fun getCurrentStateText(): String {
@@ -315,7 +297,6 @@ class TorchGlyphManager(private val context: Context) {
             TorchGlyphState.GLYPH_ON -> context.getString(R.string.torch_glyph_state_glyph)
         }
     }
-
 
     /**
      * Gets status text for current torch/glyph state.

@@ -24,7 +24,6 @@ class DNSManager(private val context: Context) {
         private const val KEY_DNS_2_URL = "dns_2_url"
         private const val KEY_DNS_3_NAME = "dns_3_name"
         private const val KEY_DNS_3_URL = "dns_3_url"
-        private const val KEY_SHOW_HEADING = "show_heading"
 
         // DNS modes for Global settings
         private const val DNS_MODE_OFF = "off"
@@ -236,23 +235,6 @@ class DNSManager(private val context: Context) {
             Log.e(TAG, "Error getting DNS specifier", e)
             ""
         }
-    }
-
-    /**
-     * Gets whether to show heading in tile.
-     */
-    fun getShowHeading(): Boolean {
-        return sharedPreferences.getBoolean(KEY_SHOW_HEADING, true)
-    }
-
-    /**
-     * Sets whether to show heading in tile.
-     */
-    fun setShowHeading(show: Boolean) {
-        sharedPreferences.edit {
-            putBoolean(KEY_SHOW_HEADING, show)
-        }
-        Log.d(TAG, "Show heading set to: $show")
     }
 
     /**

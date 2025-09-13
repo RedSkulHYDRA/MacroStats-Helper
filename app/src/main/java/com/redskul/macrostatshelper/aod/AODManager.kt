@@ -19,7 +19,6 @@ class AODManager(private val context: Context) {
     companion object {
         private const val KEY_AOD_ENABLED = "aod_enabled"
         private const val KEY_CURRENT_STATE = "current_state"
-        private const val KEY_SHOW_HEADING = "show_heading"
 
         // AOD states
         const val STATE_OFF = 0
@@ -202,23 +201,6 @@ class AODManager(private val context: Context) {
             Log.e(TAG, "Error getting aod_display_mode", e)
             AOD_MODE_ALWAYS_ON
         }
-    }
-
-    /**
-     * Gets whether to show heading in tile.
-     */
-    fun getShowHeading(): Boolean {
-        return sharedPreferences.getBoolean(KEY_SHOW_HEADING, true)
-    }
-
-    /**
-     * Sets whether to show heading in tile.
-     */
-    fun setShowHeading(show: Boolean) {
-        sharedPreferences.edit {
-            putBoolean(KEY_SHOW_HEADING, show)
-        }
-        Log.d(TAG, "Show heading set to: $show")
     }
 
     /**
