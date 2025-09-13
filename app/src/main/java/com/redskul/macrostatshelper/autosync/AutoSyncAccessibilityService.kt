@@ -15,13 +15,6 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Accessibility service that manages auto-sync functionality based on device lock state.
- * Monitors device lock/unlock events and automatically toggles sync settings after a configured delay.
- *
- * Uses:
- * - Foreground service for 15-minute delay (precise timing)
- * - WorkManager for delays > 15 minutes (30, 45, 60 minutes - reliable background execution)
- *
- * Simplified: Removed periodic enforcement, handler backup, and legacy alarm-based broadcast receiver.
  */
 class AutoSyncAccessibilityService : AccessibilityService() {
 
@@ -32,6 +25,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
     companion object {
         private const val MIN_EVENT_INTERVAL = 1000L // Minimum 1 second between events
         private const val TAG = "AutoSyncAccessibility"
+        private const val AUTOSYNC_DISABLE_WORK_NAME = "autosync_disable_exact"
 
         /**
          * Helper method to check if accessibility service is enabled
@@ -76,7 +70,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
         isDeviceLocked = keyguardManager.isKeyguardLocked
         Log.d(TAG, "Initial lock state: $isDeviceLocked")
 
-        // Check persisted state on restart
+        // Check persisted state on restart (reschedule or catch-up)
         checkPersistedState()
     }
 
@@ -93,7 +87,7 @@ class AutoSyncAccessibilityService : AccessibilityService() {
                 AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> {
                     checkLockStateChange()
                 }
-                else -> { /* ignore other events */ }
+                else -> { /* ignore */ }
             }
         }
     }
@@ -128,59 +122,62 @@ class AutoSyncAccessibilityService : AccessibilityService() {
 
         val delayMinutes = autoSyncManager.getAutoSyncDelay()
         val delayMs = delayMinutes * 60 * 1000L
+        val scheduledTime = lockTimestamp + delayMs
 
-        Log.d(TAG, "Scheduling autosync turn-off in $delayMinutes minutes using " +
-                if (delayMinutes == 15) "ForegroundService" else "WorkManager")
-
-        cancelAllScheduledOperations()
-        scheduleAutoSyncDisable(delayMs)
-    }
-
-    private fun scheduleAutoSyncDisable(delayMs: Long) {
-        val delayMinutes = autoSyncManager.getAutoSyncDelay()
-
-        when (delayMinutes) {
-            15 -> scheduleWithForegroundService(delayMs)
-            30, 45, 60 -> scheduleWithWorkManager(delayMs)
-            else -> scheduleWithWorkManager(delayMs)
-        }
-    }
-
-    private fun scheduleWithForegroundService(delayMs: Long) {
         val prefs = getSharedPreferences("autosyncstate", Context.MODE_PRIVATE)
-        val scheduledTime = prefs.getLong("scheduleddisabletime", 0)
+        val existingScheduled = prefs.getLong("scheduleddisabletime", 0L)
+        val now = System.currentTimeMillis()
 
-        // ✅ Use remaining delay instead of full delay
-        val currentTime = System.currentTimeMillis()
-        val remainingDelay = if (scheduledTime > 0) {
-            kotlin.math.max(0, scheduledTime - currentTime)
-        } else {
-            delayMs
+        // Fallback catch-up check
+        if (existingScheduled > 0 && now >= existingScheduled) {
+            Log.w(TAG, "Missed scheduled disable. Forcing AutoSync OFF immediately (catch-up).")
+            try {
+                if (ContentResolver.getMasterSyncAutomatically()) {
+                    ContentResolver.setMasterSyncAutomatically(false)
+                    Log.d(TAG, "AutoSync turned OFF (catch-up on lock)")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error turning off AutoSync during catch-up", e)
+            }
+
+            prefs.edit {
+                remove("scheduleddisabletime")
+                putBoolean("syncdisablescheduled", false)
+            }
+            return
         }
 
-        AutoSyncForegroundService.scheduleAutoSyncDisable(this, remainingDelay, scheduledTime)
-        Log.d(TAG, "Scheduled foreground service sync disable in ${remainingDelay}ms (was ${delayMs}ms)")
+        // Normal scheduling
+        Log.d(TAG, "Scheduling autosync turn-off in $delayMinutes minutes (at $scheduledTime)")
+        cancelAllScheduledOperations()
+        scheduleAutoSyncDisable(delayMs, scheduledTime)
     }
 
-    private fun scheduleWithWorkManager(delayMs: Long) {
+    private fun scheduleAutoSyncDisable(delayMs: Long, scheduledTime: Long) {
         val workRequest = OneTimeWorkRequestBuilder<AutoSyncEnforcementWorker>()
             .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
-            .addTag("syncdisableexact")
+            .addTag(AUTOSYNC_DISABLE_WORK_NAME)
             .build()
 
+        val prefs = getSharedPreferences("autosyncstate", Context.MODE_PRIVATE)
+        prefs.edit {
+            putLong("scheduleddisabletime", scheduledTime)
+            putBoolean("syncdisablescheduled", true)
+        }
+
         WorkManager.getInstance(this).enqueueUniqueWork(
-            "exactsyncdisable",
+            AUTOSYNC_DISABLE_WORK_NAME,
             ExistingWorkPolicy.REPLACE,
             workRequest
         )
-        Log.d(TAG, "Scheduled WorkManager sync disable in ${delayMs}ms")
+
+        Log.d(TAG, "Scheduled WorkManager sync disable at $scheduledTime")
     }
 
     private fun handleDeviceUnlocked() {
         Log.d(TAG, "Device unlocked detected")
 
         persistLockState(false)
-
         if (!autoSyncManager.isAutoSyncEnabled()) return
 
         cancelAllScheduledOperations()
@@ -196,8 +193,8 @@ class AutoSyncAccessibilityService : AccessibilityService() {
     }
 
     private fun cancelAllScheduledOperations() {
-        AutoSyncForegroundService.cancelScheduledSyncDisable(this)
-        WorkManager.getInstance(this).cancelUniqueWork("exactsyncdisable")
+        WorkManager.getInstance(this).cancelUniqueWork(AUTOSYNC_DISABLE_WORK_NAME)
+        Log.d(TAG, "Cancelled all scheduled autosync operations")
     }
 
     override fun onInterrupt() {
@@ -216,7 +213,6 @@ class AutoSyncAccessibilityService : AccessibilityService() {
             putBoolean("devicelocked", isLocked)
             putLong("locktimestamp", lockTimestamp)
             putBoolean("syncdisablescheduled", isLocked)
-
             if (isLocked && lockTimestamp > 0) {
                 val delayMs = autoSyncManager.getAutoSyncDelay() * 60 * 1000L
                 putLong("scheduleddisabletime", lockTimestamp + delayMs)
@@ -238,14 +234,23 @@ class AutoSyncAccessibilityService : AccessibilityService() {
             val timeSinceLock = currentTime - lockTimestamp
 
             if (timeSinceLock >= delayMs) {
-                if (ContentResolver.getMasterSyncAutomatically()) {
-                    ContentResolver.setMasterSyncAutomatically(false)
-                    Log.d(TAG, "Disabled sync on service restart (overdue)")
+                try {
+                    if (ContentResolver.getMasterSyncAutomatically()) {
+                        ContentResolver.setMasterSyncAutomatically(false)
+                        Log.d(TAG, "Disabled sync on restart (catch-up)")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error disabling sync during restart catch-up", e)
+                }
+
+                prefs.edit {
+                    remove("scheduleddisabletime")
+                    putBoolean("syncdisablescheduled", false)
                 }
             } else if (currentTime < scheduledDisableTime) {
                 val remainingDelay = scheduledDisableTime - currentTime
                 Log.d(TAG, "Rescheduling sync disable with remaining delay: ${remainingDelay}ms")
-                scheduleAutoSyncDisable(remainingDelay)
+                scheduleAutoSyncDisable(remainingDelay, scheduledDisableTime)
             }
         }
     }

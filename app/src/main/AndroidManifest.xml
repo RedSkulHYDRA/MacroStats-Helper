@@ -19,9 +19,9 @@
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- NEW: Foreground service permissions -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- REMOVED: Foreground service permissions - no longer needed -->
+    <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> -->
+    <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" /> -->
 
     <!-- NEW: Flashlight permission -->
     <uses-permission android:name="android.permission.FLASHLIGHT" />
@@ -75,16 +75,8 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!-- NEW: AutoSync Foreground Service -->
-        <service
-            android:name=".autosync.AutoSyncForegroundService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="AutoSync timing management for precise execution without Doze mode interference" />
-        </service>
+        <!-- REMOVED: AutoSync Foreground Service - replaced with expedited WorkManager -->
+        <!-- <service android:name=".autosync.AutoSyncForegroundService" ... /> -->
 
         <!-- Torch/Glyph QS Tile Service -->
         <service
