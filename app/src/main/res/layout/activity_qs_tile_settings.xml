@@ -120,7 +120,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_period_in_title"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -239,7 +239,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_screen_timeout_in_title"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -318,7 +318,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_charge_cycles_in_title"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -351,7 +351,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_battery_health_in_title"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -470,7 +470,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_dns_heading"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -712,7 +712,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_torch_glyph_heading"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -762,7 +762,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_refresh_rate_heading"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -812,7 +812,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/show_aod_heading"
+                    android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
                 <androidx.appcompat.widget.SwitchCompat

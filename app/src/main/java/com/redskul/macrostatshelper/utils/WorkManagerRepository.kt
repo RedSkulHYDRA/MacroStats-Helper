@@ -25,31 +25,19 @@ class WorkManagerRepository(private val context: Context) {
     }
 
     /**
-     * Start all monitoring work with proper constraints
+     * Ensure all monitoring work is active with proper constraints
      */
-    fun startMonitoring() {
-        startDataUsageMonitoring()
-        startBatteryMonitoring()
-        android.util.Log.d(TAG, "All monitoring work started")
+    fun ensureMonitoringActive() {
+        ensureDataUsageMonitoringActive()
+        ensureBatteryMonitoringActive()
+        android.util.Log.d(TAG, "All monitoring work ensured active")
     }
 
     /**
-     * Stop all monitoring work
-     */
-    fun stopMonitoring() {
-        workManager.cancelUniqueWork(DataUsageWorker.WORK_NAME)
-        workManager.cancelUniqueWork(BatteryWorker.WORK_NAME)
-        // Also cancel any pending immediate work
-        workManager.cancelAllWorkByTag(IMMEDIATE_DATA_WORK_TAG)
-        workManager.cancelAllWorkByTag(IMMEDIATE_BATTERY_WORK_TAG)
-        android.util.Log.d(TAG, "All monitoring work stopped")
-    }
-
-    /**
-     * Start data usage monitoring with adaptive constraints
+     * Ensure data usage monitoring is active with adaptive constraints
      * (User-configurable interval is kept for data usage only)
      */
-    private fun startDataUsageMonitoring() {
+    private fun ensureDataUsageMonitoringActive() {
         val baseInterval = settingsManager.getUpdateInterval().toLong()
         val adaptiveInterval = calculateAdaptiveInterval(baseInterval)
 
@@ -73,18 +61,18 @@ class WorkManagerRepository(private val context: Context) {
 
         workManager.enqueueUniquePeriodicWork(
             DataUsageWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            ExistingPeriodicWorkPolicy.KEEP,
             dataWorkRequest
         )
 
-        android.util.Log.d(TAG, "Data usage monitoring started with ${adaptiveInterval}min interval")
+        android.util.Log.d(TAG, "Data usage monitoring ensured active with ${adaptiveInterval}min interval")
     }
 
     /**
      * UPDATED: Battery monitoring is no longer tied to the user-set interval.
      * Runs every 15 minutes, ONLY when the device is charging.
      */
-    private fun startBatteryMonitoring() {
+    private fun ensureBatteryMonitoringActive() {
         // Removed user interval and adaptive interval logic
         val constraints = Constraints.Builder()
             .setRequiresCharging(true) // Only run when charging
@@ -104,11 +92,11 @@ class WorkManagerRepository(private val context: Context) {
 
         workManager.enqueueUniquePeriodicWork(
             BatteryWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            ExistingPeriodicWorkPolicy.KEEP,
             batteryWorkRequest
         )
 
-        android.util.Log.d(TAG, "Battery monitoring started: 15min interval, only when charging")
+        android.util.Log.d(TAG, "Battery monitoring ensured active: 15min interval, only when charging")
     }
 
     /**
@@ -149,7 +137,7 @@ class WorkManagerRepository(private val context: Context) {
     fun updateDataMonitoringInterval() {
         workManager.cancelUniqueWork(DataUsageWorker.WORK_NAME)
         // No need to cancel or restart battery monitoring for user changes
-        startDataUsageMonitoring()
+        ensureDataUsageMonitoringActive()
         android.util.Log.d(TAG, "Data usage monitoring interval updated")
     }
 

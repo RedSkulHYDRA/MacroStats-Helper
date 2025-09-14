@@ -6,16 +6,13 @@
     <string name="charge_cycles">Charge Cycles</string>
 
     <!-- MainActivity strings -->
-    <string name="data_usage_monitoring_running">Data monitoring active. Tap to configure.</string>
     <string name="display_settings">Display Settings</string>
     <string name="qs_tile_settings">QS Tile Settings</string>
     <string name="accessibility_settings">Accessibility Settings</string>
-    <string name="stop_monitoring">Stop Monitoring</string>
-    <string name="start_monitoring">Start Monitoring</string>
-    <string name="monitoring_stopped">Monitoring stopped</string>
     <string name="setup_title">MacroStats Helper Setup</string>
     <string name="setup_description">Grant required permissions to continue.</string>
     <string name="setup_description_autosync">Grant all permissions for full functionality.</string>
+    <string name="setup_complete">Complete Setup</string>
 
     <!-- Consolidated Permission Templates -->
     <string name="permission_required">%1$s permission required</string>
@@ -30,7 +27,6 @@
     <string name="permission_accessibility">Accessibility</string>
 
     <!-- Short Toast Messages -->
-    <string name="monitoring_started">Monitoring started</string>
     <string name="service_error">Service error: %1$s</string>
     <string name="settings_saved">Settings saved</string>
     <string name="qs_settings_saved">QS settings saved</string>
@@ -50,16 +46,19 @@
     <string name="notification_description">Show persistent notification with usage data</string>
     <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background</string>
 
-    <!-- Historical Data Card Section -->
+    <!-- Historical Data -->
     <string name="historical_data_card_title">Historical Data Usage</string>
     <string name="enable_historical_data">Show Historical Data in Notifications</string>
     <string name="historical_data_master_description">Include historical usage data in notifications for additional context</string>
     <string name="historical_data_period_title">Select Time Period</string>
-
-    <!-- Keep existing historical data strings -->
     <string name="last_month_label">Last Month</string>
     <string name="last_week_label">Last Week</string>
     <string name="yesterday_label">Yesterday</string>
+    <string name="last_month_usage_heading">Last Month\'s Usage:</string>
+    <string name="last_week_usage_heading">Last Week\'s Usage:</string>
+    <string name="yesterday_usage_heading">Yesterday\'s Usage:</string>
+    <string name="wifi_label">Wifi:</string>
+    <string name="data_label">Data:</string>
 
     <!-- AutoSync Settings -->
     <string name="autosync_settings_title">AutoSync Management</string>
@@ -74,17 +73,14 @@
     <!-- QSTileSettingsActivity strings -->
     <string name="qs_tile_settings_title">QS Tile Settings</string>
     <string name="qs_tile_instruction">Configure Quick Settings tile display options.</string>
-    <string name="show_period_in_title">Enable Tile Heading</string>
+    <string name="enable_tile_heading">Enable Tile Heading</string>
     <string name="wifi_tile_label">WiFi Usage Tile:</string>
     <string name="wifi_tile_description">Select time period for WiFi tile</string>
     <string name="mobile_tile_label">Mobile Data Usage Tile:</string>
     <string name="mobile_tile_description">Select time period for Mobile tile</string>
     <string name="charge_tile_label">Charge Cycles Tile:</string>
-    <string name="show_charge_cycles_in_title">Enable Tile Heading</string>
     <string name="battery_health_tile_label">Battery Health Tile:</string>
-    <string name="show_battery_health_in_title">Enable Tile Heading</string>
     <string name="screen_timeout_tile_label">Screen Timeout Tile:</string>
-    <string name="show_screen_timeout_in_title">Enable Tile Heading</string>
     <string name="qs_tile_instruction_2">Add tiles to Quick Settings after saving</string>
 
     <!-- Advanced Tiles Section -->
@@ -158,7 +154,6 @@
     <string name="open_accessibility_settings">Enable Accessibility Settings</string>
 
     <!-- Additional strings for hardcoded text -->
-    <string name="monitoring_stopped_restart_note">Monitoring stopped. Use Start button to restart.</string>
     <string name="battery_optimization_disabled_check">✓ Battery Optimization Disabled</string>
     <string name="disable_battery_optimization">Disable Battery Optimization</string>
     <string name="battery_optimization_disabled_desc">Battery optimization disabled. App runs reliably.</string>
@@ -184,13 +179,10 @@
     <string name="permission_required_dialog_message">%1$s requires %2$s permission. Grant now?</string>
     <string name="permission_required_settings_dialog_message">%1$s requires %2$s. Grant in settings?</string>
 
-    <!-- DNS Tile - Updated strings -->
+    <!-- DNS Tile -->
     <string name="private_dns_heading">Private DNS</string>
-    <string name="show_dns_heading">Enable Tile Heading</string>
     <string name="add_dns_entry">Add DNS Entry</string>
     <string name="remove_dns_entry">Remove DNS entry</string>
-
-    <!-- Keep existing DNS strings -->
     <string name="dns_provider">DNS Provider</string>
     <string name="dns_tile_title">DNS Provider Tile</string>
     <string name="select_dns_provider">Select DNS Provider</string>
@@ -220,7 +212,6 @@
     <string name="torch_glyph">Torch/Glyph</string>
     <string name="torch_glyph_heading">Torch/Glyph</string>
     <string name="torch_glyph_tile_title">Torch/Glyph Tile</string>
-    <string name="show_torch_glyph_heading">Enable Tile Heading</string>
     <string name="torch_glyph_description">Toggle between Torch and Glyph lights</string>
     <string name="torch_glyph_permission_required">Permission Required</string>
     <string name="torch_glyph_not_configured">Torch/Glyph Not Configured</string>
@@ -237,7 +228,6 @@
     <string name="refresh_rate">Refresh Rate</string>
     <string name="refresh_rate_heading">Refresh Rate</string>
     <string name="refresh_rate_tile_title">Refresh Rate Tile</string>
-    <string name="show_refresh_rate_heading">Enable Tile Heading</string>
     <string name="refresh_rate_description">Toggle between Dynamic, High, and Standard refresh rate modes</string>
     <string name="refresh_rate_permission_required">Permission Required</string>
     <string name="refresh_rate_not_configured">Refresh Rate Not Configured</string>
@@ -251,7 +241,6 @@
     <string name="always_on_display">Always-on Display</string>
     <string name="aod_heading">Always-on Display</string>
     <string name="aod_tile_title">Always-on Display Tile</string>
-    <string name="show_aod_heading">Enable Tile Heading</string>
     <string name="aod_description">Toggle between Always-on Display modes</string>
     <string name="aod_permission_required">Permission Required</string>
     <string name="aod_not_configured">AOD Not Configured</string>
@@ -265,21 +254,6 @@
     <!-- ADB Instructions -->
     <string name="adb_instructions_title">How to Grant Permission via ADB</string>
     <string name="adb_instructions_message">1. Enable Developer Options\n2. Enable USB Debugging\n3. Connect to PC with ADB installed\n4. Run the copied command\n5. Restart the app</string>
-
-    <!-- Last Month's Usage strings -->
-    <string name="last_month_usage_heading">Last Month\'s Usage:</string>
-    <string name="last_month_wifi_label">Wifi:</string>
-    <string name="last_month_data_label">Data:</string>
-
-    <!-- Last Week's Usage strings -->
-    <string name="last_week_usage_heading">Last Week\'s Usage:</string>
-    <string name="last_week_wifi_label">Wifi:</string>
-    <string name="last_week_data_label">Data:</string>
-
-    <!-- Yesterday's Usage strings -->
-    <string name="yesterday_usage_heading">Yesterday\'s Usage:</string>
-    <string name="yesterday_wifi_label">Wifi:</string>
-    <string name="yesterday_data_label">Data:</string>
 
     <!-- Vibration Settings -->
     <string name="vibration_settings_title">Vibration Settings</string>

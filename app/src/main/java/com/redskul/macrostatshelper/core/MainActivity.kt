@@ -114,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             showMainUI()
             startPermissionMonitoring()
+            ensureMonitoringActive()
         }
     }
 
@@ -167,7 +168,6 @@ class MainActivity : AppCompatActivity() {
 
         setupWindowInsets(mainBinding!!.root, mainBinding!!.mainLayout)
         setupMainUIComponents()
-        ensureMonitoringStarted()
         observeWorkStatus()
     }
 
@@ -186,8 +186,6 @@ class MainActivity : AppCompatActivity() {
         // Setup action buttons
         setupActionButtons(binding)
     }
-
-    // ... [Rest of the existing MainActivity methods remain the same] ...
 
     private fun setupBatteryOptimizationCard(binding: ActivityMainBinding) {
         updateBatteryOptimizationUI()
@@ -320,24 +318,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.qsTileSettingsButton.setOnClickListener {
             startActivity(Intent(this, QSTileSettingsActivity::class.java))
-        }
-
-        setupStopServiceButton(binding)
-    }
-
-    private fun setupStopServiceButton(binding: ActivityMainBinding) {
-        binding.stopServiceButton.setOnClickListener {
-            if (binding.stopServiceButton.text == getString(R.string.stop_monitoring)) {
-                // Stop WorkManager monitoring instead of services
-                workManagerRepository.stopMonitoring()
-                showToast(getString(R.string.monitoring_stopped))
-                binding.statusText.text = getString(R.string.monitoring_stopped_restart_note)
-                binding.stopServiceButton.text = getString(R.string.start_monitoring)
-            } else {
-                startMonitoringAndShowSuccess()
-                binding.statusText.text = getString(R.string.data_usage_monitoring_running)
-                binding.stopServiceButton.text = getString(R.string.stop_monitoring)
-            }
         }
     }
 
@@ -494,12 +474,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun ensureMonitoringStarted() {
+    private fun ensureMonitoringActive() {
         try {
-            workManagerRepository.startMonitoring()
-            android.util.Log.d("MainActivity", "WorkManager monitoring ensured to be running")
+            workManagerRepository.ensureMonitoringActive()
+            android.util.Log.d("MainActivity", "WorkManager monitoring ensured to be active")
         } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Error ensuring monitoring is running", e)
+            android.util.Log.e("MainActivity", "Error ensuring monitoring is active", e)
         }
     }
 
@@ -542,32 +522,21 @@ class MainActivity : AppCompatActivity() {
             sharedPreferences.edit {
                 putBoolean("setup_complete", true)
             }
-            startMonitoringAndTransitionToMain()
+            initializeAndTransitionToMain()
         } else {
             showToast(getString(R.string.setup_description))
         }
     }
 
-    private fun startMonitoringAndTransitionToMain() {
+    private fun initializeAndTransitionToMain() {
         try {
-            workManagerRepository.startMonitoring()
-            showToast(getString(R.string.monitoring_started))
+            workManagerRepository.ensureMonitoringActive()
 
             lifecycleScope.launch {
                 delay(1500)
                 showMainUI()
                 startPermissionMonitoring()
             }
-        } catch (e: Exception) {
-            showToast(getString(R.string.service_error, e.message ?: "Unknown"))
-            e.printStackTrace()
-        }
-    }
-
-    private fun startMonitoringAndShowSuccess() {
-        try {
-            workManagerRepository.startMonitoring()
-            showToast(getString(R.string.monitoring_started))
         } catch (e: Exception) {
             showToast(getString(R.string.service_error, e.message ?: "Unknown"))
             e.printStackTrace()

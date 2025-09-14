@@ -22,13 +22,13 @@ class BootReceiver : BroadcastReceiver() {
                 val setupComplete = sharedPreferences.getBoolean("setup_complete", false)
 
                 if (setupComplete) {
-                    android.util.Log.d("BootReceiver", "Setup complete, starting WorkManager monitoring")
+                    android.util.Log.d("BootReceiver", "Setup complete, ensuring WorkManager monitoring is active")
 
                     try {
-                        // WorkManager handles persistence automatically, but we can restart to be sure
+                        // WorkManager handles persistence automatically, but we ensure it's active
                         val workManagerRepository = WorkManagerRepository(context)
-                        workManagerRepository.startMonitoring()
-                        android.util.Log.d("BootReceiver", "WorkManager monitoring started successfully after boot")
+                        workManagerRepository.ensureMonitoringActive()
+                        android.util.Log.d("BootReceiver", "WorkManager monitoring ensured active after boot")
 
                         // This ensures fresh data is available immediately after device restart
                         workManagerRepository.triggerImmediateUpdates()
@@ -53,10 +53,10 @@ class BootReceiver : BroadcastReceiver() {
                             }
                         }
                     } catch (e: Exception) {
-                        android.util.Log.e("BootReceiver", "Failed to start WorkManager monitoring after boot", e)
+                        android.util.Log.e("BootReceiver", "Failed to ensure WorkManager monitoring active after boot", e)
                     }
                 } else {
-                    android.util.Log.d("BootReceiver", "Setup not complete, skipping monitoring start")
+                    android.util.Log.d("BootReceiver", "Setup not complete, skipping monitoring activation")
                 }
             }
         }

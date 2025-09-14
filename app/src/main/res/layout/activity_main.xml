@@ -22,13 +22,6 @@
             android:textStyle="bold"
             android:paddingBottom="@dimen/spacing_xl" />
 
-        <TextView
-            android:id="@+id/status_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/data_usage_monitoring_running"
-            android:paddingBottom="@dimen/spacing_md" />
-
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/spacing_md" />
@@ -218,15 +211,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/qs_tile_settings"
-            android:paddingHorizontal="@dimen/button_padding_horizontal"
-            android:paddingVertical="@dimen/button_padding_vertical"
-            android:layout_marginBottom="@dimen/spacing_sm" />
-
-        <Button
-            android:id="@+id/stop_service_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/stop_monitoring"
             android:paddingHorizontal="@dimen/button_padding_horizontal"
             android:paddingVertical="@dimen/button_padding_vertical" />
 
