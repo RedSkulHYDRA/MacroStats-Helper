@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/card_background"
-            android:layout_marginBottom="@dimen/spacing_lg">
+            android:layout_marginBottom="@dimen/spacing_md">
 
             <TextView
                 android:id="@+id/data_usage_card_title"
@@ -70,55 +70,6 @@
                 android:textSize="@dimen/text_size_small"
                 android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_lg" />
-
-            <!-- Historical Data Section -->
-            <TextView
-                android:id="@+id/historical_data_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/historical_data_title"
-                android:textSize="@dimen/text_size_subheading"
-                android:paddingBottom="@dimen/spacing_sm" />
-
-            <TextView
-                android:id="@+id/historical_data_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/historical_data_description"
-                android:textSize="@dimen/text_size_small"
-                android:alpha="0.7"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <!-- Horizontal Checkboxes for Historical Data -->
-            <LinearLayout
-                android:id="@+id/historical_data_checkboxes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingBottom="@dimen/spacing_xl">
-
-                <CheckBox
-                    android:id="@+id/last_month_checkbox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/last_month_checkbox_label" />
-
-                <CheckBox
-                    android:id="@+id/last_week_checkbox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/last_week_checkbox_label" />
-
-                <CheckBox
-                    android:id="@+id/yesterday_checkbox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/yesterday_checkbox_label" />
-
-            </LinearLayout>
 
             <!-- WiFi Section -->
             <TextView
@@ -222,6 +173,98 @@
                 android:textSize="@dimen/text_size_body"
                 android:paddingHorizontal="@dimen/button_padding_small_horizontal"
                 android:paddingVertical="@dimen/button_padding_extra_small_vertical"/>
+
+        </LinearLayout>
+
+        <!-- Historical Data Usage Card -->
+        <LinearLayout
+            android:id="@+id/historical_data_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_lg">
+
+            <TextView
+                android:id="@+id/historical_data_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/historical_data_card_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <!-- Master Toggle Section -->
+            <LinearLayout
+                android:id="@+id/historical_data_master_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/historical_data_master_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/enable_historical_data"
+                    android:textSize="@dimen/text_size_subheading" />
+
+                <Switch
+                    android:id="@+id/historical_data_master_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/historical_data_master_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/historical_data_master_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <!-- Time Period Selection Section -->
+            <TextView
+                android:id="@+id/historical_data_period_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/historical_data_period_title"
+                android:textSize="@dimen/text_size_subheading"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+
+            <!-- Horizontal RadioGroup for Historical Data Time Periods -->
+            <RadioGroup
+                android:id="@+id/historical_data_radio_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/last_month_radio_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/last_month_label" />
+
+                <RadioButton
+                    android:id="@+id/last_week_radio_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/last_week_label" />
+
+                <RadioButton
+                    android:id="@+id/yesterday_radio_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/yesterday_label" />
+
+            </RadioGroup>
 
         </LinearLayout>
 

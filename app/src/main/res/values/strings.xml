@@ -50,12 +50,16 @@
     <string name="notification_description">Show persistent notification with usage data</string>
     <string name="notification_disabled_note">Note: Disabling this will hide the notification, but monitoring will continue in the background</string>
 
-    <!-- Historical Data Section -->
-    <string name="historical_data_title">Historical Data</string>
-    <string name="historical_data_description">Include historical usage data in notifications for additional context</string>
-    <string name="last_month_checkbox_label">Last Month</string>
-    <string name="last_week_checkbox_label">Last Week</string>
-    <string name="yesterday_checkbox_label">Yesterday</string>
+    <!-- Historical Data Card Section -->
+    <string name="historical_data_card_title">Historical Data Usage</string>
+    <string name="enable_historical_data">Show Historical Data in Notifications</string>
+    <string name="historical_data_master_description">Include historical usage data in notifications for additional context</string>
+    <string name="historical_data_period_title">Select Time Period</string>
+
+    <!-- Keep existing historical data strings -->
+    <string name="last_month_label">Last Month</string>
+    <string name="last_week_label">Last Week</string>
+    <string name="yesterday_label">Yesterday</string>
 
     <!-- AutoSync Settings -->
     <string name="autosync_settings_title">AutoSync Management</string>

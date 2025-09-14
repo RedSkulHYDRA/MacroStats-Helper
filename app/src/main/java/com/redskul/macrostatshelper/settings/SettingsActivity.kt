@@ -101,34 +101,29 @@ class SettingsActivity : AppCompatActivity() {
                 }
                 return@setOnCheckedChangeListener
             }
+
+            // Update historical data card visibility based on notification switch
+            updateHistoricalDataCardState()
         }
 
-        // Setup historical data checkboxes with haptic feedback AND mutual exclusivity
-        binding.lastMonthCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            binding.lastMonthCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            if (isChecked) {
-                // Uncheck other historical data options
-                binding.lastWeekCheckbox.isChecked = false
-                binding.yesterdayCheckbox.isChecked = false
+        // Setup historical data master switch
+        binding.historicalDataMasterSwitch.setOnCheckedChangeListener { switch, isChecked ->
+            // Add haptic feedback
+            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+
+            // Enable/disable radio buttons based on master switch
+            updateRadioButtonsState(isChecked)
+
+            // If turning off, clear radio button selection
+            if (!isChecked) {
+                binding.historicalDataRadioGroup.clearCheck()
             }
         }
 
-        binding.lastWeekCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            binding.lastWeekCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            if (isChecked) {
-                // Uncheck other historical data options
-                binding.lastMonthCheckbox.isChecked = false
-                binding.yesterdayCheckbox.isChecked = false
-            }
-        }
-
-        binding.yesterdayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            binding.yesterdayCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            if (isChecked) {
-                // Uncheck other historical data options
-                binding.lastMonthCheckbox.isChecked = false
-                binding.lastWeekCheckbox.isChecked = false
-            }
+        // Setup historical data radio buttons with haptic feedback
+        binding.historicalDataRadioGroup.setOnCheckedChangeListener { _, _ ->
+            // Add haptic feedback when any radio button is selected
+            binding.historicalDataRadioGroup.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
 
         // Setup WiFi checkboxes with haptic feedback
@@ -168,6 +163,40 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateHistoricalDataCardState() {
+        val binding = binding ?: return
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val notificationEnabled = binding.notificationEnabledSwitch.isChecked
+
+        // Enable/disable the entire historical data card based on notification state and permissions
+        val cardEnabled = hasUsageStats && notificationEnabled
+
+        binding.historicalDataMasterSwitch.isEnabled = cardEnabled
+
+        // If card is disabled, also disable master switch and radio buttons
+        if (!cardEnabled) {
+            binding.historicalDataMasterSwitch.isChecked = false
+            updateRadioButtonsState(false)
+        } else {
+            // Re-enable radio buttons if master switch is on
+            updateRadioButtonsState(binding.historicalDataMasterSwitch.isChecked)
+        }
+    }
+
+    private fun updateRadioButtonsState(enabled: Boolean) {
+        val binding = binding ?: return
+
+        binding.historicalDataRadioGroup.isEnabled = enabled
+        binding.lastMonthRadioButton.isEnabled = enabled
+        binding.lastWeekRadioButton.isEnabled = enabled
+        binding.yesterdayRadioButton.isEnabled = enabled
+
+        // Visual feedback - reduce alpha when disabled
+        val alpha = if (enabled) 1.0f else 0.5f
+        binding.historicalDataRadioGroup.alpha = alpha
+        binding.historicalDataPeriodTitle.alpha = alpha
+    }
+
     private fun startPermissionMonitoring() {
         lifecycleScope.launch {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
@@ -202,10 +231,8 @@ class SettingsActivity : AppCompatActivity() {
             binding.notificationEnabledSwitch.isChecked = false
         }
 
-        // Historical data checkboxes don't require permissions, but are dependent on notification being enabled
-        binding.lastMonthCheckbox.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
-        binding.lastWeekCheckbox.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
-        binding.yesterdayCheckbox.isEnabled = hasUsageStats && binding.notificationEnabledSwitch.isChecked
+        // Update historical data card state
+        updateHistoricalDataCardState()
     }
 
     private fun updatePermissionStatus() {
@@ -227,36 +254,30 @@ class SettingsActivity : AppCompatActivity() {
         val binding = binding ?: return
         val settings = settingsManager.getDisplaySettings()
 
-        // Set notification switch (moved to top)
+        // Set notification switch
         binding.notificationEnabledSwitch.isChecked = settingsManager.isNotificationEnabled()
 
-        // Set historical data checkboxes (mutually exclusive - only one can be true)
+        // Determine if any historical data is enabled to set master switch
         val showLastMonth = settingsManager.isShowLastMonthUsageEnabled()
         val showLastWeek = settingsManager.isShowLastWeekUsageEnabled()
         val showYesterday = settingsManager.isShowYesterdayUsageEnabled()
+        val anyHistoricalEnabled = showLastMonth || showLastWeek || showYesterday
 
-        // Ensure only one is selected (priority: Last Month > Last Week > Yesterday)
+        // Set historical data master switch
+        binding.historicalDataMasterSwitch.isChecked = anyHistoricalEnabled
+
+        // Set historical data radio buttons
+        binding.historicalDataRadioGroup.clearCheck()
+
         when {
             showLastMonth -> {
-                binding.lastMonthCheckbox.isChecked = true
-                binding.lastWeekCheckbox.isChecked = false
-                binding.yesterdayCheckbox.isChecked = false
+                binding.lastMonthRadioButton.isChecked = true
             }
             showLastWeek -> {
-                binding.lastMonthCheckbox.isChecked = false
-                binding.lastWeekCheckbox.isChecked = true
-                binding.yesterdayCheckbox.isChecked = false
+                binding.lastWeekRadioButton.isChecked = true
             }
             showYesterday -> {
-                binding.lastMonthCheckbox.isChecked = false
-                binding.lastWeekCheckbox.isChecked = false
-                binding.yesterdayCheckbox.isChecked = true
-            }
-            else -> {
-                // None selected
-                binding.lastMonthCheckbox.isChecked = false
-                binding.lastWeekCheckbox.isChecked = false
-                binding.yesterdayCheckbox.isChecked = false
+                binding.yesterdayRadioButton.isChecked = true
             }
         }
 
@@ -272,6 +293,7 @@ class SettingsActivity : AppCompatActivity() {
 
         updatePermissionBasedUI()
         updatePermissionStatus()
+        updateRadioButtonsState(anyHistoricalEnabled)
     }
 
     private fun saveSettings() {
@@ -300,11 +322,19 @@ class SettingsActivity : AppCompatActivity() {
         // Save notification preference (will be validated by SettingsManager)
         settingsManager.saveNotificationEnabled(isNotificationEnabled)
 
-        // Save historical data preferences (mutually exclusive)
-        // Only save true for the checked one, false for others
-        settingsManager.saveShowLastMonthUsage(binding.lastMonthCheckbox.isChecked)
-        settingsManager.saveShowLastWeekUsage(binding.lastWeekCheckbox.isChecked)
-        settingsManager.saveShowYesterdayUsage(binding.yesterdayCheckbox.isChecked)
+        // Save historical data preferences based on master switch and radio button selection
+        val masterSwitchEnabled = binding.historicalDataMasterSwitch.isChecked
+        if (masterSwitchEnabled) {
+            val checkedRadioButtonId = binding.historicalDataRadioGroup.checkedRadioButtonId
+            settingsManager.saveShowLastMonthUsage(checkedRadioButtonId == R.id.last_month_radio_button)
+            settingsManager.saveShowLastWeekUsage(checkedRadioButtonId == R.id.last_week_radio_button)
+            settingsManager.saveShowYesterdayUsage(checkedRadioButtonId == R.id.yesterday_radio_button)
+        } else {
+            // If master switch is off, disable all historical data options
+            settingsManager.saveShowLastMonthUsage(false)
+            settingsManager.saveShowLastWeekUsage(false)
+            settingsManager.saveShowYesterdayUsage(false)
+        }
 
         // Handle immediate notification changes
         if (isNotificationEnabled && !wasNotificationEnabled) {
@@ -323,12 +353,12 @@ class SettingsActivity : AppCompatActivity() {
             notificationHelper.cancelNotification()
             android.util.Log.d("SettingsActivity", "Notification hidden immediately after disabling")
         } else if (isNotificationEnabled) {
-            // Notification is enabled and was already enabled - update to reflect checkbox changes
+            // Notification is enabled and was already enabled - update to reflect changes
             lifecycleScope.launch {
                 try {
                     val usageData = dataUsageMonitor.getUsageData()
                     notificationHelper.showUsageNotification(usageData)
-                    android.util.Log.d("SettingsActivity", "Notification updated to reflect historical data checkbox changes")
+                    android.util.Log.d("SettingsActivity", "Notification updated to reflect historical data changes")
                 } catch (e: Exception) {
                     android.util.Log.e("SettingsActivity", "Error updating notification", e)
                 }
