@@ -96,10 +96,41 @@
                 android:textSize="@dimen/text_size_subheading"
                 android:paddingBottom="@dimen/spacing_sm" />
 
-            <Spinner
-                android:id="@+id/update_interval_spinner"
+            <RadioGroup
+                android:id="@+id/update_interval_radio_group"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/update_15_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_15_minutes" />
+
+                <RadioButton
+                    android:id="@+id/update_30_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_30_minutes" />
+
+                <RadioButton
+                    android:id="@+id/update_45_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_45_minutes" />
+
+                <RadioButton
+                    android:id="@+id/update_60_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_60_minutes" />
+
+            </RadioGroup>
 
         </LinearLayout>
 
@@ -162,10 +193,41 @@
                 android:paddingTop="@dimen/spacing_sm"
                 android:paddingBottom="@dimen/spacing_xs" />
 
-            <Spinner
-                android:id="@+id/autosync_delay_spinner"
+            <RadioGroup
+                android:id="@+id/autosync_delay_radio_group"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/delay_15_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_15_minutes" />
+
+                <RadioButton
+                    android:id="@+id/delay_30_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_30_minutes" />
+
+                <RadioButton
+                    android:id="@+id/delay_45_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_45_minutes" />
+
+                <RadioButton
+                    android:id="@+id/delay_60_minutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/interval_60_minutes" />
+
+            </RadioGroup>
 
             <TextView
                 android:id="@+id/delay_description"

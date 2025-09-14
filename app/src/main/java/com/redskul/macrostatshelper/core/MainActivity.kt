@@ -11,8 +11,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.RadioGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -196,50 +195,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUpdateIntervalCard(binding: ActivityMainBinding) {
-        // Setup adapter
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            settingsManager.getUpdateIntervalOptions()
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-
-        binding.updateIntervalSpinner.adapter = adapter
-
         // Load current setting BEFORE setting up the listener
         val savedInterval = settingsManager.getUpdateInterval()
-        val currentIndex = settingsManager.getUpdateIntervalValues().indexOf(savedInterval)
-        if (currentIndex >= 0) {
-            binding.updateIntervalSpinner.setSelection(currentIndex)
+        val currentRadioId = when (savedInterval) {
+            15 -> R.id.update_15_minutes
+            30 -> R.id.update_30_minutes
+            45 -> R.id.update_45_minutes
+            60 -> R.id.update_60_minutes
+            else -> R.id.update_15_minutes
         }
+        binding.updateIntervalRadioGroup.check(currentRadioId)
 
         // Set up listener AFTER initial selection is set
-        binding.updateIntervalSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            private var isInitialSelection = true
-
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                // Skip the first trigger which happens during initial setup
-                if (isInitialSelection) {
-                    isInitialSelection = false
-                    return
-                }
-
-                val selectedInterval = settingsManager.getUpdateIntervalValues()[position]
-                val currentSavedInterval = settingsManager.getUpdateInterval()
-
-                // Only proceed if the interval actually changed
-                if (selectedInterval != currentSavedInterval) {
-                    settingsManager.setUpdateInterval(selectedInterval)
-
-                    // Update WorkManager interval instead of restarting services
-                    workManagerRepository.updateDataMonitoringInterval()
-
-                    showToast(getString(R.string.update_frequency_changed))
-                }
+        binding.updateIntervalRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val selectedInterval = when (checkedId) {
+                R.id.update_15_minutes -> 15
+                R.id.update_30_minutes -> 30
+                R.id.update_45_minutes -> 45
+                R.id.update_60_minutes -> 60
+                else -> 15
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            val currentSavedInterval = settingsManager.getUpdateInterval()
+
+            // Only proceed if the interval actually changed
+            if (selectedInterval != currentSavedInterval) {
+                settingsManager.setUpdateInterval(selectedInterval)
+
+                // Update WorkManager interval instead of restarting services
+                workManagerRepository.updateDataMonitoringInterval()
+
+                showToast(getString(R.string.update_frequency_changed))
+            }
         }
     }
 
@@ -258,51 +245,39 @@ class MainActivity : AppCompatActivity() {
                 return@setOnCheckedChangeListener
             }
             autoSyncManager.setAutoSyncEnabled(isChecked)
-            binding.autosyncDelaySpinner.isEnabled = isChecked && autoSyncManager.canEnableAutoSync()
+            binding.autosyncDelayRadioGroup.isEnabled = isChecked && autoSyncManager.canEnableAutoSync()
         }
-
-        // Setup delay spinner
-        val delayAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            autoSyncManager.getDelayOptions()
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-
-        binding.autosyncDelaySpinner.adapter = delayAdapter
 
         // Load current delay setting BEFORE setting up the listener
         val delayMinutes = autoSyncManager.getAutoSyncDelay()
-        val delayIndex = autoSyncManager.getAllowedDelays().indexOf(delayMinutes)
-        if (delayIndex >= 0) {
-            binding.autosyncDelaySpinner.setSelection(delayIndex)
+        val delayRadioId = when (delayMinutes) {
+            15 -> R.id.delay_15_minutes
+            30 -> R.id.delay_30_minutes
+            45 -> R.id.delay_45_minutes
+            60 -> R.id.delay_60_minutes
+            else -> R.id.delay_15_minutes
         }
+        binding.autosyncDelayRadioGroup.check(delayRadioId)
 
-        // Set up delay spinner listener with initial selection flag
-        binding.autosyncDelaySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            private var isInitialSelection = true
-
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                // Skip the first trigger which happens during initial setup
-                if (isInitialSelection) {
-                    isInitialSelection = false
-                    return
-                }
-
-                val selectedDelay = autoSyncManager.getAllowedDelays()[position]
-                val currentDelay = autoSyncManager.getAutoSyncDelay()
-
-                // Only proceed if the delay actually changed
-                if (selectedDelay != currentDelay) {
-                    autoSyncManager.setAutoSyncDelay(selectedDelay)
-                }
+        // Set up delay radio group listener
+        binding.autosyncDelayRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val selectedDelay = when (checkedId) {
+                R.id.delay_15_minutes -> 15
+                R.id.delay_30_minutes -> 30
+                R.id.delay_45_minutes -> 45
+                R.id.delay_60_minutes -> 60
+                else -> 15
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            val currentDelay = autoSyncManager.getAutoSyncDelay()
+
+            // Only proceed if the delay actually changed
+            if (selectedDelay != currentDelay) {
+                autoSyncManager.setAutoSyncDelay(selectedDelay)
+            }
         }
 
-        binding.autosyncDelaySpinner.isEnabled = binding.autosyncEnabledSwitch.isChecked && autoSyncManager.canEnableAutoSync()
+        binding.autosyncDelayRadioGroup.isEnabled = binding.autosyncEnabledSwitch.isChecked && autoSyncManager.canEnableAutoSync()
 
         binding.accessibilityButton.setOnClickListener {
             requestAccessibilityPermission()

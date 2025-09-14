@@ -261,4 +261,9 @@
     <string name="tile_vibration_description">Provide haptic feedback when Quick Settings tiles are tapped</string>
     <string name="vibration_disabled_no_hardware">Vibration disabled - device has no vibrator</string>
 
+    <!-- Time Interval -->
+    <string name="interval_15_minutes">15 Min</string>
+    <string name="interval_30_minutes">30 Min</string>
+    <string name="interval_45_minutes">45 Min</string>
+    <string name="interval_60_minutes">1 Hour</string>
 </resources>

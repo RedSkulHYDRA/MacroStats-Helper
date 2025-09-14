@@ -31,7 +31,7 @@
             android:alpha="0.8"
             android:paddingBottom="@dimen/spacing_lg" />
 
-        <!-- Vibration Settings Card - ADD THIS SECTION -->
+        <!-- Vibration Settings Card -->
         <LinearLayout
             android:id="@+id/vibration_settings_card"
             android:layout_width="match_parent"
@@ -150,10 +150,34 @@
                 android:alpha="0.8"
                 android:paddingBottom="@dimen/spacing_sm" />
 
-            <Spinner
-                android:id="@+id/wifi_tile_spinner"
+            <RadioGroup
+                android:id="@+id/wifi_tile_radio_group"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/wifi_daily"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/daily" />
+
+                <RadioButton
+                    android:id="@+id/wifi_weekly"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/weekly" />
+
+                <RadioButton
+                    android:id="@+id/wifi_monthly"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/monthly" />
+
+            </RadioGroup>
 
             <!-- Mobile Tile Section -->
             <TextView
@@ -175,10 +199,34 @@
                 android:alpha="0.8"
                 android:paddingBottom="@dimen/spacing_md" />
 
-            <Spinner
-                android:id="@+id/mobile_tile_spinner"
+            <RadioGroup
+                android:id="@+id/mobile_tile_radio_group"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/mobile_daily"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/daily" />
+
+                <RadioButton
+                    android:id="@+id/mobile_weekly"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/weekly" />
+
+                <RadioButton
+                    android:id="@+id/mobile_monthly"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/monthly" />
+
+            </RadioGroup>
 
             <!-- Usage Access Permission Status -->
             <TextView
@@ -774,7 +822,7 @@
 
         </LinearLayout>
 
-        <!-- NEW: AOD Tile Card -->
+        <!-- AOD Tile Card -->
         <LinearLayout
             android:id="@+id/aod_tile_card"
             android:layout_width="match_parent"

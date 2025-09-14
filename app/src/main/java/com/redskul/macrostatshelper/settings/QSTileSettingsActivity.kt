@@ -8,8 +8,7 @@ import android.text.InputType
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.widget.Toast
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -174,18 +173,20 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
         val vibrationEnabled = vibrationManager.isVibrationEnabled()
 
-        // Set spinner selections
-        binding.wifiTileSpinner.setSelection(when (wifiPeriod) {
-            TimePeriod.DAILY -> 0
-            TimePeriod.WEEKLY -> 1
-            TimePeriod.MONTHLY -> 2
-        })
+        // Set radio group selections
+        val wifiRadioId = when (wifiPeriod) {
+            TimePeriod.DAILY -> R.id.wifi_daily
+            TimePeriod.WEEKLY -> R.id.wifi_weekly
+            TimePeriod.MONTHLY -> R.id.wifi_monthly
+        }
+        binding.wifiTileRadioGroup.check(wifiRadioId)
 
-        binding.mobileTileSpinner.setSelection(when (mobilePeriod) {
-            TimePeriod.DAILY -> 0
-            TimePeriod.WEEKLY -> 1
-            TimePeriod.MONTHLY -> 2
-        })
+        val mobileRadioId = when (mobilePeriod) {
+            TimePeriod.DAILY -> R.id.mobile_daily
+            TimePeriod.WEEKLY -> R.id.mobile_weekly
+            TimePeriod.MONTHLY -> R.id.mobile_monthly
+        }
+        binding.mobileTileRadioGroup.check(mobileRadioId)
 
         // Set switch states - ALL CONSISTENT NOW
         binding.showPeriodInTitleSwitch.isChecked = showPeriodInTitle
@@ -218,18 +219,18 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private fun saveSettings() {
         val binding = binding ?: return
 
-        // Get spinner selections
-        val wifiPeriod = when (binding.wifiTileSpinner.selectedItemPosition) {
-            0 -> TimePeriod.DAILY
-            1 -> TimePeriod.WEEKLY
-            2 -> TimePeriod.MONTHLY
+        // Get radio group selections
+        val wifiPeriod = when (binding.wifiTileRadioGroup.checkedRadioButtonId) {
+            R.id.wifi_daily -> TimePeriod.DAILY
+            R.id.wifi_weekly -> TimePeriod.WEEKLY
+            R.id.wifi_monthly -> TimePeriod.MONTHLY
             else -> TimePeriod.DAILY
         }
 
-        val mobilePeriod = when (binding.mobileTileSpinner.selectedItemPosition) {
-            0 -> TimePeriod.DAILY
-            1 -> TimePeriod.WEEKLY
-            2 -> TimePeriod.MONTHLY
+        val mobilePeriod = when (binding.mobileTileRadioGroup.checkedRadioButtonId) {
+            R.id.mobile_daily -> TimePeriod.DAILY
+            R.id.mobile_weekly -> TimePeriod.WEEKLY
+            R.id.mobile_monthly -> TimePeriod.MONTHLY
             else -> TimePeriod.DAILY
         }
 
@@ -302,8 +303,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private fun setupUI() {
         val binding = binding ?: return
 
-        // Setup spinners
-        setupSpinners(binding)
+        // Setup radio groups
+        setupRadioGroups(binding)
 
         // Setup switches
         setupSwitches(binding)
@@ -333,25 +334,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
         setupAdvancedTilesSection(binding)
     }
 
-    private fun setupSpinners(binding: ActivityQsTileSettingsBinding) {
-        val periodOptions = listOf(getString(R.string.daily), getString(R.string.weekly), getString(R.string.monthly))
-
-        // WiFi spinner
-        binding.wifiTileSpinner.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            periodOptions
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+    private fun setupRadioGroups(binding: ActivityQsTileSettingsBinding) {
+        // WiFi radio group listener
+        binding.wifiTileRadioGroup.setOnCheckedChangeListener { _, _ ->
+            // Settings will be saved when save button is clicked
         }
 
-        // Mobile spinner
-        binding.mobileTileSpinner.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            periodOptions
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Mobile radio group listener
+        binding.mobileTileRadioGroup.setOnCheckedChangeListener { _, _ ->
+            // Settings will be saved when save button is clicked
         }
     }
 
@@ -558,8 +549,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
 
         // Enable/disable data usage related controls
-        binding.wifiTileSpinner.isEnabled = hasUsageStats
-        binding.mobileTileSpinner.isEnabled = hasUsageStats
+        binding.wifiTileRadioGroup.isEnabled = hasUsageStats
+        binding.mobileTileRadioGroup.isEnabled = hasUsageStats
         binding.showPeriodInTitleSwitch.isEnabled = hasUsageStats
 
         // Enable/disable screen timeout controls
