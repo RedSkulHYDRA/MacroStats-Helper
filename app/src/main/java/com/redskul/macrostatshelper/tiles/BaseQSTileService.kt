@@ -23,7 +23,7 @@ abstract class BaseQSTileService : TileService() {
         super.onClick()
 
         // Centralized vibration handling
-        vibrationManager.vibrateForTileClick()
+        vibrationManager.vibrateOnClick()
 
         // Call the tile-specific click logic
         onTileClick()

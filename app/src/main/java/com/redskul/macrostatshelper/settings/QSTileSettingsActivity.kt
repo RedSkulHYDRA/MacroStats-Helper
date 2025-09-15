@@ -8,7 +8,6 @@ import android.text.InputType
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.widget.Toast
-import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -152,7 +151,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
             // Provide immediate feedback if vibration is being enabled
             if (isChecked) {
-                vibrationManager.vibrateForTileClick()
+                vibrationManager.vibrateOnClick()
             }
         }
     }
@@ -337,11 +336,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private fun setupRadioGroups(binding: ActivityQsTileSettingsBinding) {
         // WiFi radio group listener
         binding.wifiTileRadioGroup.setOnCheckedChangeListener { _, _ ->
+            // Add haptic feedback
+            vibrationManager.vibrateOnClick()
             // Settings will be saved when save button is clicked
         }
 
         // Mobile radio group listener
         binding.mobileTileRadioGroup.setOnCheckedChangeListener { _, _ ->
+            // Add haptic feedback
+            vibrationManager.vibrateOnClick()
             // Settings will be saved when save button is clicked
         }
     }

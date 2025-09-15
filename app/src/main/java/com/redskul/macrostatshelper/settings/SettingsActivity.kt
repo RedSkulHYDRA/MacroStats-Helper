@@ -3,7 +3,6 @@ package com.redskul.macrostatshelper.settings
 import android.content.Intent
 import android.provider.Settings
 import android.os.Bundle
-import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +12,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.utils.PermissionHelper
+import com.redskul.macrostatshelper.utils.VibrationManager
 import com.redskul.macrostatshelper.databinding.ActivitySettingsBinding
 import com.redskul.macrostatshelper.datausage.DataUsageMonitor
 import com.redskul.macrostatshelper.notification.NotificationHelper
@@ -27,6 +27,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var dataUsageMonitor: DataUsageMonitor
     private lateinit var workManagerRepository: WorkManagerRepository
+    private lateinit var vibrationManager: VibrationManager
     private var binding: ActivitySettingsBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +46,7 @@ class SettingsActivity : AppCompatActivity() {
         notificationHelper = NotificationHelper(this)
         dataUsageMonitor = DataUsageMonitor(this)
         workManagerRepository = WorkManagerRepository(this)
+        vibrationManager = VibrationManager(this)
 
         setupWindowInsets()
         setupUI()
@@ -88,8 +90,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // Setup notification switch
         binding.notificationEnabledSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            // Add haptic feedback
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Add haptic feedback using VibrationManager
+            vibrationManager.vibrateOnClick()
 
             if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
                 binding.notificationEnabledSwitch.isChecked = false
@@ -108,8 +110,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // Setup historical data master switch
         binding.historicalDataMasterSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            // Add haptic feedback
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Add haptic feedback using VibrationManager
+            vibrationManager.vibrateOnClick()
 
             // Enable/disable radio buttons based on master switch
             updateRadioButtonsState(isChecked)
@@ -122,34 +124,34 @@ class SettingsActivity : AppCompatActivity() {
 
         // Setup historical data radio buttons with haptic feedback
         binding.historicalDataRadioGroup.setOnCheckedChangeListener { _, _ ->
-            // Add haptic feedback when any radio button is selected
-            binding.historicalDataRadioGroup.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Add haptic feedback using VibrationManager
+            vibrationManager.vibrateOnClick()
         }
 
         // Setup WiFi checkboxes with haptic feedback
         binding.wifiDailyCheckbox.setOnCheckedChangeListener { _, _ ->
-            binding.wifiDailyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            vibrationManager.vibrateOnClick()
         }
 
         binding.wifiWeeklyCheckbox.setOnCheckedChangeListener { _, _ ->
-            binding.wifiWeeklyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            vibrationManager.vibrateOnClick()
         }
 
         binding.wifiMonthlyCheckbox.setOnCheckedChangeListener { _, _ ->
-            binding.wifiMonthlyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            vibrationManager.vibrateOnClick()
         }
 
         // Setup Mobile checkboxes with haptic feedback
         binding.mobileDailyCheckbox.setOnCheckedChangeListener { _, _ ->
-            binding.mobileDailyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            vibrationManager.vibrateOnClick()
         }
 
         binding.mobileWeeklyCheckbox.setOnCheckedChangeListener { _, _ ->
-            binding.mobileWeeklyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            vibrationManager.vibrateOnClick()
         }
 
         binding.mobileMonthlyCheckbox.setOnCheckedChangeListener { _, _ ->
-            binding.mobileMonthlyCheckbox.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            vibrationManager.vibrateOnClick()
         }
 
         // Setup usage access button

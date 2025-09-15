@@ -58,7 +58,7 @@ class VibrationManager(private val context: Context) {
      * Only vibrates if user has enabled the setting
      */
     @RequiresPermission(Manifest.permission.VIBRATE)
-    fun vibrateForTileClick() {
+    fun vibrateOnClick() {
         if (!isVibrationEnabled()) {
             return
         }

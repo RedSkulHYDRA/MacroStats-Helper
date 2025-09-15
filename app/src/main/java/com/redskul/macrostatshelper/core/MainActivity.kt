@@ -1,8 +1,6 @@
 package com.redskul.macrostatshelper.core
 
 import android.Manifest
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -11,9 +9,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
-import android.widget.RadioGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -30,6 +26,7 @@ import com.redskul.macrostatshelper.R
 import com.redskul.macrostatshelper.settings.SettingsActivity
 import com.redskul.macrostatshelper.settings.SettingsManager
 import com.redskul.macrostatshelper.utils.PermissionHelper
+import com.redskul.macrostatshelper.utils.VibrationManager
 import com.redskul.macrostatshelper.databinding.ActivityMainBinding
 import com.redskul.macrostatshelper.databinding.ActivitySetupBinding
 import com.redskul.macrostatshelper.utils.WorkManagerRepository
@@ -43,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var settingsManager: SettingsManager
     private lateinit var autoSyncManager: AutoSyncManager
     private lateinit var workManagerRepository: WorkManagerRepository
+    private lateinit var vibrationManager: VibrationManager
 
     private var mainBinding: ActivityMainBinding? = null
     private var setupBinding: ActivitySetupBinding? = null
@@ -107,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         settingsManager = SettingsManager(this)
         autoSyncManager = AutoSyncManager(this)
         workManagerRepository = WorkManagerRepository(this)
+        vibrationManager = VibrationManager(this)
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
@@ -208,6 +207,9 @@ class MainActivity : AppCompatActivity() {
 
         // Set up listener AFTER initial selection is set
         binding.updateIntervalRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            // Add haptic feedback
+            vibrationManager.vibrateOnClick()
+
             val selectedInterval = when (checkedId) {
                 R.id.update_15_minutes -> 15
                 R.id.update_30_minutes -> 30
@@ -261,6 +263,9 @@ class MainActivity : AppCompatActivity() {
 
         // Set up delay radio group listener
         binding.autosyncDelayRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            // Add haptic feedback
+            vibrationManager.vibrateOnClick()
+
             val selectedDelay = when (checkedId) {
                 R.id.delay_15_minutes -> 15
                 R.id.delay_30_minutes -> 30
