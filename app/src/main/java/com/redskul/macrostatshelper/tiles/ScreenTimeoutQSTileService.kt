@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import kotlinx.coroutines.*
+import com.redskul.macrostatshelper.R
 
 class ScreenTimeoutQSTileService : BaseQSTileService() {
 
@@ -50,6 +51,15 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
     override fun onCreate() {
         super.onCreate()
         qsTileSettingsManager = QSTileSettingsManager(this)
+    }
+
+    override fun onTileAdded() {
+        super.onTileAdded()
+        // Ensure tile picker always shows the manifest label
+        qsTile?.let { tile ->
+            tile.label = getString(R.string.screen_timeout)
+            tile.updateTile()
+        }
     }
 
     override fun onStartListening() {
@@ -159,8 +169,8 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
                         // Permission not granted - show permission required state
                         tile.state = Tile.STATE_INACTIVE
                         tile.icon = config.icon
-                        tile.label = getString(com.redskul.macrostatshelper.R.string.screen_timeout_permission_required)
-                        tile.subtitle = getString(com.redskul.macrostatshelper.R.string.tap_to_grant)
+                        tile.label = getString(R.string.screen_timeout_permission_required)
+                        tile.subtitle = getString(R.string.tap_to_grant)
                     }
 
                     tile.updateTile()

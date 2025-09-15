@@ -2,7 +2,6 @@ package com.redskul.macrostatshelper.dns
 
 import android.app.AlertDialog
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -29,6 +28,15 @@ class DNSQSTileService : BaseQSTileService() {
         super.onCreate()
         dnsManager = DNSManager(this)
         qsTileSettingsManager = QSTileSettingsManager(this)
+    }
+
+    override fun onTileAdded() {
+        super.onTileAdded()
+        // Ensure tile picker always shows the manifest label
+        qsTile?.let { tile ->
+            tile.label = getString(R.string.private_dns)
+            tile.updateTile()
+        }
     }
 
     override fun onStartListening() {

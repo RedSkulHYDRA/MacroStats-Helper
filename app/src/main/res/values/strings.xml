@@ -183,7 +183,7 @@
     <string name="private_dns_heading">Private DNS</string>
     <string name="add_dns_entry">Add DNS Entry</string>
     <string name="remove_dns_entry">Remove DNS entry</string>
-    <string name="dns_provider">DNS Provider</string>
+    <string name="private_dns">Private DNS</string>
     <string name="dns_tile_title">DNS Provider Tile</string>
     <string name="select_dns_provider">Select DNS Provider</string>
     <string name="dns_permission_required">Permission Required</string>

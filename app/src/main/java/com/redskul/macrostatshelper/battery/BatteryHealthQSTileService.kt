@@ -12,6 +12,7 @@ import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
+import com.redskul.macrostatshelper.R
 
 class BatteryHealthQSTileService : BaseQSTileService() {
 
@@ -39,6 +40,15 @@ class BatteryHealthQSTileService : BaseQSTileService() {
         super.onCreate()
         qsTileSettingsManager = QSTileSettingsManager(this)
         batteryHealthMonitor = BatteryHealthMonitor(this)
+    }
+
+    override fun onTileAdded() {
+        super.onTileAdded()
+        // Ensure tile picker always shows the manifest label
+        qsTile?.let { tile ->
+            tile.label = getString(R.string.battery_health)
+            tile.updateTile()
+        }
     }
 
     override fun onStartListening() {

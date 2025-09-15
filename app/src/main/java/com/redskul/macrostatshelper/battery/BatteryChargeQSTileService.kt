@@ -11,6 +11,7 @@ import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import com.redskul.macrostatshelper.utils.WorkManagerRepository
 import kotlinx.coroutines.*
+import com.redskul.macrostatshelper.R
 
 class BatteryChargeQSTileService : BaseQSTileService() {
 
@@ -34,6 +35,15 @@ class BatteryChargeQSTileService : BaseQSTileService() {
         qsTileSettingsManager = QSTileSettingsManager(this)
         batteryChargeMonitor = BatteryChargeMonitor(this)
         workManagerRepository = WorkManagerRepository(this)
+    }
+
+    override fun onTileAdded() {
+        super.onTileAdded()
+        // Ensure tile picker always shows the manifest label
+        qsTile?.let { tile ->
+            tile.label = getString(R.string.charge_cycles)
+            tile.updateTile()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)

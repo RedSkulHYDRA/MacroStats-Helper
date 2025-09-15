@@ -40,6 +40,15 @@ class RefreshRateQSTileService : BaseQSTileService() {
         qsTileSettingsManager = QSTileSettingsManager(this)
     }
 
+    override fun onTileAdded() {
+        super.onTileAdded()
+        // Ensure tile picker always shows the manifest label
+        qsTile?.let { tile ->
+            tile.label = getString(R.string.refresh_rate)
+            tile.updateTile()
+        }
+    }
+
     override fun onStartListening() {
         super.onStartListening()
         registerReceiver(

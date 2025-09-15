@@ -14,6 +14,7 @@ import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import com.redskul.macrostatshelper.utils.PermissionHelper
 import com.redskul.macrostatshelper.utils.WorkManagerRepository
 import kotlinx.coroutines.*
+import com.redskul.macrostatshelper.R
 
 class MobileDataUsageQSTileService : BaseQSTileService() {
 
@@ -38,6 +39,15 @@ class MobileDataUsageQSTileService : BaseQSTileService() {
         dataUsageMonitor = DataUsageMonitor(this)
         permissionHelper = PermissionHelper(this)
         workManagerRepository = WorkManagerRepository(this)
+    }
+
+    override fun onTileAdded() {
+        super.onTileAdded()
+        // Ensure tile picker always shows the manifest label
+        qsTile?.let { tile ->
+            tile.label = getString(R.string.mobile_data)
+            tile.updateTile()
+        }
     }
 
     override fun onStartListening() {
