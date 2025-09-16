@@ -26,9 +26,9 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/spacing_md" />
 
-        <!-- Battery Optimization Card -->
+        <!-- Permissions Card -->
         <LinearLayout
-            android:id="@+id/battery_opt_card"
+            android:id="@+id/permissions_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -36,28 +36,114 @@
             android:layout_marginBottom="@dimen/spacing_md">
 
             <TextView
-                android:id="@+id/battery_opt_title"
+                android:id="@+id/permissions_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/battery_optimization_title"
+                android:text="@string/permissions_title"
                 android:textSize="@dimen/text_size_heading"
                 android:textStyle="bold"
-                android:paddingBottom="@dimen/spacing_md" />
+                android:paddingBottom="@dimen/spacing_sm" />
 
             <TextView
-                android:id="@+id/battery_opt_description"
+                android:id="@+id/permissions_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_body"
-                android:alpha="0.8"
+                android:text="@string/permissions_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
-            <Button
-                android:id="@+id/battery_opt_button"
-                android:layout_width="wrap_content"
+            <!-- Usage Stats Permission -->
+            <LinearLayout
+                android:id="@+id/usage_stats_permission_layout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="@dimen/button_padding_horizontal"
-                android:paddingVertical="@dimen/button_padding_vertical" />
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/usage_stats_permission_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/usage_stats_permission_label"
+                    android:textSize="@dimen/text_size_body" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/usage_stats_permission_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <!-- Write Settings Permission -->
+            <LinearLayout
+                android:id="@+id/write_settings_permission_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/write_settings_permission_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/write_settings_permission_label"
+                    android:textSize="@dimen/text_size_body" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/write_settings_permission_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <!-- Accessibility Permission -->
+            <LinearLayout
+                android:id="@+id/accessibility_permission_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/accessibility_permission_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/accessibility_permission_label"
+                    android:textSize="@dimen/text_size_body" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/accessibility_permission_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <!-- Secure Settings Permission -->
+            <LinearLayout
+                android:id="@+id/secure_settings_permission_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/spacing_sm">
+
+                <TextView
+                    android:id="@+id/secure_settings_permission_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/secure_settings_permission_label"
+                    android:textSize="@dimen/text_size_body" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/secure_settings_permission_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -88,12 +174,23 @@
                 android:alpha="0.8"
                 android:paddingBottom="@dimen/spacing_md" />
 
+            <!-- Permission requirement message for update interval -->
+            <TextView
+                android:id="@+id/update_interval_permission_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@android:color/holo_orange_dark"
+                android:paddingBottom="@dimen/spacing_sm"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/spinner_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/update_every_label"
-                android:textSize="@dimen/text_size_subheading"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold"
                 android:paddingBottom="@dimen/spacing_sm" />
 
             <RadioGroup
@@ -151,6 +248,16 @@
                 android:textSize="@dimen/text_size_heading"
                 android:textStyle="bold"
                 android:paddingBottom="@dimen/spacing_sm" />
+
+            <!-- Permission requirement message for autosync -->
+            <TextView
+                android:id="@+id/autosync_permission_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@android:color/holo_orange_dark"
+                android:paddingBottom="@dimen/spacing_sm"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/autosync_switch_layout"
@@ -228,34 +335,6 @@
                     android:text="@string/interval_60_minutes" />
 
             </RadioGroup>
-
-            <TextView
-                android:id="@+id/delay_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/autosync_delay_description"
-                android:textSize="@dimen/text_size_caption"
-                android:alpha="0.6"
-                android:paddingTop="@dimen/spacing_xs"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <TextView
-                android:id="@+id/accessibility_status_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <Button
-                android:id="@+id/accessibility_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/open_accessibility_settings"
-                android:textSize="@dimen/text_size_body"
-                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_small_vertical" />
-
         </LinearLayout>
 
         <!-- Action Buttons -->

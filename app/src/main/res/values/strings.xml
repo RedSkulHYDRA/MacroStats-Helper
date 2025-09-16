@@ -14,6 +14,22 @@
     <string name="setup_description_autosync">Grant all permissions for full functionality.</string>
     <string name="setup_complete">Complete Setup</string>
 
+    <!-- Permissions Section -->
+    <string name="permissions_title">Permissions</string>
+    <string name="permissions_description">Manage app permissions. Toggles always open respective settings pages.</string>
+    <string name="usage_stats_permission_label">Usage Stats Access</string>
+    <string name="write_settings_permission_label">Modify System Settings</string>
+    <string name="accessibility_permission_label">Accessibility Service</string>
+    <string name="secure_settings_permission_label">Advanced Features (ADB)</string>
+    <string name="battery_optimization_permission_label">Battery Optimization</string>
+
+    <!-- Permission requirement messages -->
+    <string name="usage_stats_permission_required_for_notifications">Usage Stats permission is required for this feature to work</string>
+    <string name="usage_stats_permission_required_for_data_tiles">Usage Stats permission is required for this feature to work</string>
+    <string name="write_settings_permission_required_for_screen_timeout">Write Settings permission is required for this feature to work</string>
+    <string name="accessibility_permission_required_for_autosync">Accessibility permission is required for this feature to work</string>
+    <string name="secure_settings_permission_required_for_advanced_tiles">Secure Settings permission is required for this feature to work</string>
+
     <!-- Consolidated Permission Templates -->
     <string name="permission_required">%1$s permission required</string>
     <string name="grant_permission_button">Grant %1$s Permission</string>

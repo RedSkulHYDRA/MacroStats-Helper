@@ -78,31 +78,13 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding = null
     }
 
+    override fun onResume() {
+        super.onResume()
+        updatePermissionRequirementMessages()
+    }
+
     private fun setupSwitches(binding: ActivityQsTileSettingsBinding) {
-        // Setup permission-required switches
-        binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            // Use centralized vibration manager for app interactions
-            vibrationManager.vibrateOnAppInteraction()
-            if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
-                binding.showPeriodInTitleSwitch.isChecked = false
-                showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
-                return@setOnCheckedChangeListener
-            }
-            triggerImmediateTileUpdates()
-        }
-
-        binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            // Use centralized vibration manager for app interactions
-            vibrationManager.vibrateOnAppInteraction()
-            if (isChecked && !permissionHelper.hasWriteSettingsPermission()) {
-                binding.showScreenTimeoutInTitleSwitch.isChecked = false
-                showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
-                return@setOnCheckedChangeListener
-            }
-            triggerImmediateTileUpdates()
-        }
-
-        // Add haptic feedback to other switches and immediate tile updates
+        // Add haptic feedback to switches and immediate tile updates
         binding.showChargeInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
             // Use centralized vibration manager for app interactions
             vibrationManager.vibrateOnAppInteraction()
@@ -110,6 +92,18 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
+            triggerImmediateTileUpdates()
+        }
+
+        binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
+            triggerImmediateTileUpdates()
+        }
+
+        binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
             // Use centralized vibration manager for app interactions
             vibrationManager.vibrateOnAppInteraction()
             triggerImmediateTileUpdates()
@@ -218,9 +212,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
             binding.designCapacityEditText.setText(designCapacity.toString())
         }
 
-        updatePermissionBasedUI()
-        updatePermissionStatuses()
-        updateSecureSettingsPermissionStatus()
+        updatePermissionRequirementMessages()
     }
 
     private fun saveSettings() {
@@ -327,18 +319,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Setup DNS buttons
         setupDNSButtons(binding)
-
-        // Setup Torch/Glyph section
-        setupTorchGlyphSection(binding)
-
-        // Setup Refresh Rate section
-        setupRefreshRateSection(binding)
-
-        // Setup AOD section
-        setupAODSection(binding)
-
-        // Setup Advanced tiles section
-        setupAdvancedTilesSection(binding)
     }
 
     private fun setupRadioGroups(binding: ActivityQsTileSettingsBinding) {
@@ -358,14 +338,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
     }
 
     private fun setupButtons(binding: ActivityQsTileSettingsBinding) {
-        binding.qsUsageAccessButton.setOnClickListener {
-            requestUsageStatsPermission()
-        }
-
-        binding.writeSettingsButton.setOnClickListener {
-            requestWriteSettingsPermission()
-        }
-
         binding.qsSaveButton.setOnClickListener {
             saveSettings()
         }
@@ -388,8 +360,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dns3NameEditText.setText(dns3.name)
         binding.dns3UrlEditText.setText(dns3.url)
 
-        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
-
         // Show DNS 2 and 3 if they have data
         if (dns2.isValid() && dns2.url.isNotEmpty()) {
             binding.dns2Container.visibility = android.view.View.VISIBLE
@@ -399,25 +369,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         updateDNSAddButtonVisibility()
-    }
-
-    private fun setupTorchGlyphSection(binding: ActivityQsTileSettingsBinding) {
-        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
-    }
-
-    private fun setupRefreshRateSection(binding: ActivityQsTileSettingsBinding) {
-        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
-    }
-
-    private fun setupAODSection(binding: ActivityQsTileSettingsBinding) {
-        // Heading preference is now loaded in loadCurrentSettings() - no need to set here
-    }
-
-    private fun setupAdvancedTilesSection(binding: ActivityQsTileSettingsBinding) {
-        binding.secureSettingsPermissionButton.setOnClickListener {
-            showSecureSettingsPermissionDialog()
-        }
-        updateSecureSettingsPermissionStatus()
     }
 
     private fun setupDNSButtons(binding: ActivityQsTileSettingsBinding) {
@@ -468,54 +419,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.dnsAddButton.visibility = if (allVisible) android.view.View.GONE else android.view.View.VISIBLE
     }
 
-    private fun showSecureSettingsPermissionDialog() {
-        val command = dnsManager.getADBCommand()
-
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.secure_settings_permission_title))
-            .setMessage(getString(R.string.secure_settings_permission_dialog_message))
-            .setView(createCommandView(command))
-            .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
-                copyCommandToClipboard(command)
-            }
-            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setNeutralButton(getString(R.string.learn_more)) { _, _ ->
-                showADBInstructions()
-            }
-            .show()
-    }
-
-    private fun createCommandView(command: String): android.view.View {
-        val padding = resources.getDimensionPixelSize(R.dimen.spacing_md)
-        val textView = android.widget.TextView(this).apply {
-            text = command
-            setTextIsSelectable(true)
-            typeface = android.graphics.Typeface.MONOSPACE
-            setBackgroundResource(android.R.drawable.editbox_background)
-            setPadding(padding, padding, padding, padding)
-        }
-        return textView
-    }
-
-    private fun copyCommandToClipboard(command: String) {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("ADB Command", command)
-        clipboard.setPrimaryClip(clip)
-        showToast(getString(R.string.command_copied))
-    }
-
-    private fun showADBInstructions() {
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.adb_instructions_title))
-            .setMessage(getString(R.string.adb_instructions_message))
-            .setPositiveButton(getString(R.string.ok_button)) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-    }
-
     private fun startPermissionMonitoring() {
         lifecycleScope.launch {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
@@ -531,9 +434,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
                 if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings ||
                     lastSecureSettings != currentSecureSettings) {
-                    updatePermissionBasedUI()
-                    updatePermissionStatuses()
-                    updateSecureSettingsPermissionStatus()
+                    updatePermissionRequirementMessages()
 
                     if (lastUsageStats && !currentUsageStats) {
                         showToast(getString(R.string.data_tiles_disabled))
@@ -553,18 +454,36 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun updatePermissionBasedUI() {
+    private fun updatePermissionRequirementMessages() {
         val binding = binding ?: return
         val hasUsageStats = permissionHelper.hasUsageStatsPermission()
         val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
         val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
 
-        // Enable/disable data usage related controls
+        // Show/hide permission requirement messages
+        if (!hasUsageStats) {
+            binding.dataTilesPermissionText.visibility = android.view.View.VISIBLE
+        } else {
+            binding.dataTilesPermissionText.visibility = android.view.View.GONE
+        }
+
+        if (!hasWriteSettings) {
+            binding.screenTimeoutPermissionText.visibility = android.view.View.VISIBLE
+        } else {
+            binding.screenTimeoutPermissionText.visibility = android.view.View.GONE
+        }
+
+        if (!hasSecureSettings) {
+            binding.advancedTilesPermissionText.visibility = android.view.View.VISIBLE
+        } else {
+            binding.advancedTilesPermissionText.visibility = android.view.View.GONE
+        }
+
+        // Enable/disable controls based on permissions
         binding.wifiTileRadioGroup.isEnabled = hasUsageStats
         binding.mobileTileRadioGroup.isEnabled = hasUsageStats
         binding.showPeriodInTitleSwitch.isEnabled = hasUsageStats
 
-        // Enable/disable screen timeout controls
         binding.showScreenTimeoutInTitleSwitch.isEnabled = hasWriteSettings
 
         // Enable/disable advanced tiles controls
@@ -581,56 +500,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.torchGlyphShowHeadingSwitch.isEnabled = hasSecureSettings
         binding.refreshRateShowHeadingSwitch.isEnabled = hasSecureSettings
         binding.aodShowHeadingSwitch.isEnabled = hasSecureSettings
-    }
-
-    private fun updatePermissionStatuses() {
-        val binding = binding ?: return
-
-        // Update usage access permission status
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-        binding.usageAccessStatusText.text = if (hasUsageStats) {
-            getString(R.string.usage_access_permission_enabled)
-        } else {
-            getString(R.string.usage_access_permission_disabled)
-        }
-        binding.usageAccessStatusText.setTextColor(
-            if (hasUsageStats) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-        )
-
-        // Update write settings permission status
-        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
-        binding.writeSettingsStatusText.text = if (hasWriteSettings) {
-            getString(R.string.write_settings_permission_enabled)
-        } else {
-            getString(R.string.write_settings_permission_disabled)
-        }
-        binding.writeSettingsStatusText.setTextColor(
-            if (hasWriteSettings) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-        )
-    }
-
-    private fun updateSecureSettingsPermissionStatus() {
-        val binding = binding ?: return
-        val hasPermission = dnsManager.hasSecureSettingsPermission()
-
-        binding.secureSettingsPermissionStatusText.text = if (hasPermission) {
-            getString(R.string.secure_settings_permission_enabled)
-        } else {
-            getString(R.string.secure_settings_permission_disabled)
-        }
-
-        binding.secureSettingsPermissionStatusText.setTextColor(
-            if (hasPermission) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-        )
-
-        binding.secureSettingsPermissionButton.text = if (hasPermission) {
-            getString(R.string.permission_granted_check)
-        } else {
-            getString(R.string.grant_secure_settings_permission)
-        }
-
-        binding.secureSettingsPermissionButton.isEnabled = !hasPermission
-        binding.secureSettingsPermissionButton.alpha = if (hasPermission) 0.7f else 1.0f
     }
 
     private fun saveDNSSettings(binding: ActivityQsTileSettingsBinding) {
@@ -788,28 +657,6 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 android.util.Log.e("QSTileSettings", "Error sending AOD tile update broadcast", e)
             }
         }
-    }
-
-    private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle(getString(R.string.permission_required_title))
-            .setMessage(getString(R.string.permission_required_settings_dialog_message, featureName, permissionName))
-            .setPositiveButton(getString(R.string.ok_button)) { dialog, _ -> dialog.dismiss() }
-            .show()
-    }
-
-    private fun requestUsageStatsPermission() {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-        startActivity(intent)
-        showToast(getString(R.string.enable_usage_access_helper))
-    }
-
-    private fun requestWriteSettingsPermission() {
-        val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-            data = "package:$packageName".toUri()
-        }
-        startActivity(intent)
-        showToast(getString(R.string.enable_write_settings_helper))
     }
 
     private fun showToast(message: String) {

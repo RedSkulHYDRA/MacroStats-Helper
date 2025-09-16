@@ -29,6 +29,7 @@ import com.redskul.macrostatshelper.utils.VibrationManager
 import com.redskul.macrostatshelper.databinding.ActivityMainBinding
 import com.redskul.macrostatshelper.databinding.ActivitySetupBinding
 import com.redskul.macrostatshelper.utils.WorkManagerRepository
+import com.redskul.macrostatshelper.dns.DNSManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var autoSyncManager: AutoSyncManager
     private lateinit var workManagerRepository: WorkManagerRepository
     private lateinit var vibrationManager: VibrationManager
+    private lateinit var dnsManager: DNSManager
 
     private var mainBinding: ActivityMainBinding? = null
     private var setupBinding: ActivitySetupBinding? = null
@@ -57,40 +59,25 @@ class MainActivity : AppCompatActivity() {
     private val usageStatsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        if (permissionHelper.hasUsageStatsPermission()) {
-            showToast(getString(R.string.permission_granted, getString(R.string.permission_usage_stats)))
-        } else {
-            showToast(getString(R.string.permission_required, getString(R.string.permission_usage_stats)))
-        }
+        updatePermissionSwitches()
     }
 
     private val writeSettingsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        if (permissionHelper.hasWriteSettingsPermission()) {
-            showToast(getString(R.string.permission_granted, getString(R.string.permission_write_settings)))
-        } else {
-            showToast(getString(R.string.permission_denied, getString(R.string.permission_write_settings)))
-        }
+        updatePermissionSwitches()
     }
 
     private val accessibilityPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        if (permissionHelper.hasAccessibilityPermission()) {
-            showToast(getString(R.string.permission_granted, getString(R.string.permission_accessibility)))
-        } else {
-            showToast(getString(R.string.permission_guide_short))
-        }
+        updatePermissionSwitches()
     }
 
     private val batteryOptimizationLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        updateBatteryOptimizationUI()
-        if (permissionHelper.isBatteryOptimizationDisabled()) {
-            showToast(getString(R.string.battery_optimization_disabled_toast))
-        }
+        updatePermissionButtonStates()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         autoSyncManager = AutoSyncManager(this)
         workManagerRepository = WorkManagerRepository(this)
         vibrationManager = VibrationManager(this)
+        dnsManager = DNSManager(this)
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
@@ -125,12 +113,16 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             var lastUsageStats = permissionHelper.hasUsageStatsPermission()
             var lastAccessibility = permissionHelper.hasAccessibilityPermission()
+            var lastWriteSettings = permissionHelper.hasWriteSettingsPermission()
+            var lastSecureSettings = dnsManager.hasSecureSettingsPermission()
 
             while (true) {
                 delay(2000) // Check every 2 seconds
 
                 val currentUsageStats = permissionHelper.hasUsageStatsPermission()
                 val currentAccessibility = permissionHelper.hasAccessibilityPermission()
+                val currentWriteSettings = permissionHelper.hasWriteSettingsPermission()
+                val currentSecureSettings = dnsManager.hasSecureSettingsPermission()
 
                 // Check if permissions were revoked
                 if (lastUsageStats && !currentUsageStats) {
@@ -146,11 +138,13 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // Update UI
-                updateBatteryOptimizationUI()
-                updateAccessibilityStatus()
+                updatePermissionSwitches()
+                updatePermissionRequirementMessages()
 
                 lastUsageStats = currentUsageStats
                 lastAccessibility = currentAccessibility
+                lastWriteSettings = currentWriteSettings
+                lastSecureSettings = currentSecureSettings
             }
         }
     }
@@ -171,8 +165,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupMainUIComponents() {
         val binding = mainBinding ?: return
 
-        // Setup battery optimization card
-        setupBatteryOptimizationCard(binding)
+        // Setup permissions card
+        setupPermissionsCard(binding)
 
         // Setup update interval card
         setupUpdateIntervalCard(binding)
@@ -182,14 +176,34 @@ class MainActivity : AppCompatActivity() {
 
         // Setup action buttons
         setupActionButtons(binding)
+
+        // Update permission-based UI
+        updatePermissionRequirementMessages()
     }
 
-    private fun setupBatteryOptimizationCard(binding: ActivityMainBinding) {
-        updateBatteryOptimizationUI()
-
-        binding.batteryOptButton.setOnClickListener {
-            requestBatteryOptimizationExemption()
+    private fun setupPermissionsCard(binding: ActivityMainBinding) {
+        // Setup permission switches with listeners that always open settings
+        binding.usageStatsPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            requestUsageStatsPermission()
         }
+
+        binding.writeSettingsPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            requestWriteSettingsPermission()
+        }
+
+        binding.accessibilityPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            requestAccessibilityPermission()
+        }
+
+        binding.secureSettingsPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            showSecureSettingsPermissionDialog()
+        }
+
+        updatePermissionSwitches()
     }
 
     private fun setupUpdateIntervalCard(binding: ActivityMainBinding) {
@@ -282,12 +296,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.autosyncDelayRadioGroup.isEnabled = binding.autosyncEnabledSwitch.isChecked && autoSyncManager.canEnableAutoSync()
-
-        binding.accessibilityButton.setOnClickListener {
-            requestAccessibilityPermission()
-        }
-
-        updateAccessibilityStatus()
     }
 
     private fun setupActionButtons(binding: ActivityMainBinding) {
@@ -297,6 +305,59 @@ class MainActivity : AppCompatActivity() {
 
         binding.qsTileSettingsButton.setOnClickListener {
             startActivity(Intent(this, QSTileSettingsActivity::class.java))
+        }
+    }
+
+    private fun updatePermissionSwitches() {
+        val binding = mainBinding ?: return
+
+        // Update switch states based on current permissions (but don't trigger listeners)
+        binding.usageStatsPermissionSwitch.setOnCheckedChangeListener(null)
+        binding.usageStatsPermissionSwitch.isChecked = permissionHelper.hasUsageStatsPermission()
+        binding.usageStatsPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            requestUsageStatsPermission()
+        }
+
+        binding.writeSettingsPermissionSwitch.setOnCheckedChangeListener(null)
+        binding.writeSettingsPermissionSwitch.isChecked = permissionHelper.hasWriteSettingsPermission()
+        binding.writeSettingsPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            requestWriteSettingsPermission()
+        }
+
+        binding.accessibilityPermissionSwitch.setOnCheckedChangeListener(null)
+        binding.accessibilityPermissionSwitch.isChecked = permissionHelper.hasAccessibilityPermission()
+        binding.accessibilityPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            requestAccessibilityPermission()
+        }
+
+        binding.secureSettingsPermissionSwitch.setOnCheckedChangeListener(null)
+        binding.secureSettingsPermissionSwitch.isChecked = dnsManager.hasSecureSettingsPermission()
+        binding.secureSettingsPermissionSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            showSecureSettingsPermissionDialog()
+        }
+    }
+
+    private fun updatePermissionRequirementMessages() {
+        val binding = mainBinding ?: return
+
+        // Update interval card permission message
+        if (!permissionHelper.hasUsageStatsPermission()) {
+            binding.updateIntervalPermissionText.text = getString(R.string.usage_stats_permission_required_for_notifications)
+            binding.updateIntervalPermissionText.visibility = android.view.View.VISIBLE
+        } else {
+            binding.updateIntervalPermissionText.visibility = android.view.View.GONE
+        }
+
+        // AutoSync card permission message
+        if (!permissionHelper.hasAccessibilityPermission()) {
+            binding.autosyncPermissionText.text = getString(R.string.accessibility_permission_required_for_autosync)
+            binding.autosyncPermissionText.visibility = android.view.View.VISIBLE
+        } else {
+            binding.autosyncPermissionText.visibility = android.view.View.GONE
         }
     }
 
@@ -315,34 +376,99 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateBatteryOptimizationUI() {
-        val binding = mainBinding ?: return
-
-        if (permissionHelper.isBatteryOptimizationDisabled()) {
-            binding.batteryOptButton.text = getString(R.string.battery_optimization_disabled_check)
-            binding.batteryOptButton.alpha = 0.7f
-            binding.batteryOptButton.isEnabled = false
-            binding.batteryOptDescription.text = getString(R.string.battery_optimization_disabled_desc)
-        } else {
-            binding.batteryOptButton.text = getString(R.string.disable_battery_optimization)
-            binding.batteryOptButton.alpha = 1.0f
-            binding.batteryOptButton.isEnabled = true
-            binding.batteryOptDescription.text = getString(R.string.disable_optimization_desc)
+    private fun requestBatteryOptimizationExemption() {
+        try {
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                data = "package:$packageName".toUri()
+            }
+            batteryOptimizationLauncher.launch(intent)
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Error requesting battery optimization exemption", e)
+            showToast(getString(R.string.unable_open_battery_settings))
         }
     }
 
-    private fun updateAccessibilityStatus() {
-        val binding = mainBinding ?: return
-
-        val isAccessibilityEnabled = AutoSyncAccessibilityService.isAccessibilityServiceEnabled(this)
-        binding.accessibilityStatusText.text = if (isAccessibilityEnabled) {
-            getString(R.string.accessibility_service_enabled)
-        } else {
-            getString(R.string.accessibility_service_disabled)
+    private fun ensureMonitoringActive() {
+        try {
+            workManagerRepository.ensureMonitoringActive()
+            android.util.Log.d("MainActivity", "WorkManager monitoring ensured to be active")
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Error ensuring monitoring is active", e)
         }
-        binding.accessibilityStatusText.setTextColor(
-            if (isAccessibilityEnabled) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-        )
+    }
+
+    private fun requestNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
+        }
+    }
+
+    private fun requestUsageStatsPermission() {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        usageStatsPermissionLauncher.launch(intent)
+    }
+
+    private fun requestWriteSettingsPermission() {
+        val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
+            data = "package:$packageName".toUri()
+        }
+        writeSettingsPermissionLauncher.launch(intent)
+    }
+
+    private fun requestAccessibilityPermission() {
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+        accessibilityPermissionLauncher.launch(intent)
+    }
+
+    private fun showSecureSettingsPermissionDialog() {
+        val command = dnsManager.getADBCommand()
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(getString(R.string.secure_settings_permission_title))
+            .setMessage(getString(R.string.secure_settings_permission_dialog_message))
+            .setView(createCommandView(command))
+            .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
+                copyCommandToClipboard(command)
+            }
+            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNeutralButton(getString(R.string.learn_more)) { _, _ ->
+                showADBInstructions()
+            }
+            .show()
+    }
+
+    private fun createCommandView(command: String): android.view.View {
+        val padding = resources.getDimensionPixelSize(R.dimen.spacing_md)
+        val textView = android.widget.TextView(this).apply {
+            text = command
+            setTextIsSelectable(true)
+            typeface = android.graphics.Typeface.MONOSPACE
+            setBackgroundResource(android.R.drawable.editbox_background)
+            setPadding(padding, padding, padding, padding)
+        }
+        return textView
+    }
+
+    private fun copyCommandToClipboard(command: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = android.content.ClipData.newPlainText("ADB Command", command)
+        clipboard.setPrimaryClip(clip)
+        showToast(getString(R.string.command_copied))
+    }
+
+    private fun showADBInstructions() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(getString(R.string.adb_instructions_title))
+            .setMessage(getString(R.string.adb_instructions_message))
+            .setPositiveButton(getString(R.string.ok_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun showPermissionSetupUI() {
@@ -439,61 +565,6 @@ class MainActivity : AppCompatActivity() {
             )
             WindowInsetsCompat.CONSUMED
         }
-    }
-
-    private fun requestBatteryOptimizationExemption() {
-        try {
-            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                data = "package:$packageName".toUri()
-            }
-            batteryOptimizationLauncher.launch(intent)
-        } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Error requesting battery optimization exemption", e)
-            showToast(getString(R.string.unable_open_battery_settings))
-        }
-    }
-
-    private fun ensureMonitoringActive() {
-        try {
-            workManagerRepository.ensureMonitoringActive()
-            android.util.Log.d("MainActivity", "WorkManager monitoring ensured to be active")
-        } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Error ensuring monitoring is active", e)
-        }
-    }
-
-    private fun requestNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
-        }
-    }
-
-    private fun requestUsageStatsPermission() {
-        if (!permissionHelper.hasUsageStatsPermission()) {
-            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-            usageStatsPermissionLauncher.launch(intent)
-        } else {
-            showToast(getString(R.string.permission_granted, getString(R.string.permission_usage_stats)))
-        }
-    }
-
-    private fun requestWriteSettingsPermission() {
-        if (!permissionHelper.hasWriteSettingsPermission()) {
-            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                data = "package:$packageName".toUri()
-            }
-            writeSettingsPermissionLauncher.launch(intent)
-        } else {
-            showToast(getString(R.string.permission_granted, getString(R.string.permission_write_settings)))
-        }
-    }
-
-    private fun requestAccessibilityPermission() {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        accessibilityPermissionLauncher.launch(intent)
     }
 
     private fun completeSetup() {

@@ -108,6 +108,17 @@
                 android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
+            <!-- Permission requirement message for data tiles -->
+            <TextView
+                android:id="@+id/data_tiles_permission_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_stats_permission_required_for_data_tiles"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@android:color/holo_orange_dark"
+                android:paddingBottom="@dimen/spacing_sm"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/period_switch_layout"
                 android:layout_width="match_parent"
@@ -228,24 +239,6 @@
 
             </RadioGroup>
 
-            <!-- Usage Access Permission Status -->
-            <TextView
-                android:id="@+id/usage_access_status_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <Button
-                android:id="@+id/qs_usage_access_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_small_vertical"
-                android:text="@string/open_usage_access_settings"
-                android:textSize="@dimen/text_size_body" />
-
         </LinearLayout>
 
         <!-- Screen Timeout Card -->
@@ -275,6 +268,17 @@
                 android:alpha="0.7"
                 android:paddingBottom="@dimen/spacing_md" />
 
+            <!-- Permission requirement message for screen timeout -->
+            <TextView
+                android:id="@+id/screen_timeout_permission_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/write_settings_permission_required_for_screen_timeout"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@android:color/holo_orange_dark"
+                android:paddingBottom="@dimen/spacing_sm"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/timeout_switch_layout"
                 android:layout_width="match_parent"
@@ -296,24 +300,6 @@
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
-
-            <!-- Write Settings Permission Status -->
-            <TextView
-                android:id="@+id/write_settings_status_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md" />
-
-            <Button
-                android:id="@+id/write_settings_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/open_write_settings"
-                android:textSize="@dimen/text_size_body"
-                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_small_vertical" />
 
         </LinearLayout>
 
@@ -461,23 +447,16 @@
             android:alpha="0.8"
             android:paddingBottom="@dimen/spacing_md" />
 
-        <!-- Secure Settings Permission Status -->
+        <!-- Permission requirement message for advanced tiles -->
         <TextView
-            android:id="@+id/secure_settings_permission_status_text"
+            android:id="@+id/advanced_tiles_permission_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/secure_settings_permission_required_for_advanced_tiles"
             android:textSize="@dimen/text_size_small"
-            android:paddingBottom="@dimen/spacing_md" />
-
-        <Button
-            android:id="@+id/secure_settings_permission_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/grant_secure_settings_permission"
-            android:textSize="@dimen/text_size_body"
-            android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-            android:paddingVertical="@dimen/button_padding_small_vertical"
-            android:layout_marginBottom="@dimen/spacing_lg" />
+            android:textColor="@android:color/holo_orange_dark"
+            android:paddingBottom="@dimen/spacing_md"
+            android:visibility="gone" />
 
         <!-- DNS Tile Card -->
         <LinearLayout

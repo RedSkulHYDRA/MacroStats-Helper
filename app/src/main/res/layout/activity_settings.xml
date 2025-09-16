@@ -39,6 +39,17 @@
                 android:textStyle="bold"
                 android:paddingBottom="@dimen/spacing_md" />
 
+            <!-- Permission requirement message for notification -->
+            <TextView
+                android:id="@+id/notification_permission_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_stats_permission_required_for_notifications"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@android:color/holo_orange_dark"
+                android:paddingBottom="@dimen/spacing_sm"
+                android:visibility="gone" />
+
             <!-- Notification Toggle Section -->
             <LinearLayout
                 android:id="@+id/notification_switch_layout"
@@ -157,23 +168,6 @@
                 android:alpha="0.6"
                 android:paddingTop="@dimen/spacing_lg"/>
 
-            <!-- Permission Status -->
-            <TextView
-                android:id="@+id/notification_permission_status_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:paddingTop="@dimen/spacing_xs"/>
-
-            <Button
-                android:id="@+id/usage_access_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/open_usage_access_settings"
-                android:textSize="@dimen/text_size_body"
-                android:paddingHorizontal="@dimen/button_padding_small_horizontal"
-                android:paddingVertical="@dimen/button_padding_extra_small_vertical"/>
-
         </LinearLayout>
 
         <!-- Historical Data Usage Card -->
@@ -234,7 +228,6 @@
                 android:text="@string/historical_data_period_title"
                 android:textSize="@dimen/text_size_subheading"
                 android:paddingBottom="@dimen/spacing_sm" />
-
 
             <!-- Horizontal RadioGroup for Historical Data Time Periods -->
             <RadioGroup

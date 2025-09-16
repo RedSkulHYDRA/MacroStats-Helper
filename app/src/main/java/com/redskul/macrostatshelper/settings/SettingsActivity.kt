@@ -61,8 +61,7 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updatePermissionBasedUI()
-        updatePermissionStatus()
+        updatePermissionRequirementMessages()
     }
 
     private fun setupWindowInsets() {
@@ -98,9 +97,7 @@ class SettingsActivity : AppCompatActivity() {
                 showPermissionRequiredDialog(
                     getString(R.string.show_data_usage_notification),
                     getString(R.string.permission_usage_stats)
-                ) {
-                    requestUsageStatsPermission()
-                }
+                )
                 return@setOnCheckedChangeListener
             }
 
@@ -154,11 +151,6 @@ class SettingsActivity : AppCompatActivity() {
             vibrationManager.vibrateOnAppInteraction()
         }
 
-        // Setup usage access button
-        binding.usageAccessButton.setOnClickListener {
-            requestUsageStatsPermission()
-        }
-
         // Setup save button
         binding.saveButton.setOnClickListener {
             saveSettings()
@@ -209,8 +201,7 @@ class SettingsActivity : AppCompatActivity() {
                 val currentUsageStats = permissionHelper.hasUsageStatsPermission()
 
                 if (lastUsageStats != currentUsageStats) {
-                    updatePermissionBasedUI()
-                    updatePermissionStatus()
+                    updatePermissionRequirementMessages()
 
                     if (lastUsageStats && !currentUsageStats) {
                         binding?.notificationEnabledSwitch?.isChecked = false
@@ -223,33 +214,18 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun updatePermissionBasedUI() {
+    private fun updatePermissionRequirementMessages() {
         val binding = binding ?: return
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
 
-        // Enable/disable notification switch
-        binding.notificationEnabledSwitch.isEnabled = hasUsageStats
-        if (!hasUsageStats && binding.notificationEnabledSwitch.isChecked) {
-            binding.notificationEnabledSwitch.isChecked = false
+        // Show/hide permission requirement message for notifications
+        if (!permissionHelper.hasUsageStatsPermission()) {
+            binding.notificationPermissionText.visibility = android.view.View.VISIBLE
+        } else {
+            binding.notificationPermissionText.visibility = android.view.View.GONE
         }
 
         // Update historical data card state
         updateHistoricalDataCardState()
-    }
-
-    private fun updatePermissionStatus() {
-        val binding = binding ?: return
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-
-        binding.notificationPermissionStatusText.text = if (hasUsageStats) {
-            getString(R.string.usage_access_permission_enabled)
-        } else {
-            getString(R.string.usage_access_permission_disabled)
-        }
-
-        binding.notificationPermissionStatusText.setTextColor(
-            if (hasUsageStats) 0xFF4CAF50.toInt() else 0xFFFF5722.toInt()
-        )
     }
 
     private fun loadCurrentSettings() {
@@ -293,8 +269,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.mobileWeeklyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.WEEKLY)
         binding.mobileMonthlyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.MONTHLY)
 
-        updatePermissionBasedUI()
-        updatePermissionStatus()
+        updatePermissionRequirementMessages()
         updateRadioButtonsState(anyHistoricalEnabled)
     }
 
@@ -374,19 +349,12 @@ class SettingsActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun showPermissionRequiredDialog(featureName: String, permissionName: String, onPositive: () -> Unit) {
-        AlertDialog.Builder(this)
+    private fun showPermissionRequiredDialog(featureName: String, permissionName: String) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle(getString(R.string.permission_required_title))
             .setMessage(getString(R.string.permission_required_dialog_message, featureName, permissionName))
-            .setPositiveButton(getString(R.string.grant_button)) { _, _ -> onPositive() }
-            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(getString(R.string.ok_button)) { dialog, _ -> dialog.dismiss() }
             .show()
-    }
-
-    private fun requestUsageStatsPermission() {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-        startActivity(intent)
-        showToast(getString(R.string.enable_usage_access_helper))
     }
 
     private fun showToast(message: String) {
