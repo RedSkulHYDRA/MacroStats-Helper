@@ -7,7 +7,6 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
-import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -207,8 +206,8 @@ class MainActivity : AppCompatActivity() {
 
         // Set up listener AFTER initial selection is set
         binding.updateIntervalRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            // Add haptic feedback
-            vibrationManager.vibrateOnClick()
+            // Add haptic feedback - always enabled for app interactions
+            vibrationManager.vibrateOnAppInteraction()
 
             val selectedInterval = when (checkedId) {
                 R.id.update_15_minutes -> 15
@@ -236,8 +235,8 @@ class MainActivity : AppCompatActivity() {
         binding.autosyncEnabledSwitch.isChecked = autoSyncManager.isAutoSyncEnabled()
 
         binding.autosyncEnabledSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            // Add haptic feedback
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Add haptic feedback - always enabled for app interactions
+            vibrationManager.vibrateOnAppInteraction()
 
             if (isChecked && !autoSyncManager.canEnableAutoSync()) {
                 binding.autosyncEnabledSwitch.isChecked = false
@@ -263,8 +262,8 @@ class MainActivity : AppCompatActivity() {
 
         // Set up delay radio group listener
         binding.autosyncDelayRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            // Add haptic feedback
-            vibrationManager.vibrateOnClick()
+            // Add haptic feedback - always enabled for app interactions
+            vibrationManager.vibrateOnAppInteraction()
 
             val selectedDelay = when (checkedId) {
                 R.id.delay_15_minutes -> 15

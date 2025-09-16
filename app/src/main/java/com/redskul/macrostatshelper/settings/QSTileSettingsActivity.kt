@@ -5,8 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.text.InputType
-import android.view.HapticFeedbackConstants
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -83,7 +81,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private fun setupSwitches(binding: ActivityQsTileSettingsBinding) {
         // Setup permission-required switches
         binding.showPeriodInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
                 binding.showPeriodInTitleSwitch.isChecked = false
                 showPermissionRequiredDialog(getString(R.string.data_usage_tiles_title), getString(R.string.permission_usage_stats))
@@ -93,7 +92,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         binding.showScreenTimeoutInTitleSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             if (isChecked && !permissionHelper.hasWriteSettingsPermission()) {
                 binding.showScreenTimeoutInTitleSwitch.isChecked = false
                 showPermissionRequiredDialog(getString(R.string.screen_timeout_tile_label), getString(R.string.permission_write_settings))
@@ -104,41 +104,49 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Add haptic feedback to other switches and immediate tile updates
         binding.showChargeInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            triggerImmediateTileUpdates()
-        }
-        binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             triggerImmediateTileUpdates()
         }
 
-        // DNS heading switch - using centralized QSTileSettingsManager
+        binding.showBatteryHealthInTitleSwitch.setOnCheckedChangeListener { switch, _ ->
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
+            triggerImmediateTileUpdates()
+        }
+
+        // DNS heading switch - using centralized VibrationManager
         binding.dnsShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             triggerDNSTileUpdate()
         }
 
-        // Torch/Glyph heading switch - using centralized QSTileSettingsManager
+        // Torch/Glyph heading switch - using centralized VibrationManager
         binding.torchGlyphShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             triggerTorchGlyphTileUpdate()
         }
 
-        // Refresh Rate heading switch - using centralized QSTileSettingsManager
+        // Refresh Rate heading switch - using centralized VibrationManager
         binding.refreshRateShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             triggerRefreshRateTileUpdate()
         }
 
-        // AOD heading switch - using centralized QSTileSettingsManager
+        // AOD heading switch - using centralized VibrationManager
         binding.aodShowHeadingSwitch.setOnCheckedChangeListener { switch, _ ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             triggerAODTileUpdate()
         }
 
         // Vibration switch
         binding.vibrationEnabledSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            switch.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
 
             if (!vibrationManager.hasVibrator() && isChecked) {
                 // Device doesn't have vibrator, disable the switch and show message
@@ -151,7 +159,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
             // Provide immediate feedback if vibration is being enabled
             if (isChecked) {
-                vibrationManager.vibrateOnClick()
+                vibrationManager.qstilevibration()
             }
         }
     }
@@ -336,15 +344,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private fun setupRadioGroups(binding: ActivityQsTileSettingsBinding) {
         // WiFi radio group listener
         binding.wifiTileRadioGroup.setOnCheckedChangeListener { _, _ ->
-            // Add haptic feedback
-            vibrationManager.vibrateOnClick()
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             // Settings will be saved when save button is clicked
         }
 
         // Mobile radio group listener
         binding.mobileTileRadioGroup.setOnCheckedChangeListener { _, _ ->
-            // Add haptic feedback
-            vibrationManager.vibrateOnClick()
+            // Use centralized vibration manager for app interactions
+            vibrationManager.vibrateOnAppInteraction()
             // Settings will be saved when save button is clicked
         }
     }
@@ -384,10 +392,10 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Show DNS 2 and 3 if they have data
         if (dns2.isValid() && dns2.url.isNotEmpty()) {
-            binding.dns2Container.visibility = View.VISIBLE
+            binding.dns2Container.visibility = android.view.View.VISIBLE
         }
         if (dns3.isValid() && dns3.url.isNotEmpty()) {
-            binding.dns3Container.visibility = View.VISIBLE
+            binding.dns3Container.visibility = android.view.View.VISIBLE
         }
 
         updateDNSAddButtonVisibility()
@@ -420,7 +428,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Remove DNS 2 button
         binding.dnsRemove2Button.setOnClickListener {
-            binding.dns2Container.visibility = View.GONE
+            binding.dns2Container.visibility = android.view.View.GONE
             // Clear the fields
             binding.dns2NameEditText.setText("")
             binding.dns2UrlEditText.setText("")
@@ -429,7 +437,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
         // Remove DNS 3 button
         binding.dnsRemove3Button.setOnClickListener {
-            binding.dns3Container.visibility = View.GONE
+            binding.dns3Container.visibility = android.view.View.GONE
             // Clear the fields
             binding.dns3NameEditText.setText("")
             binding.dns3UrlEditText.setText("")
@@ -441,11 +449,11 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val binding = binding ?: return
 
         when {
-            binding.dns2Container.visibility == View.GONE -> {
-                binding.dns2Container.visibility = View.VISIBLE
+            binding.dns2Container.visibility == android.view.View.GONE -> {
+                binding.dns2Container.visibility = android.view.View.VISIBLE
             }
             binding.dns3Container.isGone -> {
-                binding.dns3Container.visibility = View.VISIBLE
+                binding.dns3Container.visibility = android.view.View.VISIBLE
             }
         }
         updateDNSAddButtonVisibility()
@@ -457,7 +465,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         // Hide add button if all 3 DNS entries are visible
         val allVisible = binding.dns2Container.isVisible &&
                 binding.dns3Container.isVisible
-        binding.dnsAddButton.visibility = if (allVisible) View.GONE else View.VISIBLE
+        binding.dnsAddButton.visibility = if (allVisible) android.view.View.GONE else android.view.View.VISIBLE
     }
 
     private fun showSecureSettingsPermissionDialog() {

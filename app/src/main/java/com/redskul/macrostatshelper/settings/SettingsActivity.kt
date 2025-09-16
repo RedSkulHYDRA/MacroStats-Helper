@@ -90,8 +90,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // Setup notification switch
         binding.notificationEnabledSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            // Add haptic feedback using VibrationManager
-            vibrationManager.vibrateOnClick()
+            // Add haptic feedback - always enabled for app interactions
+            vibrationManager.vibrateOnAppInteraction()
 
             if (isChecked && !permissionHelper.hasUsageStatsPermission()) {
                 binding.notificationEnabledSwitch.isChecked = false
@@ -110,8 +110,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // Setup historical data master switch
         binding.historicalDataMasterSwitch.setOnCheckedChangeListener { switch, isChecked ->
-            // Add haptic feedback using VibrationManager
-            vibrationManager.vibrateOnClick()
+            // Add haptic feedback - always enabled for app interactions
+            vibrationManager.vibrateOnAppInteraction()
 
             // Enable/disable radio buttons based on master switch
             updateRadioButtonsState(isChecked)
@@ -124,34 +124,34 @@ class SettingsActivity : AppCompatActivity() {
 
         // Setup historical data radio buttons with haptic feedback
         binding.historicalDataRadioGroup.setOnCheckedChangeListener { _, _ ->
-            // Add haptic feedback using VibrationManager
-            vibrationManager.vibrateOnClick()
+            // Add haptic feedback - always enabled for app interactions
+            vibrationManager.vibrateOnAppInteraction()
         }
 
         // Setup WiFi checkboxes with haptic feedback
         binding.wifiDailyCheckbox.setOnCheckedChangeListener { _, _ ->
-            vibrationManager.vibrateOnClick()
+            vibrationManager.vibrateOnAppInteraction()
         }
 
         binding.wifiWeeklyCheckbox.setOnCheckedChangeListener { _, _ ->
-            vibrationManager.vibrateOnClick()
+            vibrationManager.vibrateOnAppInteraction()
         }
 
         binding.wifiMonthlyCheckbox.setOnCheckedChangeListener { _, _ ->
-            vibrationManager.vibrateOnClick()
+            vibrationManager.vibrateOnAppInteraction()
         }
 
         // Setup Mobile checkboxes with haptic feedback
         binding.mobileDailyCheckbox.setOnCheckedChangeListener { _, _ ->
-            vibrationManager.vibrateOnClick()
+            vibrationManager.vibrateOnAppInteraction()
         }
 
         binding.mobileWeeklyCheckbox.setOnCheckedChangeListener { _, _ ->
-            vibrationManager.vibrateOnClick()
+            vibrationManager.vibrateOnAppInteraction()
         }
 
         binding.mobileMonthlyCheckbox.setOnCheckedChangeListener { _, _ ->
-            vibrationManager.vibrateOnClick()
+            vibrationManager.vibrateOnAppInteraction()
         }
 
         // Setup usage access button
