@@ -8,7 +8,6 @@
     <!-- MainActivity strings -->
     <string name="display_settings">Display Settings</string>
     <string name="qs_tile_settings">QS Tile Settings</string>
-    <string name="accessibility_settings">Accessibility Settings</string>
     <string name="setup_title">MacroStats Helper Setup</string>
     <string name="setup_description">Grant required permissions to continue.</string>
     <string name="setup_description_autosync">Grant all permissions for full functionality.</string>
@@ -21,7 +20,6 @@
     <string name="write_settings_permission_label">Modify System Settings</string>
     <string name="accessibility_permission_label">Accessibility Service</string>
     <string name="secure_settings_permission_label">Advanced Features (ADB)</string>
-    <string name="battery_optimization_permission_label">Battery Optimization</string>
 
     <!-- Permission requirement messages -->
     <string name="usage_stats_permission_required_for_notifications">Usage Stats permission is required for this feature to work</string>
@@ -31,7 +29,6 @@
     <string name="secure_settings_permission_required_for_advanced_tiles">Secure Settings permission is required for this feature to work</string>
 
     <!-- Consolidated Permission Templates -->
-    <string name="permission_required">%1$s permission required</string>
     <string name="grant_permission_button">Grant %1$s Permission</string>
     <string name="permission_granted">%1$s permission granted</string>
     <string name="permission_denied">%1$s permission needed for functionality</string>
@@ -46,7 +43,6 @@
     <string name="service_error">Service error: %1$s</string>
     <string name="settings_saved">Settings saved</string>
     <string name="qs_settings_saved">QS settings saved</string>
-    <string name="permission_guide_short">Find the app in the list and enable</string>
 
     <!-- SettingsActivity strings -->
     <string name="settings_title">Display Settings</string>
@@ -81,7 +77,6 @@
     <string name="enable_autosync_management">Enable AutoSync Management</string>
     <string name="autosync_description">Auto-manage sync based on lock state</string>
     <string name="autosync_delay_label">Turn off sync after:</string>
-    <string name="autosync_delay_description">Delay before turning off sync when locked</string>
 
     <!-- Accessibility Service -->
     <string name="accessibility_service_description">Manages AutoSync based on device lock state</string>
@@ -154,27 +149,11 @@
     <string name="tap_to_grant">Tap to grant</string>
 
     <!-- Permission Status strings for QS Tile Settings -->
-    <string name="usage_access_permission_enabled">✓ Usage Access permission is granted</string>
-    <string name="usage_access_permission_disabled">⚠ Usage Access permission is required</string>
-    <string name="write_settings_permission_enabled">✓ Modify System Settings permission is granted</string>
-    <string name="write_settings_permission_disabled">⚠ Modify System Settings permission is required</string>
-    <string name="accessibility_service_enabled">✓ Accessibility service is enabled</string>
-    <string name="accessibility_service_disabled">⚠ Accessibility service is disabled</string>
-    <string name="secure_settings_permission_enabled">✓ WRITE_SECURE_SETTINGS permission is granted</string>
-    <string name="secure_settings_permission_disabled">⚠ WRITE_SECURE_SETTINGS permission is required</string>
 
     <!-- Permission Button strings -->
-    <string name="open_usage_access_settings">Enable Usage Access Settings</string>
-    <string name="open_write_settings">Enable Modify System Settings</string>
-    <string name="enable_write_settings_helper">Enable Modify System Settings</string>
-    <string name="open_accessibility_settings">Enable Accessibility Settings</string>
 
     <!-- Additional strings for hardcoded text -->
-    <string name="battery_optimization_disabled_check">✓ Battery Optimization Disabled</string>
     <string name="disable_battery_optimization">Disable Battery Optimization</string>
-    <string name="battery_optimization_disabled_desc">Battery optimization disabled. App runs reliably.</string>
-    <string name="disable_optimization_desc">Disable optimization for reliable monitoring.</string>
-    <string name="battery_optimization_title">Battery Optimization</string>
     <string name="update_frequency_title">Update Frequency</string>
     <string name="update_frequency_desc">Update frequency for data statistics</string>
     <string name="update_every_label">Update every:</string>
@@ -183,7 +162,6 @@
     <string name="permission_required_title">Permission Required</string>
     <string name="grant_button">Grant</string>
     <string name="cancel_button">Cancel</string>
-    <string name="enable_usage_access_helper">Enable usage access for MacroStats Helper</string>
     <string name="battery_optimization_disabled_check_full">✓ Disable Battery Optimization</string>
     <string name="data_usage_display_title">Data Usage Display</string>
     <string name="data_usage_tiles_title">Data Usage Tiles</string>
@@ -191,9 +169,7 @@
     <string name="ok_button">OK</string>
     <string name="data_tiles_disabled">Data tiles disabled due to missing permission</string>
     <string name="screen_timeout_disabled">Screen timeout disabled due to missing permission</string>
-    <string name="battery_optimization_disabled_toast">Battery optimization disabled</string>
     <string name="permission_required_dialog_message">%1$s requires %2$s permission. Grant now?</string>
-    <string name="permission_required_settings_dialog_message">%1$s requires %2$s. Grant in settings?</string>
 
     <!-- DNS Tile -->
     <string name="private_dns_heading">Private DNS</string>
@@ -217,9 +193,7 @@
     <string name="dns_configuration_description">Configure up to 3 custom DNS providers. Use the add button above to add entries, and the remove buttons to delete them.</string>
 
     <!-- Secure Settings Permission -->
-    <string name="grant_secure_settings_permission">Grant WRITE_SECURE_SETTINGS Permission</string>
     <string name="secure_settings_permission_title">WRITE_SECURE_SETTINGS Permission Required</string>
-    <string name="permission_granted_check">✓ Permission Granted</string>
     <string name="copy_command">Copy Command</string>
     <string name="command_copied">Command copied to clipboard</string>
     <string name="learn_more">Learn More</string>
@@ -228,7 +202,6 @@
     <string name="torch_glyph">Torch/Glyph</string>
     <string name="torch_glyph_heading">Torch/Glyph</string>
     <string name="torch_glyph_tile_title">Torch/Glyph Tile</string>
-    <string name="torch_glyph_description">Toggle between Torch and Glyph lights</string>
     <string name="torch_glyph_permission_required">Permission Required</string>
     <string name="torch_glyph_not_configured">Torch/Glyph Not Configured</string>
     <string name="torch_glyph_state_off">Off</string>
@@ -244,27 +217,23 @@
     <string name="refresh_rate">Refresh Rate</string>
     <string name="refresh_rate_heading">Refresh Rate</string>
     <string name="refresh_rate_tile_title">Refresh Rate Tile</string>
-    <string name="refresh_rate_description">Toggle between Dynamic, High, and Standard refresh rate modes</string>
     <string name="refresh_rate_permission_required">Permission Required</string>
     <string name="refresh_rate_not_configured">Refresh Rate Not Configured</string>
     <string name="refresh_rate_state_dynamic">Dynamic</string>
     <string name="refresh_rate_state_high">High</string>
     <string name="refresh_rate_state_standard">Standard</string>
-    <string name="refresh_rate_state_change_failed">Failed to change refresh rate state</string>
     <string name="refresh_rate_tile_detailed_description">Switch between Dynamic (adaptive), High (120Hz), and Standard (60Hz) refresh rate modes. Cycles between Dynamic → High → Standard → Dynamic states.</string>
 
     <!-- AOD Tile strings -->
     <string name="always_on_display">Always-on Display</string>
     <string name="aod_heading">Always-on Display</string>
     <string name="aod_tile_title">Always-on Display Tile</string>
-    <string name="aod_description">Toggle between Always-on Display modes</string>
     <string name="aod_permission_required">Permission Required</string>
     <string name="aod_not_configured">AOD Not Configured</string>
     <string name="aod_state_off">Off</string>
     <string name="aod_state_always_on">Always On</string>
     <string name="aod_state_schedule">Schedule</string>
     <string name="aod_state_tap_to_show">Tap to show</string>
-    <string name="aod_state_change_failed">Failed to change AOD state</string>
     <string name="aod_tile_detailed_description">Switch between Always-on Display modes: Off, Always On, Schedule, and Tap to show. Cycles between Off → Always On → Schedule → Tap to show → Off states.</string>
 
     <!-- ADB Instructions -->

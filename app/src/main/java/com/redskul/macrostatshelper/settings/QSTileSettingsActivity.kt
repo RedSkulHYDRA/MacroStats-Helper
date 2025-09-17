@@ -81,6 +81,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionRequirementMessages()
+        updateFeatureControls()
     }
 
     private fun setupSwitches(binding: ActivityQsTileSettingsBinding) {
@@ -213,6 +214,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         }
 
         updatePermissionRequirementMessages()
+        updateFeatureControls()
     }
 
     private fun saveSettings() {
@@ -435,6 +437,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 if (lastUsageStats != currentUsageStats || lastWriteSettings != currentWriteSettings ||
                     lastSecureSettings != currentSecureSettings) {
                     updatePermissionRequirementMessages()
+                    updateFeatureControls()
 
                     if (lastUsageStats && !currentUsageStats) {
                         showToast(getString(R.string.data_tiles_disabled))
@@ -478,15 +481,35 @@ class QSTileSettingsActivity : AppCompatActivity() {
         } else {
             binding.advancedTilesPermissionText.visibility = android.view.View.GONE
         }
+    }
 
-        // Enable/disable controls based on permissions
+    private fun updateFeatureControls() {
+        val binding = binding ?: return
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+        val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
+
+        // Data usage tile controls (Usage Stats permission required)
         binding.wifiTileRadioGroup.isEnabled = hasUsageStats
+        for (i in 0 until binding.wifiTileRadioGroup.childCount) {
+            binding.wifiTileRadioGroup.getChildAt(i).isEnabled = hasUsageStats
+        }
+        binding.wifiTileRadioGroup.alpha = if (hasUsageStats) 1.0f else 0.5f
+
         binding.mobileTileRadioGroup.isEnabled = hasUsageStats
+        for (i in 0 until binding.mobileTileRadioGroup.childCount) {
+            binding.mobileTileRadioGroup.getChildAt(i).isEnabled = hasUsageStats
+        }
+        binding.mobileTileRadioGroup.alpha = if (hasUsageStats) 1.0f else 0.5f
+
         binding.showPeriodInTitleSwitch.isEnabled = hasUsageStats
+        binding.showPeriodInTitleSwitch.alpha = if (hasUsageStats) 1.0f else 0.5f
 
+        // Screen timeout controls (Write Settings permission required)
         binding.showScreenTimeoutInTitleSwitch.isEnabled = hasWriteSettings
+        binding.showScreenTimeoutInTitleSwitch.alpha = if (hasWriteSettings) 1.0f else 0.5f
 
-        // Enable/disable advanced tiles controls
+        // Advanced tiles controls (Secure Settings permission required)
         binding.dns1NameEditText.isEnabled = hasSecureSettings
         binding.dns1UrlEditText.isEnabled = hasSecureSettings
         binding.dns2NameEditText.isEnabled = hasSecureSettings
@@ -500,6 +523,27 @@ class QSTileSettingsActivity : AppCompatActivity() {
         binding.torchGlyphShowHeadingSwitch.isEnabled = hasSecureSettings
         binding.refreshRateShowHeadingSwitch.isEnabled = hasSecureSettings
         binding.aodShowHeadingSwitch.isEnabled = hasSecureSettings
+
+        // Visual feedback for advanced tiles
+        val advancedAlpha = if (hasSecureSettings) 1.0f else 0.5f
+        binding.dns1NameEditText.alpha = advancedAlpha
+        binding.dns1UrlEditText.alpha = advancedAlpha
+        binding.dns2NameEditText.alpha = advancedAlpha
+        binding.dns2UrlEditText.alpha = advancedAlpha
+        binding.dns3NameEditText.alpha = advancedAlpha
+        binding.dns3UrlEditText.alpha = advancedAlpha
+        binding.dnsShowHeadingSwitch.alpha = advancedAlpha
+        binding.dnsAddButton.alpha = advancedAlpha
+        binding.dnsRemove2Button.alpha = advancedAlpha
+        binding.dnsRemove3Button.alpha = advancedAlpha
+        binding.torchGlyphShowHeadingSwitch.alpha = advancedAlpha
+        binding.refreshRateShowHeadingSwitch.alpha = advancedAlpha
+        binding.aodShowHeadingSwitch.alpha = advancedAlpha
+
+        // Battery controls are always enabled (no specific permissions required)
+        binding.showChargeInTitleSwitch.isEnabled = true
+        binding.showBatteryHealthInTitleSwitch.isEnabled = true
+        binding.designCapacityEditText.isEnabled = true
     }
 
     private fun saveDNSSettings(binding: ActivityQsTileSettingsBinding) {

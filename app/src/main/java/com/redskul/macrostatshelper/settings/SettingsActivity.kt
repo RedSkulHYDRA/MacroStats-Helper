@@ -62,6 +62,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionRequirementMessages()
+        updateFeatureControls()
     }
 
     private fun setupWindowInsets() {
@@ -179,14 +180,17 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updateRadioButtonsState(enabled: Boolean) {
         val binding = binding ?: return
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val notificationEnabled = binding.notificationEnabledSwitch.isChecked
+        val finalEnabled = enabled && hasUsageStats && notificationEnabled
 
-        binding.historicalDataRadioGroup.isEnabled = enabled
-        binding.lastMonthRadioButton.isEnabled = enabled
-        binding.lastWeekRadioButton.isEnabled = enabled
-        binding.yesterdayRadioButton.isEnabled = enabled
+        binding.historicalDataRadioGroup.isEnabled = finalEnabled
+        binding.lastMonthRadioButton.isEnabled = finalEnabled
+        binding.lastWeekRadioButton.isEnabled = finalEnabled
+        binding.yesterdayRadioButton.isEnabled = finalEnabled
 
         // Visual feedback - reduce alpha when disabled
-        val alpha = if (enabled) 1.0f else 0.5f
+        val alpha = if (finalEnabled) 1.0f else 0.5f
         binding.historicalDataRadioGroup.alpha = alpha
         binding.historicalDataPeriodTitle.alpha = alpha
     }
@@ -202,6 +206,7 @@ class SettingsActivity : AppCompatActivity() {
 
                 if (lastUsageStats != currentUsageStats) {
                     updatePermissionRequirementMessages()
+                    updateFeatureControls()
 
                     if (lastUsageStats && !currentUsageStats) {
                         binding?.notificationEnabledSwitch?.isChecked = false
@@ -225,6 +230,34 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Update historical data card state
+        updateHistoricalDataCardState()
+    }
+
+    private fun updateFeatureControls() {
+        val binding = binding ?: return
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+
+        // Notification switch
+        binding.notificationEnabledSwitch.isEnabled = hasUsageStats
+        binding.notificationEnabledSwitch.alpha = if (hasUsageStats) 1.0f else 0.5f
+
+        // WiFi checkboxes
+        binding.wifiDailyCheckbox.isEnabled = hasUsageStats
+        binding.wifiWeeklyCheckbox.isEnabled = hasUsageStats
+        binding.wifiMonthlyCheckbox.isEnabled = hasUsageStats
+        binding.wifiDailyCheckbox.alpha = if (hasUsageStats) 1.0f else 0.5f
+        binding.wifiWeeklyCheckbox.alpha = if (hasUsageStats) 1.0f else 0.5f
+        binding.wifiMonthlyCheckbox.alpha = if (hasUsageStats) 1.0f else 0.5f
+
+        // Mobile checkboxes
+        binding.mobileDailyCheckbox.isEnabled = hasUsageStats
+        binding.mobileWeeklyCheckbox.isEnabled = hasUsageStats
+        binding.mobileMonthlyCheckbox.isEnabled = hasUsageStats
+        binding.mobileDailyCheckbox.alpha = if (hasUsageStats) 1.0f else 0.5f
+        binding.mobileWeeklyCheckbox.alpha = if (hasUsageStats) 1.0f else 0.5f
+        binding.mobileMonthlyCheckbox.alpha = if (hasUsageStats) 1.0f else 0.5f
+
+        // Historical data controls are handled by updateHistoricalDataCardState()
         updateHistoricalDataCardState()
     }
 
@@ -270,6 +303,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.mobileMonthlyCheckbox.isChecked = settings.mobileTimePeriods.contains(TimePeriod.MONTHLY)
 
         updatePermissionRequirementMessages()
+        updateFeatureControls()
         updateRadioButtonsState(anyHistoricalEnabled)
     }
 

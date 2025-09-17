@@ -60,18 +60,21 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         updatePermissionSwitches()
+        updateFeatureControls()
     }
 
     private val writeSettingsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
         updatePermissionSwitches()
+        updateFeatureControls()
     }
 
     private val accessibilityPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
         updatePermissionSwitches()
+        updateFeatureControls()
     }
 
     private val batteryOptimizationLauncher = registerForActivityResult(
@@ -140,6 +143,7 @@ class MainActivity : AppCompatActivity() {
                 // Update UI
                 updatePermissionSwitches()
                 updatePermissionRequirementMessages()
+                updateFeatureControls()
 
                 lastUsageStats = currentUsageStats
                 lastAccessibility = currentAccessibility
@@ -179,6 +183,7 @@ class MainActivity : AppCompatActivity() {
 
         // Update permission-based UI
         updatePermissionRequirementMessages()
+        updateFeatureControls()
     }
 
     private fun setupPermissionsCard(binding: ActivityMainBinding) {
@@ -359,6 +364,30 @@ class MainActivity : AppCompatActivity() {
         } else {
             binding.autosyncPermissionText.visibility = android.view.View.GONE
         }
+    }
+
+    private fun updateFeatureControls() {
+        val binding = mainBinding ?: return
+        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val hasAccessibility = permissionHelper.hasAccessibilityPermission()
+
+        // Update interval controls
+        binding.updateIntervalRadioGroup.isEnabled = hasUsageStats
+        for (i in 0 until binding.updateIntervalRadioGroup.childCount) {
+            binding.updateIntervalRadioGroup.getChildAt(i).isEnabled = hasUsageStats
+        }
+        binding.updateIntervalRadioGroup.alpha = if (hasUsageStats) 1.0f else 0.5f
+
+        // AutoSync controls
+        binding.autosyncEnabledSwitch.isEnabled = hasAccessibility
+        binding.autosyncDelayRadioGroup.isEnabled = hasAccessibility && binding.autosyncEnabledSwitch.isChecked
+        for (i in 0 until binding.autosyncDelayRadioGroup.childCount) {
+            binding.autosyncDelayRadioGroup.getChildAt(i).isEnabled = hasAccessibility && binding.autosyncEnabledSwitch.isChecked
+        }
+
+        val autosyncAlpha = if (hasAccessibility) 1.0f else 0.5f
+        binding.autosyncEnabledSwitch.alpha = autosyncAlpha
+        binding.autosyncDelayRadioGroup.alpha = if (hasAccessibility && binding.autosyncEnabledSwitch.isChecked) 1.0f else 0.5f
     }
 
     // NEW: Observe WorkManager status
