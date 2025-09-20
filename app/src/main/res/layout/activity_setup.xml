@@ -38,30 +38,6 @@
             android:layout_marginBottom="@dimen/spacing_sm" />
 
         <Button
-            android:id="@+id/usage_stats_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/button_padding_horizontal"
-            android:paddingVertical="@dimen/button_padding_vertical"
-            android:layout_marginBottom="@dimen/spacing_sm" />
-
-        <Button
-            android:id="@+id/write_settings_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/button_padding_horizontal"
-            android:paddingVertical="@dimen/button_padding_vertical"
-            android:layout_marginBottom="@dimen/spacing_sm" />
-
-        <Button
-            android:id="@+id/setup_accessibility_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/button_padding_horizontal"
-            android:paddingVertical="@dimen/button_padding_vertical"
-            android:layout_marginBottom="@dimen/spacing_sm" />
-
-        <Button
             android:id="@+id/setup_battery_opt_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

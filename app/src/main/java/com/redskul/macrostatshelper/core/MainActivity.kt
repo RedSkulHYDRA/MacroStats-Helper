@@ -42,7 +42,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var workManagerRepository: WorkManagerRepository
     private lateinit var vibrationManager: VibrationManager
     private lateinit var dnsManager: DNSManager
-
     private var mainBinding: ActivityMainBinding? = null
     private var setupBinding: ActivitySetupBinding? = null
 
@@ -102,8 +101,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             showMainUI()
             startPermissionMonitoring()
-            ensureMonitoringActive()
         }
+        ensureMonitoringActive()
     }
 
     override fun onDestroy() {
@@ -133,7 +132,6 @@ class MainActivity : AppCompatActivity() {
                     settingsManager.enforcePermissionRestrictions()
                     showToast(getString(R.string.data_tiles_disabled))
                 }
-
                 if (lastAccessibility && !currentAccessibility) {
                     android.util.Log.i("MainActivity", "Accessibility permission was revoked")
                     autoSyncManager.enforcePermissionRestrictions()
@@ -427,8 +425,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
             showToast(getString(R.string.permission_granted, getString(R.string.permission_notification)))
@@ -513,9 +510,6 @@ class MainActivity : AppCompatActivity() {
         val binding = setupBinding ?: return
 
         binding.notificationButton.setOnClickListener { requestNotificationPermission() }
-        binding.usageStatsButton.setOnClickListener { requestUsageStatsPermission() }
-        binding.writeSettingsButton.setOnClickListener { requestWriteSettingsPermission() }
-        binding.setupAccessibilityButton.setOnClickListener { requestAccessibilityPermission() }
         binding.setupBatteryOptButton.setOnClickListener { requestBatteryOptimizationExemption() }
         binding.startButton.setOnClickListener { completeSetup() }
     }
@@ -533,9 +527,6 @@ class MainActivity : AppCompatActivity() {
         val binding = setupBinding ?: return
 
         val hasNotification = permissionHelper.hasNotificationPermission()
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
-        val hasAccessibility = permissionHelper.hasAccessibilityPermission()
         val hasBatteryOpt = permissionHelper.isBatteryOptimizationDisabled()
 
         // Update button texts and states
@@ -546,27 +537,6 @@ class MainActivity : AppCompatActivity() {
         }
         binding.notificationButton.alpha = if (hasNotification) 0.7f else 1.0f
 
-        binding.usageStatsButton.text = if (hasUsageStats) {
-            "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
-        } else {
-            getString(R.string.grant_permission_button, getString(R.string.permission_usage_stats))
-        }
-        binding.usageStatsButton.alpha = if (hasUsageStats) 0.7f else 1.0f
-
-        binding.writeSettingsButton.text = if (hasWriteSettings) {
-            "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
-        } else {
-            getString(R.string.grant_permission_button, getString(R.string.permission_write_settings))
-        }
-        binding.writeSettingsButton.alpha = if (hasWriteSettings) 0.7f else 1.0f
-
-        binding.setupAccessibilityButton.text = if (hasAccessibility) {
-            "✓ " + getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
-        } else {
-            getString(R.string.grant_permission_button, getString(R.string.permission_accessibility))
-        }
-        binding.setupAccessibilityButton.alpha = if (hasAccessibility) 0.7f else 1.0f
-
         binding.setupBatteryOptButton.text = if (hasBatteryOpt) {
             getString(R.string.battery_optimization_disabled_check_full)
         } else {
@@ -574,7 +544,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.setupBatteryOptButton.alpha = if (hasBatteryOpt) 0.7f else 1.0f
 
-        binding.startButton.isEnabled = hasNotification && hasUsageStats && hasWriteSettings && hasAccessibility
+        binding.startButton.isEnabled = hasNotification && hasBatteryOpt
         binding.startButton.alpha = if (binding.startButton.isEnabled) 1.0f else 0.5f
     }
 
@@ -597,7 +567,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun completeSetup() {
-        if (permissionHelper.hasAllPermissions()) {
+        if (permissionHelper.hasNotificationPermission() && permissionHelper.isBatteryOptimizationDisabled()) {
             sharedPreferences.edit {
                 putBoolean("setup_complete", true)
             }

@@ -36,7 +36,6 @@
     <!-- Permission Types -->
     <string name="permission_notification">Notification</string>
     <string name="permission_usage_stats">Usage Stats</string>
-    <string name="permission_write_settings">Write Settings</string>
     <string name="permission_accessibility">Accessibility</string>
 
     <!-- Short Toast Messages -->
