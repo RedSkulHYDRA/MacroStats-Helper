@@ -73,18 +73,17 @@ class WorkManagerRepository(private val context: Context) {
      * Runs every 15 minutes, ONLY when the device is charging.
      */
     private fun ensureBatteryMonitoringActive() {
-        // Removed user interval and adaptive interval logic
+        // Battery monitoring runs every hour regardless of charging state
         val constraints = Constraints.Builder()
-            .setRequiresCharging(true) // Only run when charging
             .build()
 
         val batteryWorkRequest = PeriodicWorkRequestBuilder<BatteryWorker>(
-            15, TimeUnit.MINUTES // Fixed 15 minute interval
+            1, TimeUnit.HOURS // Fixed 1-hour interval
         )
             .setConstraints(constraints)
             .setBackoffCriteria(
                 BackoffPolicy.LINEAR,
-                WorkRequest.MIN_BACKOFF_MILLIS, // Minimum safe backoff
+                WorkRequest.MIN_BACKOFF_MILLIS,
                 TimeUnit.MILLISECONDS
             )
             .addTag("battery_monitoring")
@@ -96,7 +95,7 @@ class WorkManagerRepository(private val context: Context) {
             batteryWorkRequest
         )
 
-        android.util.Log.d(TAG, "Battery monitoring ensured active: 15min interval, only when charging")
+        android.util.Log.d(TAG, "Battery monitoring ensured active: 1-hour interval, no charging constraint")
     }
 
     /**
