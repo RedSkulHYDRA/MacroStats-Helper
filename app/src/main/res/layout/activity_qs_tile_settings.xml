@@ -72,7 +72,8 @@
                     android:text="@string/enable_tile_vibration"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/vibration_enabled_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -134,7 +135,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/show_period_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -294,7 +296,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/show_screen_timeout_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -355,7 +358,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/show_charge_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -388,7 +392,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/show_battery_health_in_title_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -500,7 +505,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/dns_show_heading_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -742,7 +748,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/torch_glyph_show_heading_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -792,7 +799,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/refresh_rate_show_heading_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -842,7 +850,8 @@
                     android:text="@string/enable_tile_heading"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/aod_show_heading_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -853,6 +862,7 @@
 
         <!-- Save Button -->
         <Button
+            style="@style/CustomButtonStyle"
             android:id="@+id/qs_save_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -860,7 +870,6 @@
             android:textSize="@dimen/text_size_subheading"
             android:paddingHorizontal="@dimen/button_padding_horizontal"
             android:paddingVertical="@dimen/button_padding_vertical"
-            android:background="@android:drawable/btn_default"
             android:layout_marginBottom="@dimen/spacing_sm" />
 
         <TextView

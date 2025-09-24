@@ -52,7 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.service)
-
+    implementation("com.google.android.material:material:1.12.0")
     // WorkManager - NEW DEPENDENCY
     implementation("androidx.work:work-runtime-ktx:2.10.3")
 

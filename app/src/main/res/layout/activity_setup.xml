@@ -30,6 +30,7 @@
             android:paddingBottom="@dimen/spacing_xl" />
 
         <Button
+            style="@style/CustomButtonStyle"
             android:id="@+id/notification_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,6 +39,7 @@
             android:layout_marginBottom="@dimen/spacing_sm" />
 
         <Button
+            style="@style/CustomButtonStyle"
             android:id="@+id/setup_battery_opt_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -47,6 +49,7 @@
             android:layout_marginBottom="@dimen/spacing_sm" />
 
         <Button
+            style="@style/CustomButtonStyle"
             android:id="@+id/start_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

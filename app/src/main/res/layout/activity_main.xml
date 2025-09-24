@@ -69,7 +69,8 @@
                     android:text="@string/usage_stats_permission_label"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/usage_stats_permission_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -92,7 +93,8 @@
                     android:text="@string/write_settings_permission_label"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/write_settings_permission_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -115,7 +117,8 @@
                     android:text="@string/accessibility_permission_label"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/accessibility_permission_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -138,7 +141,8 @@
                     android:text="@string/secure_settings_permission_label"
                     android:textSize="@dimen/text_size_body" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/secure_settings_permission_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -274,7 +278,8 @@
                     android:text="@string/enable_autosync_management"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <Switch
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/autosync_enabled_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -339,6 +344,7 @@
 
         <!-- Action Buttons -->
         <Button
+            style="@style/CustomButtonStyle"
             android:id="@+id/settings_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -348,6 +354,7 @@
             android:layout_marginBottom="@dimen/spacing_sm" />
 
         <Button
+            style="@style/CustomButtonStyle"
             android:id="@+id/qs_tile_settings_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

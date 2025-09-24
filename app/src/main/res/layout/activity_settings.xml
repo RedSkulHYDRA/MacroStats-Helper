@@ -66,7 +66,8 @@
                     android:text="@string/show_data_usage_notification"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <Switch
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/notification_enabled_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -204,7 +205,8 @@
                     android:text="@string/enable_historical_data"
                     android:textSize="@dimen/text_size_subheading" />
 
-                <Switch
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
                     android:id="@+id/historical_data_master_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -263,14 +265,14 @@
 
         <!-- Save Button -->
         <Button
+            style="@style/CustomButtonStyle"
             android:id="@+id/save_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/save_settings"
             android:textSize="@dimen/text_size_subheading"
             android:paddingHorizontal="@dimen/button_padding_horizontal"
-            android:paddingVertical="@dimen/button_padding_vertical"
-            android:background="@android:drawable/btn_default" />
+            android:paddingVertical="@dimen/button_padding_vertical"/>
 
     </LinearLayout>
 
