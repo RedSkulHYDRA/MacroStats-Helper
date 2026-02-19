@@ -250,4 +250,13 @@
     <string name="interval_30_minutes">30 Min</string>
     <string name="interval_45_minutes">45 Min</string>
     <string name="interval_60_minutes">1 Hour</string>
+
+    <!-- Heads-Up Tile strings -->
+    <string name="heads_up">Heads-up</string>
+    <string name="heads_up_heading">Heads-up</string>
+    <string name="heads_up_tile_title">Heads-up Notifications Tile</string>
+    <string name="heads_up_permission_required">Permission Required</string>
+    <string name="heads_up_state_on">Enabled</string>
+    <string name="heads_up_state_off">Disabled</string>
+    <string name="heads_up_tile_description">Quickly toggle heads-up (peek) notifications on or off system-wide.</string>
 </resources>

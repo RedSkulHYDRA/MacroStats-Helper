@@ -115,6 +115,16 @@ object TileConfigHelper {
         )
     }
 
+    fun getHeadsUpTileConfig(context: Context, isEnabled: Boolean): TileConfiguration {
+        val iconRes = if (isEnabled) R.drawable.ic_heads_up_on else R.drawable.ic_heads_up_off
+        return TileConfiguration(
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
+            defaultState = if (isEnabled) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+        )
+    }
+
     fun applyConfigToTile(
         tile: Tile,
         config: TileConfiguration,
@@ -137,7 +147,6 @@ object TileConfigHelper {
         tile.state = config.defaultState
 
         if (showPeriodInTitle && period != null && context != null) {
-            // Show period in title WITHOUT separator, value as subtitle
             val titleText = when (period) {
                 TimePeriod.DAILY -> if (isWifi) context.getString(R.string.wifi_usage_daily) else context.getString(R.string.mobile_data_usage_daily)
                 TimePeriod.WEEKLY -> if (isWifi) context.getString(R.string.wifi_usage_weekly) else context.getString(R.string.mobile_data_usage_weekly)
@@ -146,10 +155,8 @@ object TileConfigHelper {
             tile.label = titleText
             tile.subtitle = value
         } else {
-            // Show divider only if text is short enough to not animate
             val showDivider = value.length < HIDE_DIVIDER_LENGTH_THRESHOLD
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-
             tile.label = if (prefix.isNotEmpty()) "$prefix $value" else value
             tile.subtitle = null
         }
@@ -166,11 +173,9 @@ object TileConfigHelper {
         tile.icon = config.icon
 
         if (showChargeInTitle && context != null) {
-            // Show "Charge Cycles" in title WITHOUT separator, value as subtitle
             tile.label = context.getString(R.string.charge_cycles)
             tile.subtitle = value
         } else {
-            // For charge cycles, include "Charging Cycles" text
             val fullText = if (context != null) {
                 "$value ${context.getString(R.string.charging_cycles)}"
             } else {
@@ -178,7 +183,6 @@ object TileConfigHelper {
             }
             val showDivider = fullText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-
             tile.label = if (prefix.isNotEmpty()) "$prefix $fullText" else fullText
             tile.subtitle = null
         }
@@ -198,41 +202,32 @@ object TileConfigHelper {
     ) {
         tile.icon = config.icon
 
-        // New 3-state logic
         val valueText = when {
             !hasPermission -> {
-                // State 1: No permission
                 tile.state = Tile.STATE_INACTIVE
                 tile.label = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
                 tile.subtitle = context?.getString(R.string.tap_to_grant) ?: "Tap to grant"
                 return
             }
             designCapacityValue <= 0 -> {
-                // State 2a: Design capacity not set
                 context?.getString(R.string.set_design_capacity) ?: "Set design capacity"
             }
             !isHealthCalculated -> {
-                // State 2b: Design capacity set but not charged to 100%
                 context?.getString(R.string.charge_to_100_for_health) ?: "Charge to 100% to calculate battery health"
             }
             else -> {
-                // State 3: Health calculated, show normal display
                 "$healthPercentage ($currentFcc / $designCapacity)"
             }
         }
 
-        // Set tile to active state (permission already checked above)
         tile.state = Tile.STATE_ACTIVE
 
         if (showHealthInTitle && context != null) {
-            // Show "Battery Health" in title, status as subtitle
             tile.label = context.getString(R.string.battery_health)
             tile.subtitle = valueText
         } else {
-            // Show status directly in title (no separator for long text)
             val showDivider = valueText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-
             tile.label = if (prefix.isNotEmpty()) "$prefix $valueText" else valueText
             tile.subtitle = null
         }
@@ -258,14 +253,11 @@ object TileConfigHelper {
         tile.state = config.defaultState
 
         if (showTimeoutInTitle && context != null) {
-            // Show "Screen Timeout" in title, value as subtitle
             tile.label = context.getString(R.string.screen_timeout)
             tile.subtitle = timeoutValue
         } else {
-            // Show value directly in title with prefix if short enough
             val showDivider = timeoutValue.length < HIDE_DIVIDER_LENGTH_THRESHOLD
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-
             tile.label = if (prefix.isNotEmpty()) "$prefix $timeoutValue" else timeoutValue
             tile.subtitle = null
         }
@@ -282,14 +274,11 @@ object TileConfigHelper {
         tile.icon = config.icon
 
         if (showRefreshRateInTitle && context != null) {
-            // Show "Refresh Rate" in title, state as subtitle
             tile.label = context.getString(R.string.refresh_rate_heading)
             tile.subtitle = stateText
         } else {
-            // Show state directly in title with prefix if short enough
             val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-
             tile.label = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
             tile.subtitle = null
         }
@@ -306,14 +295,11 @@ object TileConfigHelper {
         tile.icon = config.icon
 
         if (showAODInTitle && context != null) {
-            // Show "Always-on Display" in title, state as subtitle
             tile.label = context.getString(R.string.aod_heading)
             tile.subtitle = stateText
         } else {
-            // Show state directly in title with prefix if short enough
             val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
             val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-
             tile.label = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
             tile.subtitle = null
         }
