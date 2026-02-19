@@ -83,17 +83,13 @@ class AODQSTileService : BaseQSTileService() {
             return
         }
 
-        // Cycle to next state
-        tileScope.launch {
-            val success = aodManager.cycleToNextState()
-            withContext(Dispatchers.Main) {
-                if (success) {
-                    updateTile()
-                    android.util.Log.d("AODQSTile", "State changed to: ${aodManager.getCurrentStateText()}")
-                } else {
-                    android.util.Log.e("AODQSTile", "Failed to change state")
-                }
-            }
+        // Apply state immediately on the main thread — no coroutine needed
+        val success = aodManager.cycleToNextState()
+        if (success) {
+            updateTile()
+            android.util.Log.d("AODQSTile", "State changed to: ${aodManager.getCurrentStateText()}")
+        } else {
+            android.util.Log.e("AODQSTile", "Failed to change state")
         }
     }
 

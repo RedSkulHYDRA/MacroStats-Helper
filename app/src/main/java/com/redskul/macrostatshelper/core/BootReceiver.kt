@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import com.redskul.macrostatshelper.autosync.AutoSyncManager
+import com.redskul.macrostatshelper.notification.NotificationHelper
 import com.redskul.macrostatshelper.utils.WorkManagerRepository
 
 class BootReceiver : BroadcastReceiver() {
@@ -52,6 +53,11 @@ class BootReceiver : BroadcastReceiver() {
                                 }
                             }
                         }
+
+                        // Restore persistent notification after reboot
+                        NotificationHelper(context).showPersistentNotification()
+                        android.util.Log.d("BootReceiver", "Persistent notification restored after boot")
+
                     } catch (e: Exception) {
                         android.util.Log.e("BootReceiver", "Failed to ensure WorkManager monitoring active after boot", e)
                     }

@@ -83,17 +83,13 @@ class TorchGlyphQSTileService : BaseQSTileService() {
             return
         }
 
-        // Cycle to next state
-        tileScope.launch {
-            val success = torchGlyphManager.cycleToNextState()
-            withContext(Dispatchers.Main) {
-                if (success) {
-                    updateTile()
-                    android.util.Log.d("TorchGlyphQSTile", "State changed to: ${torchGlyphManager.getCurrentStateText()}")
-                } else {
-                    android.util.Log.e("TorchGlyphQSTile", "Failed to change state")
-                }
-            }
+        // Apply state immediately on the main thread — no coroutine needed
+        val success = torchGlyphManager.cycleToNextState()
+        if (success) {
+            updateTile()
+            android.util.Log.d("TorchGlyphQSTile", "State changed to: ${torchGlyphManager.getCurrentStateText()}")
+        } else {
+            android.util.Log.e("TorchGlyphQSTile", "Failed to change state")
         }
     }
 
@@ -209,11 +205,5 @@ class TorchGlyphQSTileService : BaseQSTileService() {
     override fun onDestroy() {
         super.onDestroy()
         tileScope.cancel()
-        // Cleanup when service is destroyed
-        try {
-            torchGlyphManager.cleanup()
-        } catch (e: Exception) {
-            android.util.Log.e("TorchGlyphQSTile", "Error during cleanup", e)
-        }
     }
 }

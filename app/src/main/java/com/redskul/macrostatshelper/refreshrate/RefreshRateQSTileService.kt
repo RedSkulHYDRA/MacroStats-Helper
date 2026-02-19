@@ -83,17 +83,13 @@ class RefreshRateQSTileService : BaseQSTileService() {
             return
         }
 
-        // Cycle to next state
-        tileScope.launch {
-            val success = refreshRateManager.cycleToNextState()
-            withContext(Dispatchers.Main) {
-                if (success) {
-                    updateTile()
-                    android.util.Log.d("RefreshRateQSTile", "State changed to: ${refreshRateManager.getCurrentStateText()}")
-                } else {
-                    android.util.Log.e("RefreshRateQSTile", "Failed to change state")
-                }
-            }
+        // Apply state immediately on the main thread — no coroutine needed
+        val success = refreshRateManager.cycleToNextState()
+        if (success) {
+            updateTile()
+            android.util.Log.d("RefreshRateQSTile", "State changed to: ${refreshRateManager.getCurrentStateText()}")
+        } else {
+            android.util.Log.e("RefreshRateQSTile", "Failed to change state")
         }
     }
 

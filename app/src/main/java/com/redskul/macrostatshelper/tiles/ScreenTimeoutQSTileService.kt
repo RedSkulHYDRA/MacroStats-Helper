@@ -76,23 +76,14 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
             return
         }
 
-        // Permission is granted, proceed with changing timeout
-        tileScope.launch {
-            try {
-                val currentTimeout = getCurrentScreenTimeout()
-                val nextTimeout = getNextTimeout(currentTimeout)
+        // Apply state immediately on the main thread — no coroutine needed
+        val currentTimeout = getCurrentScreenTimeout()
+        val nextTimeout = getNextTimeout(currentTimeout)
 
-                if (setScreenTimeout(nextTimeout)) {
-                    // Update tile
-                    withContext(Dispatchers.Main) {
-                        updateTile()
-                    }
-                } else {
-                    android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("ScreenTimeoutQSTile", "Error changing screen timeout", e)
-            }
+        if (setScreenTimeout(nextTimeout)) {
+            updateTile()
+        } else {
+            android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
         }
     }
 

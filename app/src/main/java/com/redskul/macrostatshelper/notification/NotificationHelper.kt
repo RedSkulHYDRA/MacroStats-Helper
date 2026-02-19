@@ -17,6 +17,9 @@ class NotificationHelper(private val context: Context) {
     companion object {
         const val CHANNEL_ID = "data_usage_channel"
         const val NOTIFICATION_ID = 1001
+
+        const val PERSISTENT_CHANNEL_ID = "app_status_channel"
+        const val PERSISTENT_NOTIFICATION_ID = 1002
     }
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -27,7 +30,8 @@ class NotificationHelper(private val context: Context) {
     }
 
     private fun createNotificationChannel() {
-        val channel = NotificationChannel(
+        // Existing data usage channel
+        val dataChannel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.data_usage_monitor_channel),
             NotificationManager.IMPORTANCE_LOW
@@ -35,7 +39,21 @@ class NotificationHelper(private val context: Context) {
             description = context.getString(R.string.channel_description)
             setShowBadge(false)
         }
-        notificationManager.createNotificationChannel(channel)
+        notificationManager.createNotificationChannel(dataChannel)
+
+        // Persistent app status channel — silent, collapsed, undismissable
+        val persistentChannel = NotificationChannel(
+            PERSISTENT_CHANNEL_ID,
+            "App Status",
+            NotificationManager.IMPORTANCE_MIN
+        ).apply {
+            description = "Persistent status indicator for MacroStats Helper"
+            setShowBadge(false)
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
+        }
+        notificationManager.createNotificationChannel(persistentChannel)
     }
 
     fun showUsageNotification(usageData: UsageData) {
@@ -78,11 +96,37 @@ class NotificationHelper(private val context: Context) {
 
             notificationManager.notify(NOTIFICATION_ID, notification)
 
-            // Debug: Log that notification was sent
             android.util.Log.d("NotificationHelper", "Notification sent with data: $shortText")
 
         } catch (e: Exception) {
             android.util.Log.e("NotificationHelper", "Failed to show notification", e)
+        }
+    }
+
+    fun showPersistentNotification() {
+        try {
+            val intent = Intent(context, SettingsActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(
+                context, 2, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val notification = NotificationCompat.Builder(context, PERSISTENT_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("MacroStats Helper")
+                .setContentText("Running")
+                .setContentIntent(pendingIntent)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setSilent(true)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .build()
+
+            notificationManager.notify(PERSISTENT_NOTIFICATION_ID, notification)
+
+            android.util.Log.d("NotificationHelper", "Persistent notification shown")
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationHelper", "Failed to show persistent notification", e)
         }
     }
 

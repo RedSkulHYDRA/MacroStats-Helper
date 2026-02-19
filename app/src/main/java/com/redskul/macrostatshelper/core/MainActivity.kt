@@ -22,6 +22,7 @@ import com.redskul.macrostatshelper.autosync.AutoSyncAccessibilityService
 import com.redskul.macrostatshelper.autosync.AutoSyncManager
 import com.redskul.macrostatshelper.settings.QSTileSettingsActivity
 import com.redskul.macrostatshelper.R
+import com.redskul.macrostatshelper.notification.NotificationHelper
 import com.redskul.macrostatshelper.settings.SettingsActivity
 import com.redskul.macrostatshelper.settings.SettingsManager
 import com.redskul.macrostatshelper.utils.PermissionHelper
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var workManagerRepository: WorkManagerRepository
     private lateinit var vibrationManager: VibrationManager
     private lateinit var dnsManager: DNSManager
+    private lateinit var notificationHelper: NotificationHelper
     private var mainBinding: ActivityMainBinding? = null
     private var setupBinding: ActivitySetupBinding? = null
 
@@ -95,6 +97,10 @@ class MainActivity : AppCompatActivity() {
         workManagerRepository = WorkManagerRepository(this)
         vibrationManager = VibrationManager(this)
         dnsManager = DNSManager(this)
+        notificationHelper = NotificationHelper(this)
+
+        // Show persistent notification as a safety net on every launch
+        notificationHelper.showPersistentNotification()
 
         if (isFirstLaunch()) {
             showPermissionSetupUI()
