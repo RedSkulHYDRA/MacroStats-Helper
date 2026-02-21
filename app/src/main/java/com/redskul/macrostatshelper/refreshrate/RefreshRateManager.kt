@@ -108,6 +108,13 @@ class RefreshRateManager(private val context: Context) {
     }
 
     /**
+     * Applies a specific refresh rate state directly. Used by the picker dialog.
+     */
+    fun setState(state: RefreshRateState): Boolean {
+        return applyState(state)
+    }
+
+    /**
      * Cycles to the next state and applies the change.
      * Follows the flow: DYNAMIC -> HIGH -> STANDARD -> DYNAMIC
      */

@@ -120,6 +120,13 @@ class AODManager(private val context: Context) {
     }
 
     /**
+     * Applies a specific AOD state directly. Used by the picker dialog.
+     */
+    fun setState(state: AODState): Boolean {
+        return applyState(state)
+    }
+
+    /**
      * Cycles to the next state and applies the change.
      * Follows the flow: OFF -> ALWAYS_ON -> SCHEDULE -> TAP_TO_SHOW -> OFF
      */

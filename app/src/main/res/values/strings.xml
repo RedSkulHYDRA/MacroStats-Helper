@@ -101,7 +101,7 @@
 
     <!-- Tile Descriptions -->
     <string name="data_usage_tiles_description">Monitor WiFi and mobile data usage with customizable time periods displayed as Quick Settings tiles.</string>
-    <string name="screen_timeout_tile_description">Quickly cycle through screen timeout values with a single tap.</string>
+    <string name="screen_timeout_tile_description">Tap to pick a screen timeout value from a list.</string>
     <string name="battery_tiles_description">Monitor battery charge cycles and health percentage. Requires Android 14+ for charge cycle detection.</string>
     <string name="dns_tile_description">Switch between configured DNS providers including automatic, off, and custom DNS servers.</string>
     <string name="torch_glyph_tile_detailed_description">Control device flashlight and Glyph lights (Nothing phones). Cycles between Off → Torch → Glyph → Off states.</string>
@@ -176,7 +176,6 @@
     <string name="remove_dns_entry">Remove DNS entry</string>
     <string name="private_dns">Private DNS</string>
     <string name="dns_tile_title">DNS Provider Tile</string>
-    <string name="select_dns_provider">Select DNS Provider</string>
     <string name="dns_permission_required">Permission Required</string>
     <string name="dns_not_configured">DNS Not Configured</string>
     <string name="tap_to_setup">Tap to setup</string>
@@ -221,7 +220,7 @@
     <string name="refresh_rate_state_dynamic">Dynamic</string>
     <string name="refresh_rate_state_high">High</string>
     <string name="refresh_rate_state_standard">Standard</string>
-    <string name="refresh_rate_tile_detailed_description">Switch between Dynamic (adaptive), High (120Hz), and Standard (60Hz) refresh rate modes. Cycles between Dynamic → High → Standard → Dynamic states.</string>
+    <string name="refresh_rate_tile_detailed_description">Switch between Dynamic (adaptive), High (120Hz), and Standard (60Hz) refresh rate modes. Tap to pick a mode from a list.</string>
 
     <!-- AOD Tile strings -->
     <string name="always_on_display">Always-on Display</string>
@@ -233,7 +232,7 @@
     <string name="aod_state_always_on">Always On</string>
     <string name="aod_state_schedule">Schedule</string>
     <string name="aod_state_tap_to_show">Tap to show</string>
-    <string name="aod_tile_detailed_description">Switch between Always-on Display modes: Off, Always On, Schedule, and Tap to show. Cycles between Off → Always On → Schedule → Tap to show → Off states.</string>
+    <string name="aod_tile_detailed_description">Switch between Always-on Display modes: Off, Always On, Schedule, and Tap to show. Tap to pick a mode from a list.</string>
 
     <!-- ADB Instructions -->
     <string name="adb_instructions_title">How to Grant Permission via ADB</string>

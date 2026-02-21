@@ -126,7 +126,7 @@ class DNSQSTileService : BaseQSTileService() {
         // Create custom content with proper theming
         val radioGroup = createThemedRadioGroup(dnsOptions, currentDNS)
 
-        dialogBuilder.setTitle(getString(R.string.select_dns_provider))
+        dialogBuilder.setTitle(getString(R.string.private_dns))
             .setView(radioGroup)
             .setPositiveButton(getString(R.string.apply_button)) { _, _ ->
                 val selectedIndex = radioGroup.checkedRadioButtonId
@@ -177,7 +177,8 @@ class DNSQSTileService : BaseQSTileService() {
 
         // Add padding
         val padding = resources.getDimensionPixelSize(R.dimen.spacing_md)
-        radioGroup.setPadding(padding, padding, padding, padding)
+        val padding_bottom = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+        radioGroup.setPadding(padding, padding, padding, padding_bottom)
 
         // Get appropriate text color for current theme
         val textColor = if (isDarkTheme()) {

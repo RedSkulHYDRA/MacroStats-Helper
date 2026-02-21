@@ -1,13 +1,18 @@
 package com.redskul.macrostatshelper.tiles
 
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build
 import android.provider.Settings
 import android.service.quicksettings.Tile
 import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import kotlinx.coroutines.*
 import com.redskul.macrostatshelper.R
@@ -76,15 +81,72 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
             return
         }
 
-        // Apply state immediately on the main thread — no coroutine needed
-        val currentTimeout = getCurrentScreenTimeout()
-        val nextTimeout = getNextTimeout(currentTimeout)
+        // Permission is granted, show picker dialog
+        showTimeoutDialog()
+    }
 
-        if (setScreenTimeout(nextTimeout)) {
-            updateTile()
+    private fun showTimeoutDialog() {
+        val currentTimeout = getCurrentScreenTimeout()
+        val checkedIndex = TIMEOUT_VALUES.indexOf(currentTimeout).coerceAtLeast(0)
+
+        val dialogTheme = if (isDarkTheme())
+            android.R.style.Theme_DeviceDefault_Dialog_Alert
+        else
+            android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
+
+        val radioGroup = createThemedRadioGroup(TIMEOUT_LABELS.toList(), checkedIndex)
+
+        AlertDialog.Builder(this, dialogTheme)
+            .setTitle(getString(R.string.screen_timeout))
+            .setView(radioGroup)
+            .setPositiveButton(getString(R.string.apply_button)) { _, _ ->
+                val selectedIndex = radioGroup.checkedRadioButtonId
+                if (selectedIndex in TIMEOUT_VALUES.indices) {
+                    if (setScreenTimeout(TIMEOUT_VALUES[selectedIndex])) {
+                        // Update tile
+                        updateTile()
+                    } else {
+                        android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
+                    }
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel_button)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .also { showDialog(it.create()) }
+    }
+
+    private fun isDarkTheme(): Boolean {
+        return (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    private fun createThemedRadioGroup(labels: List<String>, checkedIndex: Int): RadioGroup {
+        val radioGroup = RadioGroup(this)
+        radioGroup.orientation = RadioGroup.VERTICAL
+
+        // Add padding around the radio group
+        val padding = resources.getDimensionPixelSize(R.dimen.spacing_md)
+        val padding_bottom = resources.getDimensionPixelSize(R.dimen.spacing_sm)
+        radioGroup.setPadding(padding, padding, padding, padding_bottom)
+
+        // Get appropriate text color for current theme
+        val textColor = if (isDarkTheme()) {
+            ContextCompat.getColor(this, android.R.color.primary_text_dark)
         } else {
-            android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
+            ContextCompat.getColor(this, android.R.color.primary_text_light)
         }
+
+        labels.forEachIndexed { index, label ->
+            val radioButton = RadioButton(this)
+            radioButton.id = index
+            radioButton.text = label
+            radioButton.setTextColor(textColor)
+            radioButton.setPadding((padding * 0.5).toInt(), padding / 2, padding * 2, padding / 2)
+            radioButton.isChecked = (index == checkedIndex)
+            radioGroup.addView(radioButton)
+        }
+
+        return radioGroup
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
