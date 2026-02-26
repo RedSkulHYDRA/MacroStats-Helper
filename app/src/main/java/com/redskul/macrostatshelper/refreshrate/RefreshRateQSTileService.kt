@@ -11,6 +11,7 @@ import android.os.Build
 import android.service.quicksettings.Tile
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.Toast
 import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -113,13 +114,19 @@ class RefreshRateQSTileService : BaseQSTileService() {
             .setView(radioGroup)
             .setPositiveButton(getString(R.string.apply_button)) { _, _ ->
                 val selectedIndex = radioGroup.checkedRadioButtonId
-                if (selectedIndex in options.indices) {
-                    val success = refreshRateManager.setState(options[selectedIndex].first)
-                    if (success) {
-                        updateTile()
-                        android.util.Log.d("RefreshRateQSTile", "State changed to: ${refreshRateManager.getCurrentStateText()}")
-                    } else {
-                        android.util.Log.e("RefreshRateQSTile", "Failed to change state")
+                if (selectedIndex >= 0 && selectedIndex < options.size) {
+                    val selectedOption = options[selectedIndex]
+                    tileScope.launch {
+                        val success = refreshRateManager.setState(selectedOption.first)
+                        withContext(Dispatchers.Main) {
+                            if (success) {
+                                updateTile()
+                                Toast.makeText(this@RefreshRateQSTileService, "${getString(R.string.refresh_rate)}: ${selectedOption.second}", Toast.LENGTH_SHORT).show()
+                                android.util.Log.d("RefreshRateQSTile", "State changed to: ${selectedOption.second}")
+                            } else {
+                                android.util.Log.e("RefreshRateQSTile", "Failed to change state")
+                            }
+                        }
                     }
                 }
             }

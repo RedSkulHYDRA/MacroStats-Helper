@@ -146,7 +146,13 @@
     <string name="screen_timeout">Screen Timeout</string>
     <string name="screen_timeout_permission_required">Permission Required</string>
     <string name="tap_to_grant">Tap to grant</string>
-
+    <string name="screen_timeout_15s">15 seconds</string>
+    <string name="screen_timeout_30s">30 seconds</string>
+    <string name="screen_timeout_1m">1 minute</string>
+    <string name="screen_timeout_2m">2 minutes</string>
+    <string name="screen_timeout_5m">5 minutes</string>
+    <string name="screen_timeout_10m">10 minutes</string>
+    <string name="screen_timeout_30m">30 minutes</string>
     <!-- Permission Status strings for QS Tile Settings -->
 
     <!-- Permission Button strings -->

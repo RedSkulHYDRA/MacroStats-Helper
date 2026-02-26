@@ -2,6 +2,7 @@ package com.redskul.macrostatshelper.tiles
 
 import android.app.AlertDialog
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -13,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.Toast
 import com.redskul.macrostatshelper.settings.QSTileSettingsManager
 import kotlinx.coroutines.*
 import com.redskul.macrostatshelper.R
@@ -34,13 +36,17 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
             1800000  // 30 minutes
         )
 
-        private val TIMEOUT_LABELS = arrayOf(
-            "15s", "30s", "1m", "2m", "5m", "10m", "30m"
-        )
-
-        private fun getTimeoutLabel(timeoutMs: Int): String {
-            val index = TIMEOUT_VALUES.indexOf(timeoutMs)
-            return if (index >= 0) TIMEOUT_LABELS[index] else "${timeoutMs / 1000}s"
+        private fun getTimeoutLabel(context: Context, timeoutMs: Int): String {
+            return when (timeoutMs) {
+                15000   -> context.getString(R.string.screen_timeout_15s)
+                30000   -> context.getString(R.string.screen_timeout_30s)
+                60000   -> context.getString(R.string.screen_timeout_1m)
+                120000  -> context.getString(R.string.screen_timeout_2m)
+                300000  -> context.getString(R.string.screen_timeout_5m)
+                600000  -> context.getString(R.string.screen_timeout_10m)
+                1800000 -> context.getString(R.string.screen_timeout_30m)
+                else    -> "${timeoutMs / 1000}s"
+            }
         }
 
         private fun getNextTimeout(currentTimeoutMs: Int): Int {
@@ -88,25 +94,33 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
     private fun showTimeoutDialog() {
         val currentTimeout = getCurrentScreenTimeout()
         val checkedIndex = TIMEOUT_VALUES.indexOf(currentTimeout).coerceAtLeast(0)
+        val labels = TIMEOUT_VALUES.map { getTimeoutLabel(this, it) }
 
         val dialogTheme = if (isDarkTheme())
             android.R.style.Theme_DeviceDefault_Dialog_Alert
         else
             android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
 
-        val radioGroup = createThemedRadioGroup(TIMEOUT_LABELS.toList(), checkedIndex)
+        val radioGroup = createThemedRadioGroup(labels, checkedIndex)
 
         AlertDialog.Builder(this, dialogTheme)
             .setTitle(getString(R.string.screen_timeout))
             .setView(radioGroup)
             .setPositiveButton(getString(R.string.apply_button)) { _, _ ->
                 val selectedIndex = radioGroup.checkedRadioButtonId
-                if (selectedIndex in TIMEOUT_VALUES.indices) {
-                    if (setScreenTimeout(TIMEOUT_VALUES[selectedIndex])) {
-                        // Update tile
-                        updateTile()
-                    } else {
-                        android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
+                if (selectedIndex >= 0 && selectedIndex < TIMEOUT_VALUES.size) {
+                    val selectedLabel = labels[selectedIndex]
+                    tileScope.launch {
+                        val success = setScreenTimeout(TIMEOUT_VALUES[selectedIndex])
+                        withContext(Dispatchers.Main) {
+                            if (success) {
+                                // Update tile
+                                updateTile()
+                                Toast.makeText(this@ScreenTimeoutQSTileService, "${getString(R.string.screen_timeout)}: $selectedLabel", Toast.LENGTH_SHORT).show()
+                            } else {
+                                android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
+                            }
+                        }
                     }
                 }
             }
@@ -200,7 +214,7 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
             try {
                 val hasPermission = hasWriteSettingsPermission()
                 val currentTimeout = getCurrentScreenTimeout()
-                val timeoutLabel = getTimeoutLabel(currentTimeout)
+                val timeoutLabel = getTimeoutLabel(this@ScreenTimeoutQSTileService, currentTimeout)
                 val config = TileConfigHelper.getScreenTimeoutTileConfig(this@ScreenTimeoutQSTileService)
                 val showTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
 
@@ -248,7 +262,7 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
         return try {
             val success = Settings.System.putInt(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, timeoutMs)
             if (success) {
-                android.util.Log.d("ScreenTimeoutQSTile", "Screen timeout set to: ${getTimeoutLabel(timeoutMs)}")
+                android.util.Log.d("ScreenTimeoutQSTile", "Screen timeout set to: ${getTimeoutLabel(applicationContext, timeoutMs)}")
             } else {
                 android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
             }
