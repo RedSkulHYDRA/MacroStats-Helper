@@ -116,17 +116,13 @@ class RefreshRateQSTileService : BaseQSTileService() {
                 val selectedIndex = radioGroup.checkedRadioButtonId
                 if (selectedIndex >= 0 && selectedIndex < options.size) {
                     val selectedOption = options[selectedIndex]
-                    tileScope.launch {
-                        val success = refreshRateManager.setState(selectedOption.first)
-                        withContext(Dispatchers.Main) {
-                            if (success) {
-                                updateTile()
-                                Toast.makeText(this@RefreshRateQSTileService, "${getString(R.string.refresh_rate)}: ${selectedOption.second}", Toast.LENGTH_SHORT).show()
-                                android.util.Log.d("RefreshRateQSTile", "State changed to: ${selectedOption.second}")
-                            } else {
-                                android.util.Log.e("RefreshRateQSTile", "Failed to change state")
-                            }
-                        }
+                    val success = refreshRateManager.setState(selectedOption.first)
+                    if (success) {
+                        updateTile()
+                        Toast.makeText(this@RefreshRateQSTileService, "${getString(R.string.refresh_rate)}: ${selectedOption.second}", Toast.LENGTH_SHORT).show()
+                        android.util.Log.d("RefreshRateQSTile", "State changed to: ${selectedOption.second}")
+                    } else {
+                        android.util.Log.e("RefreshRateQSTile", "Failed to change state")
                     }
                 }
             }

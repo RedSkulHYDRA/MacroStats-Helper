@@ -110,17 +110,12 @@ class ScreenTimeoutQSTileService : BaseQSTileService() {
                 val selectedIndex = radioGroup.checkedRadioButtonId
                 if (selectedIndex >= 0 && selectedIndex < TIMEOUT_VALUES.size) {
                     val selectedLabel = labels[selectedIndex]
-                    tileScope.launch {
-                        val success = setScreenTimeout(TIMEOUT_VALUES[selectedIndex])
-                        withContext(Dispatchers.Main) {
-                            if (success) {
-                                // Update tile
-                                updateTile()
-                                Toast.makeText(this@ScreenTimeoutQSTileService, "${getString(R.string.screen_timeout)}: $selectedLabel", Toast.LENGTH_SHORT).show()
-                            } else {
-                                android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
-                            }
-                        }
+                    val success = setScreenTimeout(TIMEOUT_VALUES[selectedIndex])
+                    if (success) {
+                        updateTile()
+                        Toast.makeText(this@ScreenTimeoutQSTileService, "${getString(R.string.screen_timeout)}: $selectedLabel", Toast.LENGTH_SHORT).show()
+                    } else {
+                        android.util.Log.e("ScreenTimeoutQSTile", "Failed to set screen timeout")
                     }
                 }
             }

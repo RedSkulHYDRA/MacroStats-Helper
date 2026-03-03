@@ -117,17 +117,13 @@ class AODQSTileService : BaseQSTileService() {
                 val selectedIndex = radioGroup.checkedRadioButtonId
                 if (selectedIndex >= 0 && selectedIndex < options.size) {
                     val selectedOption = options[selectedIndex]
-                    tileScope.launch {
-                        val success = aodManager.setState(selectedOption.first)
-                        withContext(Dispatchers.Main) {
-                            if (success) {
-                                updateTile()
-                                Toast.makeText(this@AODQSTileService, "${getString(R.string.aod_heading)}: ${selectedOption.second}", Toast.LENGTH_SHORT).show()
-                                android.util.Log.d("AODQSTile", "State changed to: ${selectedOption.second}")
-                            } else {
-                                android.util.Log.e("AODQSTile", "Failed to change state")
-                            }
-                        }
+                    val success = aodManager.setState(selectedOption.first)
+                    if (success) {
+                        updateTile()
+                        Toast.makeText(this@AODQSTileService, "${getString(R.string.aod_heading)}: ${selectedOption.second}", Toast.LENGTH_SHORT).show()
+                        android.util.Log.d("AODQSTile", "State changed to: ${selectedOption.second}")
+                    } else {
+                        android.util.Log.e("AODQSTile", "Failed to change state")
                     }
                 }
             }

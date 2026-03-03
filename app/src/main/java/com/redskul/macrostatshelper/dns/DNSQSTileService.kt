@@ -132,17 +132,13 @@ class DNSQSTileService : BaseQSTileService() {
                 val selectedIndex = radioGroup.checkedRadioButtonId
                 if (selectedIndex >= 0 && selectedIndex < dnsOptions.size) {
                     val selectedDNS = dnsOptions[selectedIndex]
-                    tileScope.launch {
-                        val success = dnsManager.setCurrentDNS(selectedDNS)
-                        withContext(Dispatchers.Main) {
-                            if (success) {
-                                updateTile()
-                                Toast.makeText(this@DNSQSTileService, "${getString(R.string.private_dns_heading)}: ${selectedDNS.name}", Toast.LENGTH_SHORT).show()
-                                android.util.Log.d("DNSQSTile", "DNS changed to: ${selectedDNS.name}")
-                            } else {
-                                android.util.Log.e("DNSQSTile", "Failed to change DNS to: ${selectedDNS.name}")
-                            }
-                        }
+                    val success = dnsManager.setCurrentDNS(selectedDNS)
+                    if (success) {
+                        updateTile()
+                        Toast.makeText(this@DNSQSTileService, "${getString(R.string.private_dns_heading)}: ${selectedDNS.name}", Toast.LENGTH_SHORT).show()
+                        android.util.Log.d("DNSQSTile", "DNS changed to: ${selectedDNS.name}")
+                    } else {
+                        android.util.Log.e("DNSQSTile", "Failed to change DNS to: ${selectedDNS.name}")
                     }
                 }
             }
