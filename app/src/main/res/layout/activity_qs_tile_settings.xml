@@ -911,6 +911,57 @@
 
         </LinearLayout>
 
+        <!-- Flip to Glyph Tile Card -->
+        <LinearLayout
+            android:id="@+id/flip_to_glyph_tile_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:layout_marginBottom="@dimen/spacing_lg">
+
+            <TextView
+                android:id="@+id/flip_to_glyph_tile_card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/flip_to_glyph_tile_title"
+                android:textSize="@dimen/text_size_heading"
+                android:textStyle="bold"
+                android:paddingBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/flip_to_glyph_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/flip_to_glyph_tile_description"
+                android:textSize="@dimen/text_size_small"
+                android:alpha="0.7"
+                android:paddingBottom="@dimen/spacing_md" />
+
+            <LinearLayout
+                android:id="@+id/flip_to_glyph_heading_switch_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/flip_to_glyph_heading_switch_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/enable_tile_heading"
+                    android:textSize="@dimen/text_size_body" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/CustomSwitchStyle"
+                    android:id="@+id/flip_to_glyph_show_heading_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
         <!-- Save Button -->
         <Button
             style="@style/CustomButtonStyle"

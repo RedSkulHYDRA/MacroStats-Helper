@@ -1,10 +1,11 @@
-package com.redskul.macrostatshelper.headsup
+package com.redskul.macrostatshelper.flipglyph
 
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.service.quicksettings.Tile
 import androidx.annotation.RequiresApi
@@ -15,20 +16,21 @@ import com.redskul.macrostatshelper.tiles.BaseQSTileService
 import com.redskul.macrostatshelper.tiles.TileConfigHelper
 import kotlinx.coroutines.*
 
-class HeadsUpQSTileService : BaseQSTileService() {
+class FlipToGlyphQSTileService : BaseQSTileService() {
 
-    private lateinit var headsUpManager: HeadsUpManager
+    private lateinit var flipToGlyphManager: FlipToGlyphManager
     private lateinit var qsTileSettingsManager: QSTileSettingsManager
     private val tileScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     companion object {
-        const val ACTION_HEADS_UP_SETTINGS_UPDATED = "com.redskul.macrostatshelper.HEADS_UP_SETTINGS_UPDATED"
+        const val ACTION_FLIP_TO_GLYPH_SETTINGS_UPDATED =
+            "com.redskul.macrostatshelper.FLIP_TO_GLYPH_SETTINGS_UPDATED"
     }
 
     private val settingsUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == ACTION_HEADS_UP_SETTINGS_UPDATED) {
-                android.util.Log.d("HeadsUpQSTile", "Received settings update broadcast")
+            if (intent?.action == ACTION_FLIP_TO_GLYPH_SETTINGS_UPDATED) {
+                android.util.Log.d("FlipToGlyphQSTile", "Received settings update broadcast")
                 updateTile()
             }
         }
@@ -36,14 +38,14 @@ class HeadsUpQSTileService : BaseQSTileService() {
 
     override fun onCreate() {
         super.onCreate()
-        headsUpManager        = HeadsUpManager(this)
+        flipToGlyphManager   = FlipToGlyphManager(this)
         qsTileSettingsManager = QSTileSettingsManager(this)
     }
 
     override fun onTileAdded() {
         super.onTileAdded()
         qsTile?.let { tile ->
-            tile.label = getString(R.string.heads_up)
+            tile.label = getString(R.string.flip_to_glyph)
             tile.updateTile()
         }
     }
@@ -52,7 +54,7 @@ class HeadsUpQSTileService : BaseQSTileService() {
         super.onStartListening()
         registerReceiver(
             settingsUpdateReceiver,
-            IntentFilter(ACTION_HEADS_UP_SETTINGS_UPDATED),
+            IntentFilter(ACTION_FLIP_TO_GLYPH_SETTINGS_UPDATED),
             Context.RECEIVER_NOT_EXPORTED
         )
         updateTile()
@@ -63,7 +65,7 @@ class HeadsUpQSTileService : BaseQSTileService() {
         try {
             unregisterReceiver(settingsUpdateReceiver)
         } catch (e: IllegalArgumentException) {
-            // Receiver already unregistered
+            // Receiver already unregistered — safe to ignore
         }
     }
 
@@ -74,18 +76,17 @@ class HeadsUpQSTileService : BaseQSTileService() {
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onTileClick() {
-        if (!headsUpManager.hasRequiredPermissions()) {
+        if (!flipToGlyphManager.hasRequiredPermissions()) {
             requestRequiredPermissions()
             return
         }
 
-        // Toggle immediately on the main thread — no coroutine needed
-        val newState = headsUpManager.toggle()
+        val newState = flipToGlyphManager.toggle()
         if (newState != null) {
             updateTile()
-            android.util.Log.d("HeadsUpQSTile", "Heads-up toggled to: $newState")
+            android.util.Log.d("FlipToGlyphQSTile", "Flip to Glyph toggled to: $newState")
         } else {
-            android.util.Log.e("HeadsUpQSTile", "Failed to toggle heads-up")
+            android.util.Log.e("FlipToGlyphQSTile", "Failed to toggle Flip to Glyph")
         }
     }
 
@@ -97,26 +98,26 @@ class HeadsUpQSTileService : BaseQSTileService() {
             }
             val pendingIntent = PendingIntent.getActivity(
                 this,
-                6,
+                7, // Unique request code (HeadsUp uses 6)
                 intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
             startActivityAndCollapse(pendingIntent)
-            android.util.Log.d("HeadsUpQSTile", "Permission request activity started")
+            android.util.Log.d("FlipToGlyphQSTile", "Permission request activity started")
         } catch (e: Exception) {
-            android.util.Log.e("HeadsUpQSTile", "Error starting permission activity", e)
+            android.util.Log.e("FlipToGlyphQSTile", "Error starting permission activity", e)
         }
     }
 
     private fun updateTile() {
         tileScope.launch {
             try {
-                val hasPermission  = headsUpManager.hasRequiredPermissions()
-                val isEnabled      = headsUpManager.isHeadsUpEnabled()
-                val showHeading    = qsTileSettingsManager.getShowHeadsUpInTitle()
-                val stateText      = headsUpManager.getCurrentStateText()
-                val config         = TileConfigHelper.getHeadsUpTileConfig(
-                    this@HeadsUpQSTileService, isEnabled)
+                val hasPermission      = flipToGlyphManager.hasRequiredPermissions()
+                val isEnabled          = flipToGlyphManager.isEnabled()
+                val showHeading        = qsTileSettingsManager.getShowFlipToGlyphInTitle()
+                val stateText          = flipToGlyphManager.getCurrentStateText()
+                val config             = TileConfigHelper.getFlipToGlyphTileConfig(
+                    this@FlipToGlyphQSTileService, isEnabled)
 
                 withContext(Dispatchers.Main) {
                     val tile = qsTile ?: return@withContext
@@ -124,23 +125,22 @@ class HeadsUpQSTileService : BaseQSTileService() {
                     if (!hasPermission) {
                         tile.state    = Tile.STATE_INACTIVE
                         tile.icon     = config.icon
-                        tile.label    = getString(R.string.heads_up_permission_required)
+                        tile.label    = getString(R.string.flip_to_glyph_permission_required)
                         tile.subtitle = getString(R.string.tap_to_grant)
                     } else {
-                        TileConfigHelper.applyHeadsUpConfigToTile(
-                            tile            = tile,
-                            config          = config,
-                            stateText       = stateText,
-                            showHeadsUpInTitle = showHeading,
-                            context         = this@HeadsUpQSTileService
+                        TileConfigHelper.applyFlipToGlyphConfigToTile(
+                            tile        = tile,
+                            config      = config,
+                            stateText   = stateText,
+                            showFlipToGlyphInTitle = showHeading,
+                            context     = this@FlipToGlyphQSTileService
                         )
                     }
 
                     tile.updateTile()
-                    android.util.Log.d("HeadsUpQSTile", "Tile updated — enabled: $isEnabled")
                 }
             } catch (e: Exception) {
-                android.util.Log.e("HeadsUpQSTile", "Error updating tile", e)
+                android.util.Log.e("FlipToGlyphQSTile", "Error updating tile", e)
             }
         }
     }

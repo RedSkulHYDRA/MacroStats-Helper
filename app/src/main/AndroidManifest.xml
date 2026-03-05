@@ -102,7 +102,7 @@
             </intent-filter>
         </service>
 
-        <!-- NEW: AOD QS Tile Service -->
+        <!-- AOD QS Tile Service -->
         <service
             android:name=".aod.AODQSTileService"
             android:exported="true"
@@ -192,7 +192,7 @@
             </intent-filter>
         </service>
 
-        <!-- NEW: DNS QS Tile Service -->
+        <!-- DNS QS Tile Service -->
         <service
             android:name=".dns.DNSQSTileService"
             android:exported="true"
@@ -210,6 +210,18 @@
             android:exported="true"
             android:icon="@drawable/ic_heads_up_on"
             android:label="@string/heads_up"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Flip to Glyph QS Tile Service -->
+        <service
+            android:name=".flipglyph.FlipToGlyphQSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_flip_to_glyph"
+            android:label="@string/flip_to_glyph"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />

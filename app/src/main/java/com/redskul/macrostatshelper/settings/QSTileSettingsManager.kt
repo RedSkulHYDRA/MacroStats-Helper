@@ -11,18 +11,19 @@ class QSTileSettingsManager(context: Context) {
         context.getSharedPreferences("qs_tile_settings", Context.MODE_PRIVATE)
 
     companion object {
-        private const val KEY_WIFI_TILE_PERIOD = "wifi_tile_period"
-        private const val KEY_MOBILE_TILE_PERIOD = "mobile_tile_period"
-        private const val KEY_SHOW_PERIOD_IN_TITLE = "show_period_in_title"
-        private const val KEY_SHOW_CHARGE_IN_TITLE = "show_charge_in_title"
-        private const val KEY_SHOW_BATTERY_HEALTH_IN_TITLE = "show_battery_health_in_title"
-        private const val KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE = "show_screen_timeout_in_title"
-        private const val KEY_SHOW_TORCH_GLYPH_IN_TITLE = "show_torch_glyph_in_title"
-        private const val KEY_SHOW_REFRESH_RATE_IN_TITLE = "show_refresh_rate_in_title"
-        private const val KEY_SHOW_AOD_IN_TITLE = "show_aod_in_title"
-        private const val KEY_SHOW_DNS_IN_TITLE = "show_dns_in_title"
-        private const val KEY_SHOW_HEADS_UP_IN_TITLE = "show_heads_up_in_title"
-        private const val KEY_BATTERY_DESIGN_CAPACITY = "battery_design_capacity"
+        private const val KEY_WIFI_TILE_PERIOD               = "wifi_tile_period"
+        private const val KEY_MOBILE_TILE_PERIOD             = "mobile_tile_period"
+        private const val KEY_SHOW_PERIOD_IN_TITLE           = "show_period_in_title"
+        private const val KEY_SHOW_CHARGE_IN_TITLE           = "show_charge_in_title"
+        private const val KEY_SHOW_BATTERY_HEALTH_IN_TITLE   = "show_battery_health_in_title"
+        private const val KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE   = "show_screen_timeout_in_title"
+        private const val KEY_SHOW_TORCH_GLYPH_IN_TITLE      = "show_torch_glyph_in_title"
+        private const val KEY_SHOW_REFRESH_RATE_IN_TITLE     = "show_refresh_rate_in_title"
+        private const val KEY_SHOW_AOD_IN_TITLE              = "show_aod_in_title"
+        private const val KEY_SHOW_DNS_IN_TITLE              = "show_dns_in_title"
+        private const val KEY_SHOW_HEADS_UP_IN_TITLE         = "show_heads_up_in_title"
+        private const val KEY_SHOW_FLIP_TO_GLYPH_IN_TITLE   = "show_flip_to_glyph_in_title"
+        private const val KEY_BATTERY_DESIGN_CAPACITY        = "battery_design_capacity"
     }
 
     fun saveWiFiTilePeriod(timePeriod: TimePeriod) {
@@ -69,6 +70,10 @@ class QSTileSettingsManager(context: Context) {
         sharedPreferences.edit { putBoolean(KEY_SHOW_HEADS_UP_IN_TITLE, showHeadsUp) }
     }
 
+    fun saveShowFlipToGlyphInTitle(showFlipToGlyph: Boolean) {
+        sharedPreferences.edit { putBoolean(KEY_SHOW_FLIP_TO_GLYPH_IN_TITLE, showFlipToGlyph) }
+    }
+
     fun saveBatteryDesignCapacity(capacity: Int) {
         sharedPreferences.edit { putInt(KEY_BATTERY_DESIGN_CAPACITY, capacity) }
     }
@@ -83,38 +88,30 @@ class QSTileSettingsManager(context: Context) {
         return try { TimePeriod.valueOf(periodString ?: "DAILY") } catch (e: Exception) { TimePeriod.DAILY }
     }
 
-    fun getShowPeriodInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_PERIOD_IN_TITLE, false)
-
-    fun getShowChargeInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_CHARGE_IN_TITLE, false)
-
-    fun getShowBatteryHealthInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, false)
-
-    fun getShowScreenTimeoutInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE, false)
-
-    fun getShowTorchGlyphInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_TORCH_GLYPH_IN_TITLE, false)
-
-    fun getShowRefreshRateInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_REFRESH_RATE_IN_TITLE, false)
-
-    fun getShowAODInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_AOD_IN_TITLE, false)
-
-    fun getShowDNSInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_DNS_IN_TITLE, false)
-
-    fun getShowHeadsUpInTitle(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_HEADS_UP_IN_TITLE, false)
-
-    fun getBatteryDesignCapacity(): Int = sharedPreferences.getInt(KEY_BATTERY_DESIGN_CAPACITY, 0)
+    fun getShowPeriodInTitle(): Boolean         = sharedPreferences.getBoolean(KEY_SHOW_PERIOD_IN_TITLE, false)
+    fun getShowChargeInTitle(): Boolean         = sharedPreferences.getBoolean(KEY_SHOW_CHARGE_IN_TITLE, false)
+    fun getShowBatteryHealthInTitle(): Boolean  = sharedPreferences.getBoolean(KEY_SHOW_BATTERY_HEALTH_IN_TITLE, false)
+    fun getShowScreenTimeoutInTitle(): Boolean  = sharedPreferences.getBoolean(KEY_SHOW_SCREEN_TIMEOUT_IN_TITLE, false)
+    fun getShowTorchGlyphInTitle(): Boolean     = sharedPreferences.getBoolean(KEY_SHOW_TORCH_GLYPH_IN_TITLE, false)
+    fun getShowRefreshRateInTitle(): Boolean    = sharedPreferences.getBoolean(KEY_SHOW_REFRESH_RATE_IN_TITLE, false)
+    fun getShowAODInTitle(): Boolean            = sharedPreferences.getBoolean(KEY_SHOW_AOD_IN_TITLE, false)
+    fun getShowDNSInTitle(): Boolean            = sharedPreferences.getBoolean(KEY_SHOW_DNS_IN_TITLE, false)
+    fun getShowHeadsUpInTitle(): Boolean        = sharedPreferences.getBoolean(KEY_SHOW_HEADS_UP_IN_TITLE, false)
+    fun getShowFlipToGlyphInTitle(): Boolean    = sharedPreferences.getBoolean(KEY_SHOW_FLIP_TO_GLYPH_IN_TITLE, false)
+    fun getBatteryDesignCapacity(): Int         = sharedPreferences.getInt(KEY_BATTERY_DESIGN_CAPACITY, 0)
 
     fun getWiFiTileText(usageData: UsageData): String {
         return when (getWiFiTilePeriod()) {
-            TimePeriod.DAILY -> usageData.wifiDaily
-            TimePeriod.WEEKLY -> usageData.wifiWeekly
+            TimePeriod.DAILY   -> usageData.wifiDaily
+            TimePeriod.WEEKLY  -> usageData.wifiWeekly
             TimePeriod.MONTHLY -> usageData.wifiMonthly
         }
     }
 
     fun getMobileTileText(usageData: UsageData): String {
         return when (getMobileTilePeriod()) {
-            TimePeriod.DAILY -> usageData.mobileDaily
-            TimePeriod.WEEKLY -> usageData.mobileWeekly
+            TimePeriod.DAILY   -> usageData.mobileDaily
+            TimePeriod.WEEKLY  -> usageData.mobileWeekly
             TimePeriod.MONTHLY -> usageData.mobileMonthly
         }
     }

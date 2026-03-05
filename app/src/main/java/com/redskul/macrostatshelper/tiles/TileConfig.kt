@@ -85,7 +85,7 @@ object TileConfigHelper {
         val iconRes = when (state) {
             TorchGlyphManager.TorchGlyphState.TORCH_ON -> R.drawable.ic_torch
             TorchGlyphManager.TorchGlyphState.GLYPH_ON -> R.drawable.ic_glyph
-            TorchGlyphManager.TorchGlyphState.OFF -> R.drawable.ic_torch_off
+            TorchGlyphManager.TorchGlyphState.OFF       -> R.drawable.ic_torch_off
         }
         return TileConfiguration(
             icon = Icon.createWithResource(context, iconRes),
@@ -125,6 +125,16 @@ object TileConfigHelper {
         )
     }
 
+    fun getFlipToGlyphTileConfig(context: Context, isEnabled: Boolean): TileConfiguration {
+        val iconRes = R.drawable.ic_flip_to_glyph
+        return TileConfiguration(
+            icon = Icon.createWithResource(context, iconRes),
+            iconRes = iconRes,
+            labelPrefix = context.getString(R.string.qs_tile_prefix),
+            defaultState = if (isEnabled) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+        )
+    }
+
     fun applyConfigToTile(
         tile: Tile,
         config: TileConfiguration,
@@ -138,8 +148,8 @@ object TileConfigHelper {
         tile.icon = config.icon
 
         if (!hasPermission) {
-            tile.state = Tile.STATE_INACTIVE
-            tile.label = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
+            tile.state    = Tile.STATE_INACTIVE
+            tile.label    = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
             tile.subtitle = context?.getString(R.string.tap_to_grant) ?: "Tap to grant"
             return
         }
@@ -148,16 +158,16 @@ object TileConfigHelper {
 
         if (showPeriodInTitle && period != null && context != null) {
             val titleText = when (period) {
-                TimePeriod.DAILY -> if (isWifi) context.getString(R.string.wifi_usage_daily) else context.getString(R.string.mobile_data_usage_daily)
-                TimePeriod.WEEKLY -> if (isWifi) context.getString(R.string.wifi_usage_weekly) else context.getString(R.string.mobile_data_usage_weekly)
-                TimePeriod.MONTHLY -> if (isWifi) context.getString(R.string.wifi_usage_monthly) else context.getString(R.string.mobile_data_usage_monthly)
+                TimePeriod.DAILY   -> if (isWifi) context.getString(R.string.wifi_usage_daily)        else context.getString(R.string.mobile_data_usage_daily)
+                TimePeriod.WEEKLY  -> if (isWifi) context.getString(R.string.wifi_usage_weekly)       else context.getString(R.string.mobile_data_usage_weekly)
+                TimePeriod.MONTHLY -> if (isWifi) context.getString(R.string.wifi_usage_monthly)      else context.getString(R.string.mobile_data_usage_monthly)
             }
-            tile.label = titleText
+            tile.label    = titleText
             tile.subtitle = value
         } else {
             val showDivider = value.length < HIDE_DIVIDER_LENGTH_THRESHOLD
-            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-            tile.label = if (prefix.isNotEmpty()) "$prefix $value" else value
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $value" else value
             tile.subtitle = null
         }
     }
@@ -170,10 +180,10 @@ object TileConfigHelper {
         context: Context? = null
     ) {
         tile.state = config.defaultState
-        tile.icon = config.icon
+        tile.icon  = config.icon
 
         if (showChargeInTitle && context != null) {
-            tile.label = context.getString(R.string.charge_cycles)
+            tile.label    = context.getString(R.string.charge_cycles)
             tile.subtitle = value
         } else {
             val fullText = if (context != null) {
@@ -182,8 +192,8 @@ object TileConfigHelper {
                 "$value Charging Cycles"
             }
             val showDivider = fullText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
-            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-            tile.label = if (prefix.isNotEmpty()) "$prefix $fullText" else fullText
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $fullText" else fullText
             tile.subtitle = null
         }
     }
@@ -204,8 +214,8 @@ object TileConfigHelper {
 
         val valueText = when {
             !hasPermission -> {
-                tile.state = Tile.STATE_INACTIVE
-                tile.label = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
+                tile.state    = Tile.STATE_INACTIVE
+                tile.label    = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
                 tile.subtitle = context?.getString(R.string.tap_to_grant) ?: "Tap to grant"
                 return
             }
@@ -223,12 +233,12 @@ object TileConfigHelper {
         tile.state = Tile.STATE_ACTIVE
 
         if (showHealthInTitle && context != null) {
-            tile.label = context.getString(R.string.battery_health)
+            tile.label    = context.getString(R.string.battery_health)
             tile.subtitle = valueText
         } else {
             val showDivider = valueText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
-            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-            tile.label = if (prefix.isNotEmpty()) "$prefix $valueText" else valueText
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $valueText" else valueText
             tile.subtitle = null
         }
     }
@@ -244,8 +254,8 @@ object TileConfigHelper {
         tile.icon = config.icon
 
         if (!hasPermission) {
-            tile.state = Tile.STATE_INACTIVE
-            tile.label = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
+            tile.state    = Tile.STATE_INACTIVE
+            tile.label    = context?.getString(R.string.screen_timeout_permission_required) ?: "Permission Required"
             tile.subtitle = context?.getString(R.string.tap_to_grant) ?: "Tap to grant"
             return
         }
@@ -253,12 +263,12 @@ object TileConfigHelper {
         tile.state = config.defaultState
 
         if (showTimeoutInTitle && context != null) {
-            tile.label = context.getString(R.string.screen_timeout)
+            tile.label    = context.getString(R.string.screen_timeout)
             tile.subtitle = timeoutValue
         } else {
             val showDivider = timeoutValue.length < HIDE_DIVIDER_LENGTH_THRESHOLD
-            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-            tile.label = if (prefix.isNotEmpty()) "$prefix $timeoutValue" else timeoutValue
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $timeoutValue" else timeoutValue
             tile.subtitle = null
         }
     }
@@ -271,15 +281,15 @@ object TileConfigHelper {
         context: Context? = null
     ) {
         tile.state = config.defaultState
-        tile.icon = config.icon
+        tile.icon  = config.icon
 
         if (showRefreshRateInTitle && context != null) {
-            tile.label = context.getString(R.string.refresh_rate_heading)
+            tile.label    = context.getString(R.string.refresh_rate_heading)
             tile.subtitle = stateText
         } else {
             val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
-            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-            tile.label = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
             tile.subtitle = null
         }
     }
@@ -292,15 +302,57 @@ object TileConfigHelper {
         context: Context? = null
     ) {
         tile.state = config.defaultState
-        tile.icon = config.icon
+        tile.icon  = config.icon
 
         if (showAODInTitle && context != null) {
-            tile.label = context.getString(R.string.aod_heading)
+            tile.label    = context.getString(R.string.aod_heading)
             tile.subtitle = stateText
         } else {
             val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
-            val prefix = if (showDivider) config.labelPrefix.trimEnd() else ""
-            tile.label = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
+            tile.subtitle = null
+        }
+    }
+
+    fun applyHeadsUpConfigToTile(
+        tile: Tile,
+        config: TileConfiguration,
+        stateText: String,
+        showHeadsUpInTitle: Boolean = false,
+        context: Context? = null
+    ) {
+        tile.state = config.defaultState
+        tile.icon  = config.icon
+
+        if (showHeadsUpInTitle && context != null) {
+            tile.label    = context.getString(R.string.heads_up_heading)
+            tile.subtitle = stateText
+        } else {
+            val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
+            tile.subtitle = null
+        }
+    }
+
+    fun applyFlipToGlyphConfigToTile(
+        tile: Tile,
+        config: TileConfiguration,
+        stateText: String,
+        showFlipToGlyphInTitle: Boolean = false,
+        context: Context? = null
+    ) {
+        tile.state = config.defaultState
+        tile.icon  = config.icon
+
+        if (showFlipToGlyphInTitle && context != null) {
+            tile.label    = context.getString(R.string.flip_to_glyph_heading)
+            tile.subtitle = stateText
+        } else {
+            val showDivider = stateText.length < HIDE_DIVIDER_LENGTH_THRESHOLD
+            val prefix      = if (showDivider) config.labelPrefix.trimEnd() else ""
+            tile.label    = if (prefix.isNotEmpty()) "$prefix $stateText" else stateText
             tile.subtitle = null
         }
     }

@@ -264,4 +264,13 @@
     <string name="heads_up_state_on">Enabled</string>
     <string name="heads_up_state_off">Disabled</string>
     <string name="heads_up_tile_description">Quickly toggle heads-up (peek) notifications on or off system-wide.</string>
+
+    <!-- Flip to Glyph Tile strings -->
+    <string name="flip_to_glyph">Flip to Glyph</string>
+    <string name="flip_to_glyph_heading">Flip to Glyph</string>
+    <string name="flip_to_glyph_tile_title">Flip to Glyph Tile</string>
+    <string name="flip_to_glyph_permission_required">Permission Required</string>
+    <string name="flip_to_glyph_state_on">Enabled</string>
+    <string name="flip_to_glyph_state_off">Disabled</string>
+    <string name="flip_to_glyph_tile_description">Toggle the Flip to Glyph gesture on Nothing phones. Place the phone face-down to silence sounds and vibrations while the Glyph lights notify you of calls and alerts.</string>
 </resources>

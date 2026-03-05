@@ -19,6 +19,8 @@ import com.redskul.macrostatshelper.battery.BatteryHealthQSTileService
 import com.redskul.macrostatshelper.battery.BatteryWorker
 import com.redskul.macrostatshelper.datausage.DataUsageWorker
 import com.redskul.macrostatshelper.dns.DNSManager
+import com.redskul.macrostatshelper.flipglyph.FlipToGlyphManager
+import com.redskul.macrostatshelper.flipglyph.FlipToGlyphQSTileService
 import com.redskul.macrostatshelper.headsup.HeadsUpManager
 import com.redskul.macrostatshelper.headsup.HeadsUpQSTileService
 import com.redskul.macrostatshelper.torchglyph.TorchGlyphManager
@@ -47,6 +49,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private lateinit var refreshRateManager: RefreshRateManager
     private lateinit var aodManager: AODManager
     private lateinit var headsUpManager: HeadsUpManager
+    private lateinit var flipToGlyphManager: FlipToGlyphManager
     private lateinit var vibrationManager: VibrationManager
     private var binding: ActivityQsTileSettingsBinding? = null
 
@@ -59,14 +62,15 @@ class QSTileSettingsActivity : AppCompatActivity() {
         setContentView(binding!!.root)
 
         qsTileSettingsManager = QSTileSettingsManager(this)
-        batteryHealthMonitor = BatteryHealthMonitor(this)
-        permissionHelper = PermissionHelper(this)
-        dnsManager = DNSManager(this)
-        torchGlyphManager = TorchGlyphManager(this)
-        refreshRateManager = RefreshRateManager(this)
-        aodManager = AODManager(this)
-        headsUpManager = HeadsUpManager(this)
-        vibrationManager = VibrationManager(this)
+        batteryHealthMonitor  = BatteryHealthMonitor(this)
+        permissionHelper      = PermissionHelper(this)
+        dnsManager            = DNSManager(this)
+        torchGlyphManager     = TorchGlyphManager(this)
+        refreshRateManager    = RefreshRateManager(this)
+        aodManager            = AODManager(this)
+        headsUpManager        = HeadsUpManager(this)
+        flipToGlyphManager    = FlipToGlyphManager(this)
+        vibrationManager      = VibrationManager(this)
 
         setupWindowInsets()
         setupUI()
@@ -131,6 +135,11 @@ class QSTileSettingsActivity : AppCompatActivity() {
             triggerHeadsUpTileUpdate()
         }
 
+        binding.flipToGlyphShowHeadingSwitch.setOnCheckedChangeListener { _, _ ->
+            vibrationManager.vibrateOnAppInteraction()
+            triggerFlipToGlyphTileUpdate()
+        }
+
         binding.vibrationEnabledSwitch.setOnCheckedChangeListener { _, isChecked ->
             vibrationManager.vibrateOnAppInteraction()
 
@@ -151,44 +160,46 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private fun loadCurrentSettings() {
         val binding = binding ?: return
 
-        val wifiPeriod = qsTileSettingsManager.getWiFiTilePeriod()
-        val mobilePeriod = qsTileSettingsManager.getMobileTilePeriod()
-        val showPeriodInTitle = qsTileSettingsManager.getShowPeriodInTitle()
-        val showChargeInTitle = qsTileSettingsManager.getShowChargeInTitle()
-        val showHealthInTitle = qsTileSettingsManager.getShowBatteryHealthInTitle()
+        val wifiPeriod               = qsTileSettingsManager.getWiFiTilePeriod()
+        val mobilePeriod             = qsTileSettingsManager.getMobileTilePeriod()
+        val showPeriodInTitle        = qsTileSettingsManager.getShowPeriodInTitle()
+        val showChargeInTitle        = qsTileSettingsManager.getShowChargeInTitle()
+        val showHealthInTitle        = qsTileSettingsManager.getShowBatteryHealthInTitle()
         val showScreenTimeoutInTitle = qsTileSettingsManager.getShowScreenTimeoutInTitle()
-        val showTorchGlyphInTitle = qsTileSettingsManager.getShowTorchGlyphInTitle()
-        val showRefreshRateInTitle = qsTileSettingsManager.getShowRefreshRateInTitle()
-        val showAODInTitle = qsTileSettingsManager.getShowAODInTitle()
-        val showDNSInTitle = qsTileSettingsManager.getShowDNSInTitle()
-        val showHeadsUpInTitle = qsTileSettingsManager.getShowHeadsUpInTitle()
-        val designCapacity = qsTileSettingsManager.getBatteryDesignCapacity()
-        val vibrationEnabled = vibrationManager.isVibrationEnabled()
+        val showTorchGlyphInTitle    = qsTileSettingsManager.getShowTorchGlyphInTitle()
+        val showRefreshRateInTitle   = qsTileSettingsManager.getShowRefreshRateInTitle()
+        val showAODInTitle           = qsTileSettingsManager.getShowAODInTitle()
+        val showDNSInTitle           = qsTileSettingsManager.getShowDNSInTitle()
+        val showHeadsUpInTitle       = qsTileSettingsManager.getShowHeadsUpInTitle()
+        val showFlipToGlyphInTitle   = qsTileSettingsManager.getShowFlipToGlyphInTitle()
+        val designCapacity           = qsTileSettingsManager.getBatteryDesignCapacity()
+        val vibrationEnabled         = vibrationManager.isVibrationEnabled()
 
         val wifiRadioId = when (wifiPeriod) {
-            TimePeriod.DAILY -> R.id.wifi_daily
-            TimePeriod.WEEKLY -> R.id.wifi_weekly
+            TimePeriod.DAILY   -> R.id.wifi_daily
+            TimePeriod.WEEKLY  -> R.id.wifi_weekly
             TimePeriod.MONTHLY -> R.id.wifi_monthly
         }
         binding.wifiTileRadioGroup.check(wifiRadioId)
 
         val mobileRadioId = when (mobilePeriod) {
-            TimePeriod.DAILY -> R.id.mobile_daily
-            TimePeriod.WEEKLY -> R.id.mobile_weekly
+            TimePeriod.DAILY   -> R.id.mobile_daily
+            TimePeriod.WEEKLY  -> R.id.mobile_weekly
             TimePeriod.MONTHLY -> R.id.mobile_monthly
         }
         binding.mobileTileRadioGroup.check(mobileRadioId)
 
-        binding.showPeriodInTitleSwitch.isChecked = showPeriodInTitle
-        binding.showChargeInTitleSwitch.isChecked = showChargeInTitle
+        binding.showPeriodInTitleSwitch.isChecked        = showPeriodInTitle
+        binding.showChargeInTitleSwitch.isChecked        = showChargeInTitle
         binding.showBatteryHealthInTitleSwitch.isChecked = showHealthInTitle
         binding.showScreenTimeoutInTitleSwitch.isChecked = showScreenTimeoutInTitle
-        binding.torchGlyphShowHeadingSwitch.isChecked = showTorchGlyphInTitle
-        binding.refreshRateShowHeadingSwitch.isChecked = showRefreshRateInTitle
-        binding.aodShowHeadingSwitch.isChecked = showAODInTitle
-        binding.dnsShowHeadingSwitch.isChecked = showDNSInTitle
-        binding.headsUpShowHeadingSwitch.isChecked = showHeadsUpInTitle
-        binding.vibrationEnabledSwitch.isChecked = vibrationEnabled
+        binding.torchGlyphShowHeadingSwitch.isChecked    = showTorchGlyphInTitle
+        binding.refreshRateShowHeadingSwitch.isChecked   = showRefreshRateInTitle
+        binding.aodShowHeadingSwitch.isChecked           = showAODInTitle
+        binding.dnsShowHeadingSwitch.isChecked           = showDNSInTitle
+        binding.headsUpShowHeadingSwitch.isChecked       = showHeadsUpInTitle
+        binding.flipToGlyphShowHeadingSwitch.isChecked   = showFlipToGlyphInTitle
+        binding.vibrationEnabledSwitch.isChecked         = vibrationEnabled
 
         if (!vibrationManager.hasVibrator()) {
             binding.vibrationEnabledSwitch.isEnabled = false
@@ -208,17 +219,17 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val binding = binding ?: return
 
         val wifiPeriod = when (binding.wifiTileRadioGroup.checkedRadioButtonId) {
-            R.id.wifi_daily -> TimePeriod.DAILY
-            R.id.wifi_weekly -> TimePeriod.WEEKLY
+            R.id.wifi_daily   -> TimePeriod.DAILY
+            R.id.wifi_weekly  -> TimePeriod.WEEKLY
             R.id.wifi_monthly -> TimePeriod.MONTHLY
-            else -> TimePeriod.DAILY
+            else              -> TimePeriod.DAILY
         }
 
         val mobilePeriod = when (binding.mobileTileRadioGroup.checkedRadioButtonId) {
-            R.id.mobile_daily -> TimePeriod.DAILY
-            R.id.mobile_weekly -> TimePeriod.WEEKLY
+            R.id.mobile_daily   -> TimePeriod.DAILY
+            R.id.mobile_weekly  -> TimePeriod.WEEKLY
             R.id.mobile_monthly -> TimePeriod.MONTHLY
-            else -> TimePeriod.DAILY
+            else                -> TimePeriod.DAILY
         }
 
         val designCapacity = binding.designCapacityEditText.text.toString().toIntOrNull() ?: 0
@@ -234,6 +245,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         qsTileSettingsManager.saveShowAODInTitle(binding.aodShowHeadingSwitch.isChecked)
         qsTileSettingsManager.saveShowDNSInTitle(binding.dnsShowHeadingSwitch.isChecked)
         qsTileSettingsManager.saveShowHeadsUpInTitle(binding.headsUpShowHeadingSwitch.isChecked)
+        qsTileSettingsManager.saveShowFlipToGlyphInTitle(binding.flipToGlyphShowHeadingSwitch.isChecked)
 
         vibrationManager.setVibrationEnabled(binding.vibrationEnabledSwitch.isChecked)
 
@@ -246,6 +258,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         saveTorchGlyphSettings(binding)
         saveRefreshRateSettings(binding)
         saveAODSettings(binding)
+        saveFlipToGlyphSettings()
 
         triggerImmediateTileUpdates()
         triggerDNSTileUpdate()
@@ -253,6 +266,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
         triggerRefreshRateTileUpdate()
         triggerAODTileUpdate()
         triggerHeadsUpTileUpdate()
+        triggerFlipToGlyphTileUpdate()
 
         Toast.makeText(this, getString(R.string.qs_settings_saved), Toast.LENGTH_SHORT).show()
         finish()
@@ -373,14 +387,14 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     private fun startPermissionMonitoring() {
         lifecycleScope.launch {
-            var lastUsageStats = permissionHelper.hasUsageStatsPermission()
+            var lastUsageStats    = permissionHelper.hasUsageStatsPermission()
             var lastWriteSettings = permissionHelper.hasWriteSettingsPermission()
             var lastSecureSettings = dnsManager.hasSecureSettingsPermission()
 
             while (binding != null) {
                 delay(1000)
 
-                val currentUsageStats = permissionHelper.hasUsageStatsPermission()
+                val currentUsageStats    = permissionHelper.hasUsageStatsPermission()
                 val currentWriteSettings = permissionHelper.hasWriteSettingsPermission()
                 val currentSecureSettings = dnsManager.hasSecureSettingsPermission()
 
@@ -394,8 +408,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
                     if (lastSecureSettings && !currentSecureSettings) showToast(getString(R.string.advanced_tiles_disabled))
                 }
 
-                lastUsageStats = currentUsageStats
-                lastWriteSettings = currentWriteSettings
+                lastUsageStats     = currentUsageStats
+                lastWriteSettings  = currentWriteSettings
                 lastSecureSettings = currentSecureSettings
             }
         }
@@ -403,7 +417,7 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     private fun updatePermissionRequirementMessages() {
         val binding = binding ?: return
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
+        val hasUsageStats    = permissionHelper.hasUsageStatsPermission()
         val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
         val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
 
@@ -417,8 +431,8 @@ class QSTileSettingsActivity : AppCompatActivity() {
 
     private fun updateFeatureControls() {
         val binding = binding ?: return
-        val hasUsageStats = permissionHelper.hasUsageStatsPermission()
-        val hasWriteSettings = permissionHelper.hasWriteSettingsPermission()
+        val hasUsageStats     = permissionHelper.hasUsageStatsPermission()
+        val hasWriteSettings  = permissionHelper.hasWriteSettingsPermission()
         val hasSecureSettings = dnsManager.hasSecureSettingsPermission()
 
         // Data usage tile controls
@@ -445,39 +459,41 @@ class QSTileSettingsActivity : AppCompatActivity() {
         val advancedAlpha = if (hasSecureSettings) 1.0f else 0.5f
 
         binding.dns1NameEditText.isEnabled = hasSecureSettings
-        binding.dns1UrlEditText.isEnabled = hasSecureSettings
+        binding.dns1UrlEditText.isEnabled  = hasSecureSettings
         binding.dns2NameEditText.isEnabled = hasSecureSettings
-        binding.dns2UrlEditText.isEnabled = hasSecureSettings
+        binding.dns2UrlEditText.isEnabled  = hasSecureSettings
         binding.dns3NameEditText.isEnabled = hasSecureSettings
-        binding.dns3UrlEditText.isEnabled = hasSecureSettings
-        binding.dnsShowHeadingSwitch.isEnabled = hasSecureSettings
-        binding.dnsAddButton.isEnabled = hasSecureSettings
-        binding.dnsRemove2Button.isEnabled = hasSecureSettings
-        binding.dnsRemove3Button.isEnabled = hasSecureSettings
-        binding.torchGlyphShowHeadingSwitch.isEnabled = hasSecureSettings
+        binding.dns3UrlEditText.isEnabled  = hasSecureSettings
+        binding.dnsShowHeadingSwitch.isEnabled   = hasSecureSettings
+        binding.dnsAddButton.isEnabled           = hasSecureSettings
+        binding.dnsRemove2Button.isEnabled       = hasSecureSettings
+        binding.dnsRemove3Button.isEnabled       = hasSecureSettings
+        binding.torchGlyphShowHeadingSwitch.isEnabled  = hasSecureSettings
         binding.refreshRateShowHeadingSwitch.isEnabled = hasSecureSettings
-        binding.aodShowHeadingSwitch.isEnabled = hasSecureSettings
-        binding.headsUpShowHeadingSwitch.isEnabled = hasSecureSettings
+        binding.aodShowHeadingSwitch.isEnabled         = hasSecureSettings
+        binding.headsUpShowHeadingSwitch.isEnabled     = hasSecureSettings
+        binding.flipToGlyphShowHeadingSwitch.isEnabled = hasSecureSettings
 
         binding.dns1NameEditText.alpha = advancedAlpha
-        binding.dns1UrlEditText.alpha = advancedAlpha
+        binding.dns1UrlEditText.alpha  = advancedAlpha
         binding.dns2NameEditText.alpha = advancedAlpha
-        binding.dns2UrlEditText.alpha = advancedAlpha
+        binding.dns2UrlEditText.alpha  = advancedAlpha
         binding.dns3NameEditText.alpha = advancedAlpha
-        binding.dns3UrlEditText.alpha = advancedAlpha
-        binding.dnsShowHeadingSwitch.alpha = advancedAlpha
-        binding.dnsAddButton.alpha = advancedAlpha
-        binding.dnsRemove2Button.alpha = advancedAlpha
-        binding.dnsRemove3Button.alpha = advancedAlpha
-        binding.torchGlyphShowHeadingSwitch.alpha = advancedAlpha
+        binding.dns3UrlEditText.alpha  = advancedAlpha
+        binding.dnsShowHeadingSwitch.alpha   = advancedAlpha
+        binding.dnsAddButton.alpha           = advancedAlpha
+        binding.dnsRemove2Button.alpha       = advancedAlpha
+        binding.dnsRemove3Button.alpha       = advancedAlpha
+        binding.torchGlyphShowHeadingSwitch.alpha  = advancedAlpha
         binding.refreshRateShowHeadingSwitch.alpha = advancedAlpha
-        binding.aodShowHeadingSwitch.alpha = advancedAlpha
-        binding.headsUpShowHeadingSwitch.alpha = advancedAlpha
+        binding.aodShowHeadingSwitch.alpha         = advancedAlpha
+        binding.headsUpShowHeadingSwitch.alpha     = advancedAlpha
+        binding.flipToGlyphShowHeadingSwitch.alpha = advancedAlpha
 
         // Battery controls are always enabled
-        binding.showChargeInTitleSwitch.isEnabled = true
+        binding.showChargeInTitleSwitch.isEnabled      = true
         binding.showBatteryHealthInTitleSwitch.isEnabled = true
-        binding.designCapacityEditText.isEnabled = true
+        binding.designCapacityEditText.isEnabled       = true
     }
 
     private fun saveDNSSettings(binding: ActivityQsTileSettingsBinding) {
@@ -524,6 +540,9 @@ class QSTileSettingsActivity : AppCompatActivity() {
     private fun saveAODSettings(binding: ActivityQsTileSettingsBinding) {
         val hasValidAOD = aodManager.hasRequiredPermissions()
         aodManager.setAODEnabled(hasValidAOD)
+    }
+
+    private fun saveFlipToGlyphSettings() {
     }
 
     private fun triggerImmediateTileUpdates() {
@@ -584,6 +603,16 @@ class QSTileSettingsActivity : AppCompatActivity() {
                 sendBroadcast(Intent(HeadsUpQSTileService.ACTION_HEADS_UP_SETTINGS_UPDATED).apply { setPackage(packageName) })
             } catch (e: Exception) {
                 android.util.Log.e("QSTileSettings", "Error sending Heads-Up tile update broadcast", e)
+            }
+        }
+    }
+
+    private fun triggerFlipToGlyphTileUpdate() {
+        lifecycleScope.launch {
+            try {
+                sendBroadcast(Intent(FlipToGlyphQSTileService.ACTION_FLIP_TO_GLYPH_SETTINGS_UPDATED).apply { setPackage(packageName) })
+            } catch (e: Exception) {
+                android.util.Log.e("QSTileSettings", "Error sending Flip to Glyph tile update broadcast", e)
             }
         }
     }
